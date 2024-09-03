@@ -63,7 +63,6 @@ const CustomCardWrapper = styled(Card)(({ theme }) => ({
     boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
   },
 }));
-
 const CustomCardContent = styled(CardContent)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -76,7 +75,6 @@ const CustomCardActions = styled(CardActions)({
   padding: '8px 16px',
   alignItems: 'center',
 }); 
-
 const CustomButton = styled(Button)({
   fontSize: '0.6rem',
   minWidth: 'auto',
@@ -88,7 +86,6 @@ const GlowingBox = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  // backgroundColor: '#fff', // Default background color
   borderRadius: 20,
   boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)',
   transition: 'box-shadow 0.3s ease-in-out',
@@ -98,19 +95,12 @@ const GlowingBox = styled('div')(({ theme }) => ({
   },
 }));
 
-  // const handleCheckboxChange = (event) => {
-  //   const { name } = event.target;
-  //   setSelectedClientType(name);
-  // };
-//api historique
 
 
 
 function CustomCard({ client,selectedClientType,user }) {
   const [params,setParams]=useState([])
   const [raisonList, setRaisonList] = useState([]);
-  const [Sahar, setSahar] = useState([]);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [openHistoriqueDialog, setOpenHistoriqueDialog] = useState(false);
   const [dateTime, setDateTime] = useState(new Date().toISOString().slice(0, 16));
@@ -120,12 +110,10 @@ function CustomCard({ client,selectedClientType,user }) {
   const [commandes, setCommandes] = useState([]);
   const [expanded, setExpanded] = useState(null); 
   const [articles, setArticles] = useState({});
- 
   const [qualificationList, setQualificationList] = useState([]);
   const [selectedQualification,setSelectedQualification]=useState("")
   const [tarifs,setTarifs]=useState([])
   const[openTarifDialog,setOpenTarifDialog]=useState(false)
-
   const handleTarifDialogOpen=async()=>{
     try {
       console.log("client",client.CODE_CLIENT)
@@ -144,11 +132,8 @@ function CustomCard({ client,selectedClientType,user }) {
   useEffect(() => {
     axios.get(`${BASE_URL}/api/RaisonsList`)
       .then(response => setRaisonList(response.data))
-      .catch(error => console.error('Error fetching data:', error));
-
-   
+      .catch(error => console.error('Error fetching data:', error)); 
   }, []);
-
 
   const [selectedRaison, setSelectedRaison] = useState('');
 
@@ -162,10 +147,8 @@ useEffect(() => {
       .filter(param => param.ID_RAISON === selectedRaison.ID_RAISON)
       .map(param => param.ID_QUALIFICATION);
 
-   
   } 
 
- 
 }, [selectedRaison, params, qualificationList]);
 
 
@@ -187,8 +170,6 @@ useEffect(() => {
       .then(response => {setRaisonList(response.data)
         console.log ("sahar",response.data)
       }
-
-      
     )
 
       .catch(error => console.error('Error fetching data:', error));
@@ -265,9 +246,7 @@ useEffect(() => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-
   //Mailing 
-  
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [loginmail, setLoginmail] = useState('');
@@ -283,12 +262,9 @@ useEffect(() => {
     let code = (client.CHAMP_2_CLIENT)
   
     let username = (client.NOM_PRENOM)
-    
-      
-         
+ 
   // alert(JSON.stringify(client))
-  
-  
+
       return await axios.post('http://192.168.1.170:3200/signin', { email:client.EMAIL,loginmail, username,code }, {
               headers: {
                   "Content-Type": "application/json",
@@ -303,23 +279,9 @@ useEffect(() => {
           .catch(error => {
               alert(error)
               setMessages('Error sending verification code');
-             
-  
           });
-          
-  
   }
-  
-  
-  const handleVerifyCode = async(e) => {
-      e.preventDefault();
-      try {
-          const response = await axios.post('http://http://192.168.1.170:3200/verify', { email,username, loginmail,code });
-          setMessages('Verification successful! Token: ' + response.data.token);
-      } catch (error) {
-          setMessages('Error verifying code');
-      }
-  };
+
 
   return (
     
@@ -332,7 +294,7 @@ useEffect(() => {
   align="center"
   style={{
     color: "white",
-    fontWeight: 'bold',
+    fontWeight: 'bold', 
     textAlign: 'center',
     fontSize: '1.2rem',
   }}
@@ -343,9 +305,7 @@ useEffect(() => {
           {!client.BLOQUER_CLIENT &&(
           <CheckCircleOutlineIcon style={{ marginLeft: '8px', fontSize: '1.5rem',color:"white" }} />
         )}
-          {client.BLOQUER_CLIENT &&(
-          <BlockIcon style={{ marginLeft: '8px', fontSize: '1.5rem' ,color:"white"}} />
-        )}
+        
         </GlowingBox>
        
         <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px" }}>

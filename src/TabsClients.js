@@ -27,6 +27,8 @@ import CardInvestisseur from './CardInvestisseurs'
 import Stock from './Stock'
 import ClientsSearch from './components/clientSearch';
 import ClientsIcon from './icons/addClient.png'
+import family from './icons/people-roof.svg'
+
 import BASE_URL from './constantes';
 import axios from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
@@ -305,20 +307,19 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
                  
                   </>
                   )}
+                  
                   <FormControlLabel value="2" control={<Radio />} label="Commandes en cours" />
                   <FormControlLabel value="3" control={<Radio />} label="Etat de stock" />
+                
+                  
                 </RadioGroup>
+
+
                 <Box sx={{ ml: 2 }}>
                   <Button variant={displayMode === 'card' ? 'contained' : 'outlined'} onClick={handleDisplayModeCard}>
                     <ViewModuleIcon />
                   </Button>
-                  <Button variant={displayMode === 'list' ? 'contained' : 'outlined'} onClick={handleDisplayModeList}>
-                    <ViewListIcon />
-                  </Button>
-                  <div>
-
-                 
-                     <Button
+                  <Button
                   variant="outlined"
                   onClick={handleClickOpen}
                   size="small"
@@ -326,23 +327,26 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
                 >
                   Liste des collaborateurs
                 </Button>
+                 {/*<Button variant={displayMode === 'list' ? 'contained' : 'outlined'} onClick={handleDisplayModeList}>
+                    <ViewListIcon />
+                  </Button>*/}
+                  <div>
+
+                    
                   <Dialog open={open} onClose={handleClose} fullWidth
-      maxWidth="md" 
-      PaperProps={{
-        style: {
-          height: '90vh', 
-          maxHeight: '900vh', 
-        },
-      }}>
+                    maxWidth="md" 
+                    PaperProps={{
+                    style: {
+                      height: '90vh', 
+                      maxHeight: '900vh', 
+                           },
+                   }}>
                   <DialogTitle> Liste des collaborateurs</DialogTitle>
                   <DialogContent>
-
-
                   <TableContainer component={Paper} style={{maxHeight:"700vh",overflowY:'auto'}}>
           <Table>
             <TableHead>
               <TableRow> 
-             
                 <TableCell  sx={{
                                             fontWeight: 'bold',
                                             borderBottom: '1px solid rgba(224, 224, 224, 1)',
@@ -434,7 +438,6 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
                 {renderTriInput}
                 {renderSelectClImage}
                 {renderFiltredRotInput}
-
                 {renderSearchInput}
               </Box>
             </Box>
@@ -514,19 +517,20 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
               obj.nbr=nn
               setTot(obj)}}/>
           )}
-          {index === 0 && selectedOption === '0' && displayMode === 'list' && (
+          {/*{index === 0 && selectedOption === '0' && displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 4 }}>
               <PartenaireList searchTerm={searchTerm} selectedAvancement={selectedAvancement}/>
             </Box>
-          )}
+          )}*/}
           {index === 0 && selectedOption === '1' && displayMode === 'card' && (
             <CardClientsPartenaires displayMode={displayMode}  searchTerm={searchTerm}/>
-          )}
-          {index === 0 && selectedOption === '1' && displayMode === 'list' && (
+          )} 
+          {/*{index === 0 && selectedOption === '1' && displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
               <ClientPartList />
             </Box>
-          )}
+          )}*/}
+          
           {index === 1 && selectedOption === '1' && displayMode === 'card' && (
             <CardInvestisseursCSPD displayMode={displayMode} />
           )}
@@ -537,6 +541,8 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
               obj.nbr=nn
               setTot(obj)}}/>
           )}
+          
+         
           {index === 0 && selectedOption === '2' && (
             <CommandesList base={"fdm"} type={"partenaire"} searchTerm={searchTerm} />
           )}
@@ -549,16 +555,17 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
             {index === 3 && selectedOption === '2' && (
             <CommandesList base={"fdm"} type={"client"}  searchTerm={searchTerm}/>
           )}
-          {index === 1 && selectedOption === '1' && displayMode === 'list' && (
+           
+         {/*} {index === 1 && selectedOption === '1' && displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
               <ListInvestisseursCSPD />
             </Box>
-          )}
-          {index === 2 && selectedOption === '1'&&  displayMode === 'list' && (
+          )} */}
+           {index === 2 && selectedOption === '1'&&  displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
               <ClientList selectedClientType={"clientsCspd"} searchTerm={searchTerm} selectedTri={selectedTri}/>
             </Box>
-          )}
+          )} 
           {index === 2  && selectedOption === '1'&& displayMode === 'card' && (
             <CardClientsCSPD selectedClientType={"clientsCspd"}  displayMode={displayMode} selectedTri={selectedTri} searchTerm={searchTerm}/>
           )}
@@ -583,6 +590,8 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
           { selectedOption === '3' && index===1 && (
             <Stock searchTerm={searchTerm}  codeCli={selectedClient} base={"cspd"} type={"client"}/>
           )}
+          
+       
         </Box>
       )}
     </div>
@@ -630,6 +639,7 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
             }
             {...a11yProps(0)}
             />
+          
           <Tab 
             label={
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '150px' }}>
@@ -647,10 +657,18 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
             </Box>
             }
             />
+            
+         
+
           <Tab label="Clients Cspd" />
           <Tab label="Clients Fdm" />
+          <Tab label="Famille" />
+
         </Tabs>
       </Box>
+
+
+
       <CustomTabPanel value={value} index={0} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} 
       setNumber={ (TypeCl,num)=>{
         let newArray=[...numberCli]
@@ -707,6 +725,11 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
     
         setNumberCli(newArray)
       }}  />
+
+
+
+
+
       <CustomTabPanel value={value} index={3} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} setNumber={ (TypeCl,num)=>{
         let newArray=[...numberCli]
         let editArray=[]

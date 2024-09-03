@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import {  useTheme,Card, CardContent,TableContainer, CardActions,Autocomplete, Button, Typography, IconButton, Box, Collapse, Table, TableBody, TableCell, TableHead, TableRow, Grid ,TablePagination} from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CallIcon from '@mui/icons-material/Call';
@@ -24,6 +25,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import moneyIcon from './icons/money-bag.png'
 import fullbattery from './icons/full-battery.png'
 import emptybattery from './icons/low-battery.png'
+import call from './icons/telephone_724664.png'
 import userIcon from './icons/user.png'
 import dateIcon from './icons/NAISS.png'
 import personIcon from './icons/person.png'
@@ -32,8 +34,10 @@ import addressIcon from './icons/address.png'
 import cardIcon from './icons/credit-card.png'
 import priceIcon from './icons/money.png'
 import blockedIcon from './icons/blockedCli.png'
+
 const CommandesList = ({base,type,searchTerm}) => {
   const theme = useTheme();
+
   const [commandes, setCommandes] = useState([]);
   const [expanded, setExpanded] = useState(null); 
   // const [communications, setCommunications] = useState([]);
@@ -42,13 +46,15 @@ const CommandesList = ({base,type,searchTerm}) => {
   const [dateTime, setDateTime] = useState('');
   const user = useSelector((state) => state.user);
   const [detailsCommunication, setDetailsCommunication] = useState('');
-  const[transporteurs,setTransporteurs]=useState([])
+  const [transporteurs,setTransporteurs]=useState([])
   const [modeLiv,setModeLiv]=useState([])
   const [modePay,setModepay]=useState([])
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [userAffected,setUserAffected]=useState(false)
   const [total, setTotal] = useState(0);
+  const [tarifs,setTarifs]=useState([])
+  const [openTarifDialog,setOpenTarifDialog]=useState(false)
   const [historyDialog,setHistoryDialog]=useState(false)
   const GlowingBox = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -63,6 +69,7 @@ const CommandesList = ({base,type,searchTerm}) => {
       boxShadow: '0 0 16px rgba(0, 0, 0, 0.5)',
     },
   }));
+  
   const CustomCardActions = styled(CardActions)(({ theme }) => ({
     display: 'flex',
     justifyContent: 'space-between',
@@ -74,11 +81,9 @@ const CommandesList = ({base,type,searchTerm}) => {
     if (!dateString) return '';
   
     const date = new Date(dateString);
-    
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
@@ -266,6 +271,7 @@ const handleCloseDetailsDialog = () => {
           {reference:command.NUM_CDE_C, etat: "En cours de traitement",base:base}
         ); 
         console.log("end")
+        console.log('hellll')
   
       } catch (error) {
         console.error('Error updating partenaire:', error);
@@ -276,7 +282,24 @@ const handleCloseDetailsDialog = () => {
   };
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
 const [commandToCancel, setCommandToCancel] = useState(null);
+const handleOpentarifs =async (command) => {
+  
+   if (!command.CC_CHAMP_3) {
+     try {
+       console.log("start")
+     
+       await axios.put(
+         `${BASE_URL}/api/tarifsClient`,
+       ); 
+       console.log("end")
+ 
+     } catch (error) {
+       console.error('Error updating trf:', error);
+     }
+   } 
+ 
 
+ };
 const handleOpenCancelDialog = (command) => {
   setCommandToCancel(command);
   setOpenCancelDialog(true);
@@ -331,16 +354,37 @@ const handleConfirmCancel = async () => {
   const handleClientClick = (commandId) => {
     setExpandedClient(prev => (prev === commandId ? null : commandId));
   };
-   
+
+  const handleTarifDialogOpen=async(command)=>{
+    
+    try {
+      console.log("client",command.CODE_CLIENT)
+
+      const result = await axios.get(`${BASE_URL}/api/tarifsClient`,{ params: {
+        code: command.CODE_CLIENT
+      }
+      });
+      console.log("a7la client",result.data)
+     
+
+      setTarifs(result.data);
+    } catch (error) {
+      console.error('Error fetching commands:', error);
+    }
+    setOpenTarifDialog(true)
+  }
   
+ 
     return (
+    
       <Grid container spacing={2}>
       {commandes.map((command) => {
         const communication = communications.find(comm => comm.ref_commande === command.NUM_CDE_C);
         const etat =command.NUM_CDE_CL?'Livré': command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
-        const etatColor = etat==="Non encore traité" ? "red" :etat==="En cours de traitement" ? "orange":etat==="Traité" ? "green":etat==="Annulée"?"purple":"blue";
+        const etatColor = etat==="Non encore traité" ? "red" :etat==="En cours de traitement" ? "orange":etat==="Trait@" ? "green":etat==="Annul@e"?"purple":"blue";
         const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
        
+               console.table([{etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3}]);
 
         return (
           <Grid
@@ -358,7 +402,7 @@ const handleConfirmCancel = async () => {
             transition: 'height 0.3s ease-in-out'
           }}
         >
-              <CardContent sx={{ cursor: 'pointer', position: 'relative', height:type==="partenaire"?'400px':'300px', marginBottom: "20px" }}>
+              <CardContent sx={{ cursor: 'pointer', position: 'relative', height:type==="partenaire"?'400px':'350px', marginBottom: "20px" }}>
               <GlowingBox  style={{ backgroundColor:etatColor}}>
               <Typography
             variant="h6"
@@ -411,6 +455,7 @@ const handleConfirmCancel = async () => {
                 )}
                 <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Adresses Client: {command.ADR_C_C_2}, {command.ADR_C_C_3}</Typography>
                 <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={priceIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Total: {command.CC_TOTAL}</Typography>
+                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={call} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Numéro: {command.TEL_CLIENT_F}</Typography>
                 <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={userIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
                 {/* <Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold"}}
                  onClick={handleOpenDetailsDialog}>
@@ -454,7 +499,7 @@ const handleConfirmCancel = async () => {
               <TableCell>{article.CCL_PXU_TTC}</TableCell>
               <TableCell>{article.CCL_QTE_C}</TableCell>
               <TableCell>{article.CCL_MONTANT_TTC}</TableCell>
-              <TableCell>{Number(article.CDES_CLIENTS)-Number(article.CCL_QTE_C)-Number(article.QTE_CMD_ANNUL)}</TableCell>
+              <TableCell>{Number(article.CDES_CLIENTS)- Number(article.CCL_QTE_C) - Number(article.QTE_CMD_ANNUL)}</TableCell>
               <TableCell>{Number(article.CDES_FOURNIS)}</TableCell>
               <TableCell> {formatDate(article.LATEST_DATE_LIV_CF_P)}</TableCell>
               <TableCell>
@@ -472,16 +517,19 @@ const handleConfirmCancel = async () => {
                 </Box>
               </Collapse>
               <CustomCardActions>
-                <Button startIcon={<CallIcon />} color="primary" onClick={()=>handleOpenDialog(command)} style={{marginTop:!isClientDetailsVisible?"4%":'60%',fontWeight:"bold"}} disabled={command.CC_CHAMP_7 && command.CC_CHAMP_7!==user.LOGIN}>
+                <Button startIcon={<CallIcon />} color="primary" onClick={()=>handleOpenDialog(command)} style={{marginTop:!isClientDetailsVisible?"4%":'40%',fontSize:"10px",fontWeight:"bold"}} disabled={command.CC_CHAMP_7 && command.CC_CHAMP_7!==user.LOGIN}>
                   Appeler
                 </Button>
-                <Button startIcon={<HistoryIcon/>} onClick={()=>handleOpenHistoriqueDialog(command)} style={{marginTop:!isClientDetailsVisible?"4%":'60%',fontWeight:"bold",color: "#478CCF"}} >
+                <Button startIcon={<HistoryIcon/>} onClick={()=>handleOpenHistoriqueDialog(command)} style={{marginTop:!isClientDetailsVisible?"4%":'40%',fontWeight:"bold",color: "#478CCF",fontSize:"10px",}} >
               Historique
+                </Button>
+                <Button startIcon={<LocalAtmIcon/>} onClick={()=>handleTarifDialogOpen(command)} style={{marginTop:!isClientDetailsVisible?"4%":'40%',fontWeight:"bold",fontSize:"10px",color: "#478CCF"}} >
+              tarifs
                 </Button>
                 {!command.NUM_CDE_CL && etat!=="Traité" && (
                 <Button
     startIcon={<CancelIcon />}
-    style={{ marginTop: !isClientDetailsVisible?"4%":'60%', fontWeight: "bold", color: "red" }}
+    style={{ marginTop: !isClientDetailsVisible?"4%":'60%', fontWeight: "bold", color: "red",fontSize:"10px" }}
     onClick={() => handleOpenCancelDialog(command)}
   >
     Annuler
@@ -808,6 +856,42 @@ const handleConfirmCancel = async () => {
       </DialogActions>
      
     </Dialog>
+
+    <Dialog open={openTarifDialog} onClose={()=>setOpenTarifDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          Tarifs 
+        </DialogTitle>
+        <DialogContent>
+        <TableContainer style={{  maxHeight: '80%', overflowY: 'auto', border: '1px solid black' }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                      <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Famille</TableCell>
+                      <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise CSPD</TableCell>
+                      <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise FDM</TableCell>
+
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {tarifs.length>0 && tarifs.map((t) => (
+                        <TableRow >
+                          <TableCell>{t.INTITULE_FAM}</TableCell>
+                          <TableCell>{t.REMISE_TF}</TableCell>
+                          <TableCell>{t.TF_FAMILLE}</TableCell>
+
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={()=>setOpenTarifDialog(false)} color="primary">
+            Fermer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
          <Dialog open={openCommSuccess} onClose={handleCloseSuccessDialog} fullWidth maxWidth="sm">
         <DialogTitle style={{ backgroundColor: '#4CAF50', color: '#fff', display: 'flex', alignItems: 'center' }}>
           <CheckCircleOutlineIcon style={{ marginRight: '8px', color: '#fff' }} />

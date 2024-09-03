@@ -52,7 +52,6 @@ import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import represIcon from './icons/repres.png'
 import emailb from './icons/emailb.png'
-
 const CustomCardWrapper = styled(Card)(({ theme }) => ({
   width: 'calc(33.00% - 16px)',
   margin: theme.spacing(1),
@@ -187,12 +186,8 @@ useEffect(() => {
     axios.get(`${BASE_URL}/api/raisonQualifications`)
       axios.get(`${BASE_URL}/api/RaisonsList`)
       .then(response => {setRaisonList(response.data)
-        console.log ("sahar",response.data)
       }
-
-      
     )
-
       .catch(error => console.error('Error fetching data:', error));
   },[])
 

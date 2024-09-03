@@ -420,6 +420,62 @@ const parseAndJoin = (field) => {
     return field;
   }
 };
+//mailing
+const [email, setEmail] = useState('');
+const [code, setCode] = useState('');
+const [loginmail, setLoginmail] = useState('');
+const [username, setUsername] = useState('');
+
+const [messages, setMessages] = useState('');
+const [codeSent, setCodeSent] = useState();
+
+const handleSendCode = async(e) => {
+  
+  let loginmail = (client.TEL_CLIENT_F)
+  
+    let code = (client.CHAMP_2_CLIENT)
+  
+    let username = (client.NOM_PRENOM)
+  
+    
+       
+// alert(JSON.stringify(client))
+
+
+    return await axios.post('http://192.168.1.170:3200/signin', { email:client.EMAIL,loginmail, username,code }, {
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': ''
+            }
+        })
+        .then(res => {
+            alert(res.data)
+            setMessages(res.data);
+            setCodeSent(true);
+        })
+        .catch(error => {
+            alert(error)
+            setMessages('Error sending verification code');
+           
+
+        });
+        
+
+}
+
+
+const handleVerifyCode = async(e) => {
+    e.preventDefault();
+    try {
+        const response = await axios.post('http://http://192.168.1.170:3200/verify', { email,username, loginmail,code });
+        setMessages('Verification successful! Token: ' + response.data.token);
+    } catch (error) {
+        setMessages('Error verifying code');
+    }
+};
+
+
+
 return (
   <CustomCardWrapper>
     <CustomCardContent>
@@ -460,6 +516,9 @@ return (
         <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10}}>
           <img src={mailIcon} alt="email icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
           {client.EMAIL}
+          <Button   onClick = {handleSendCode } size="small" style={{ color: '#FF8C00', fontSize: '0.55rem' }}>
+           Mot de passe oublié
+          </Button>
         </Typography>
         <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
           <img src={dateIcon} alt="email icon" style={{ marginRight: 8, width: "20px" ,height: "20px" }} />
