@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; 
 import BASE_URL from './constantes';
 import { Select, MenuItem, InputLabel } from '@mui/material'; 
-import { InfoOutlined } from '@mui/icons-material'; 
+import { Article, InfoOutlined } from '@mui/icons-material'; 
 import HistoryIcon from '@mui/icons-material/History';
 import CancelIcon from '@mui/icons-material/Cancel';
 import moneyIcon from './icons/money-bag.png'
@@ -34,6 +34,10 @@ import addressIcon from './icons/address.png'
 import cardIcon from './icons/credit-card.png'
 import priceIcon from './icons/money.png'
 import blockedIcon from './icons/blockedCli.png'
+import userid from './icons/userid.png'
+import matricule from './icons/id-card.png'
+
+
 
 const CommandesList = ({base,type,searchTerm}) => {
   const theme = useTheme();
@@ -143,8 +147,8 @@ const CommandesList = ({base,type,searchTerm}) => {
           reference: command.NUM_CDE_C,
           base:base
         }
-      });
-      console.log("result",result)
+      }); 
+      console.log("resultcmd",result)
       setArticles(result.data);
     } catch (error) {
       console.error('Error fetching articles:', error);
@@ -270,8 +274,7 @@ const handleCloseDetailsDialog = () => {
           `${BASE_URL}/api/updateEtatCmd`,
           {reference:command.NUM_CDE_C, etat: "En cours de traitement",base:base}
         ); 
-        console.log("end")
-        console.log('hellll')
+        
   
       } catch (error) {
         console.error('Error updating partenaire:', error);
@@ -364,9 +367,7 @@ const handleConfirmCancel = async () => {
         code: command.CODE_CLIENT
       }
       });
-      console.log("a7la client",result.data)
-     
-
+  
       setTarifs(result.data);
     } catch (error) {
       console.error('Error fetching commands:', error);
@@ -377,14 +378,13 @@ const handleConfirmCancel = async () => {
  
     return (
     
-      <Grid container spacing={2}>
+      <Grid container spacing={2} >
       {commandes.map((command) => {
         const communication = communications.find(comm => comm.ref_commande === command.NUM_CDE_C);
         const etat =command.NUM_CDE_CL?'Livré': command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
         const etatColor = etat==="Non encore traité" ? "red" :etat==="En cours de traitement" ? "orange":etat==="Trait@" ? "green":etat==="Annul@e"?"purple":"blue";
         const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
-       
-               console.table([{etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3}]);
+        console.table([{etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3}]);
 
         return (
           <Grid
@@ -396,13 +396,13 @@ const handleConfirmCancel = async () => {
           xl={getGridSizes(command).xl}
           key={command.NUM_CDE_C}
         >
-             <Card
+             <Card style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent', height:'100%' }}
           sx={{
-            height: !isClientDetailsVisible  ? '100%' : '500px',
+            height: !isClientDetailsVisible  ? '100%' : '650px',
             transition: 'height 0.3s ease-in-out'
           }}
         >
-              <CardContent sx={{ cursor: 'pointer', position: 'relative', height:type==="partenaire"?'400px':'350px', marginBottom: "20px" }}>
+              <CardContent  sx={{ cursor: 'pointer', position: 'relative', height:type==="partenaire"?'400px':'420px', marginBottom: "20px" }}>
               <GlowingBox  style={{ backgroundColor:etatColor}}>
               <Typography
             variant="h6"
@@ -416,47 +416,65 @@ const handleConfirmCancel = async () => {
              
             }}
           > {etat}</Typography>
-             <InfoOutlined style={{ marginLeft: '8px', fontSize: '1.5rem' }} />
              </GlowingBox>
-                <Typography variant="h6" style={{display:"flex",alignItems:"center",marginBottom:'10px'}}>
+                <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+
                 <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Commande: {command.NUM_CDE_C}</Typography>
+                  <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px',color: "#3572EF",fontWeight:"bold" }}><img src={userid} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px", color:'#7695FF'}} />Code client: {command.CLIENT_CDE}</Typography>
 
-                {type==="partenaire" && (
-                  <>
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={personIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Code Partenaire: {command.CLIENT_CDE}</Typography>
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={personIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Partenaire: {command.CC_UTILIS}</Typography>
-                </>
-              )}
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={dateIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Date: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6}</Typography>
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'   , color: command.BLOQUER_CLIENT===1 ? "red" : "green",fontWeight:"bold" }}   onClick={() => handleClientClick(command.NUM_CDE_C)}>
-                  <img src={command.BLOQUER_CLIENT===1 ? blockedIcon:personIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Client: {command.ADR_C_C_1}
-                  </Typography>
-                  {isClientDetailsVisible && (
-                  <Box
-                    sx={{
-                      padding: '16px',
-                      borderTop: '1px solid #ccc',
-                      marginTop: '10px',
-                      backgroundColor: '#f9f9f9',
-                      marginBottom:"10px"
-                    }}
-                    onClick={() => handleClientClick(command.NUM_CDE_C)}
-                  >
-                        <Typography><strong>Mode de règlement:</strong> {command.LIBEL_REGL_C}</Typography>
-                    <Typography><strong>{command.CL_CHAMP_11}</strong></Typography>
-                    <Typography><strong>Échéance:</strong> {command.ECHEANCE_REG_C}</Typography>
-                    <Typography><strong>Encours client:</strong> {Number(command.ENCOURSREG)+Number(command.SOLDE_CLIENT)+Number(command.BLNONFACT)}</Typography>
-                    <Typography><strong>Encours max:</strong> {command.ENCOURS_MAX_C}</Typography>
-                    <Typography><strong>Encours supp:</strong> {command.ENCOURS_SUPP}</Typography>
-                  
-                  </Box>
-                )}
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Adresses Client: {command.ADR_C_C_2}, {command.ADR_C_C_3}</Typography>
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={priceIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Total: {command.CC_TOTAL}</Typography>
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={call} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Numéro: {command.TEL_CLIENT_F}</Typography>
-                <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px'}}><img src={userIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
+                {type === "partenaire" && (
+        <>
+          
+        </>
+      )}
+     
+      <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+        <img src={dateIcon} alt="date icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+        Date: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6}
+      </Typography>
+      <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
+        <img src={command.BLOQUER_CLIENT === 1 ? blockedIcon : personIcon} alt="status icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+        Client: {command.ADR_C_C_1}
+      </Typography>
+      {isClientDetailsVisible && (
+        <Box
+          sx={{
+            padding: '16px',
+            borderTop: '1px solid #ccc',
+            marginTop: '10px',
+            backgroundColor: '#f9f9f9',
+            marginBottom: "10px"
+          }}
+          onClick={() => handleClientClick(command.NUM_CDE_C)}
+        >
+          <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+            <strong>Mode de règlement:</strong> {command.LIBEL_REGL_C}
+          </Typography>
+          <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+            <strong>{command.CL_CHAMP_11}</strong>
+          </Typography>
+          <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+            <strong>Échéance:</strong> {command.ECHEANCE_REG_C}
+          </Typography>
+          <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+            <strong>Encours client:</strong> {Number(command.ENCOURSREG) + Number(command.SOLDE_CLIENT) + Number(command.BLNONFACT)}
+          </Typography>
+          <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+            <strong>Encours max:</strong> {command.ENCOURS_MAX_C}
+          </Typography>
+          <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+            <strong>Encours supp:</strong> {command.ENCOURS_SUPP}
+          </Typography>
+        </Box>
+      )}
+
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Adresse Client:  {command.ADR_C_C_2} ,{command.ADR_C_C_3 }</Typography>
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={priceIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Total: {command.CC_TOTAL} TND</Typography>
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={matricule} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Matricule : {command.ADR_C_C_3}</Typography>
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={call} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Numéro:{(((command.TEL_CLIENT_F || ' ') + (command.ADR_C_C_2 || ' ')).toString().replace(/\s+/g, '')).slice(0, 8)}
+                </Typography>
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={userIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
                 {/* <Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold"}}
                  onClick={handleOpenDetailsDialog}>
           <img src={moneyIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
@@ -468,7 +486,7 @@ const handleConfirmCancel = async () => {
                   aria-expanded={expanded === command.NUM_CDE_C}
                   sx={{ position: 'absolute', top: 8, right: 8 }}
                 >
-                  <ExpandMoreIcon />
+                  <ExpandMoreIcon style={{color:'white'}} />
                 </IconButton>
               </CardContent>
               <Collapse in={expanded === command.NUM_CDE_C} timeout="auto" unmountOnExit>
@@ -481,15 +499,18 @@ const handleConfirmCancel = async () => {
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Pu TTC</TableCell>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité</TableCell>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Montant TTC</TableCell>
+                      <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Mode de paiement</TableCell>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd clients</TableCell>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd fournisseurs</TableCell>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Date réception prv</TableCell>
+                      <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise</TableCell>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Disponibilité</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
         {articles.length > 0 && articles.map((article) => {
-         
+                   const modepay = (Number(article.STOCK_PHYSIQUE )+ Number(article.STOCK_AUT_DEPOT)) - (Number(article.CDES_CLIENTS)-Number(article.QTE_CMD_ANNUL));
+
           const difference = (Number(article.STOCK_PHYSIQUE )+ Number(article.STOCK_AUT_DEPOT)) - (Number(article.CDES_CLIENTS)-Number(article.QTE_CMD_ANNUL));
 //console.log("difference",difference)
           return (
@@ -499,9 +520,12 @@ const handleConfirmCancel = async () => {
               <TableCell>{article.CCL_PXU_TTC}</TableCell>
               <TableCell>{article.CCL_QTE_C}</TableCell>
               <TableCell>{article.CCL_MONTANT_TTC}</TableCell>
+              <TableCell>{command.LIBEL_REGL_C}</TableCell>
               <TableCell>{Number(article.CDES_CLIENTS)- Number(article.CCL_QTE_C) - Number(article.QTE_CMD_ANNUL)}</TableCell>
               <TableCell>{Number(article.CDES_FOURNIS)}</TableCell>
               <TableCell> {formatDate(article.LATEST_DATE_LIV_CF_P)}</TableCell>
+              <TableCell>{article.CCL_TX_REM} %</TableCell>
+
               <TableCell>
                 <img
                   src={difference >= 0 ? fullbattery : emptybattery}
@@ -667,7 +691,6 @@ const handleConfirmCancel = async () => {
                   <TableCell>{c.ADRESSE_LIVRAISON}</TableCell>
                   <TableCell>{c.TRANSP}</TableCell>
                   <TableCell>{c?.BENEFICIAIRE}</TableCell>
-               
                    <TableCell>{c?.MODE_PAY}</TableCell>
                
                 </TableRow>
@@ -868,8 +891,6 @@ const handleConfirmCancel = async () => {
                       <TableRow>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Famille</TableCell>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise CSPD</TableCell>
-                      <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise FDM</TableCell>
-
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -877,7 +898,6 @@ const handleConfirmCancel = async () => {
                         <TableRow >
                           <TableCell>{t.INTITULE_FAM}</TableCell>
                           <TableCell>{t.REMISE_TF}</TableCell>
-                          <TableCell>{t.TF_FAMILLE}</TableCell>
 
                         </TableRow>
                       ))}

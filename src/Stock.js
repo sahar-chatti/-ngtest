@@ -1,17 +1,19 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-
+import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import { styled } from '@mui/material/styles';
-
+import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 import TablePagination from '@mui/material/TablePagination';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import {
   Grid
   
@@ -128,7 +130,8 @@ function CustomCard({ article,tarifs,type,base }) {
     ROTATION,
     QTE_CMD,
     QTE_RSV,
-    FAMILLE
+    FAMILLE,
+    INTIT_ART_1
   } = article;
   const prix = Number(TARIF_1 * (1 + TX_TVA_ART / 100)).toFixed(3);
   const qte = STOCK_PHYSIQUE + STOCK_AUT_DEPOT;
@@ -226,25 +229,26 @@ if(type==='partenaire' ){
   const tarifRows = getTarifRows();
 
   return (
-    <CustomCardWrapper>
+    <CustomCardWrapper style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent' }} >
       <CustomCardContent>
         <Box>
           {onPromo === 1 && <PromoText variant="subtitle1">{promo}</PromoText>}
           <ArticleInfo>
-            <LocalOfferIcon color="primary" />
-            <Typography variant="h6" style={{ marginLeft: theme.spacing(1) }}>{CODE_ARTICLE}</Typography>
+            <LocalOfferIcon style={{color:'#7695FF'}} />
+            <Typography variant="h6" style={{ display: "flex", alignItems: "center", color: '#7695FF',fontWeight: 'bold' , fontSize:'18px', marginLeft: theme.spacing(1) }}>{CODE_ARTICLE}</Typography>
           </ArticleInfo>
           <ArticleInfo>
-            <InventoryIcon color="primary" />
-            <Typography variant="subtitle1" style={{ marginLeft: theme.spacing(1) }}>{INTIT_ARTICLE}</Typography>
+            <InventoryIcon style={{color:'#7695FF'}} />
+            <Typography variant="subtitle1" style={{ display: "flex", alignItems: "center",marginLeft: theme.spacing(1),color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>{INTIT_ARTICLE}</Typography>
           </ArticleInfo>
           <ArticleInfo>
-          <PriceCheckIcon color="primary" />
+          <MonetizationOnIcon style={{color:'#7695FF'}} />
       {tarifRows.length > 0 ? (
         <TableContainer >
           <Table>
             <TableHead>
               <TableRow>
+                
                 <TableCell>Type</TableCell>
                 {type!=="partenaire" && (
                   <>
@@ -286,23 +290,36 @@ if(type==='partenaire' ){
           </Table>
         </TableContainer>
       ) : (
-        <Typography variant="body2">
+        <Typography style={{ display: "flex", alignItems: "center",marginLeft: theme.spacing(1),color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
           Prix: {prix} <span>TND</span>
         </Typography>
       )}
           </ArticleInfo>
           <ArticleInfo>
-            <SpeedIcon color="primary" />
-            <Typography variant="body2" style={{ marginLeft: theme.spacing(1) }}>Vitesse: {vitesse}  Charge: {charge}</Typography>
+            <SpeedIcon style={{color:'#7695FF'}}  />
+            <Typography variant="body2" style={{ display: "flex", alignItems: "center",marginLeft: theme.spacing(1),color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>Vitesse: {vitesse}</Typography>
+          </ArticleInfo>
+          <ArticleInfo>
+            <BatteryChargingFullIcon style={{color:'#7695FF'}}  />
+            <Typography variant="body2" style={{ display: "flex", alignItems: "center",marginLeft: theme.spacing(1),color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>Charge: {charge}</Typography>
           </ArticleInfo>
           {/* <ArticleInfo>
             <WifiProtectedSetupIcon color="primary" />
             <Typography variant="body2" style={{ marginLeft: theme.spacing(1) }}>Taux rotation: {ROTATION}  </Typography>
           </ArticleInfo> */}
           <ArticleInfo>
-            <LocalShippingIcon color="primary" />
-            <Typography variant="body2" style={{ marginLeft: theme.spacing(1) }}>qte commande: {QTE_CMD > 0 ? QTE_CMD : 0}  qte réservée: {QTE_RSV > 0 ? QTE_RSV : 0} </Typography>
+            <LocalShippingIcon style={{color:'#7695FF'}}  />
+            <Typography variant="body2"style={{ display: "flex", alignItems: "center",marginLeft: theme.spacing(1),color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>Quantité commandée: {QTE_CMD > 0 ? QTE_CMD : 0}  </Typography>
           </ArticleInfo>
+          <ArticleInfo>
+            <BookmarkAddedIcon style={{color:'#7695FF'}}  />
+            <Typography variant="body2"style={{ display: "flex", alignItems: "center",marginLeft: theme.spacing(1),color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>Quantité réservée: {QTE_RSV > 0 ? QTE_RSV : 0} </Typography>
+          </ArticleInfo>
+          <ArticleInfo>
+            <EditNoteIcon style={{color:'#7695FF'}}  />
+            <Typography variant="body2"style={{ display: "flex", alignItems: "center",marginLeft: theme.spacing(1),color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>remarque: {INTIT_ART_1} </Typography>
+          </ArticleInfo>
+         
           {/* <ArticleInfo>
             <LocalShippingIcon color="primary" />
             <Typography variant="body2" style={{ marginLeft: theme.spacing(1) }}> </Typography>

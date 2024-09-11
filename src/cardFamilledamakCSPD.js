@@ -1,25 +1,28 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import emailb from './icons/emailb.png'
+import CircularProgress from '@mui/material/CircularProgress';
+import RestoreIcon from '@mui/icons-material/Restore';
+import PaymentIcon from '@mui/icons-material/Payment';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import PlaceIcon from '@mui/icons-material/Place';
+import PersonIcon from '@mui/icons-material/Person';
 import { styled, ThemeProvider, createTheme } from '@mui/system';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import AddLocationIcon from '@mui/icons-material/AddLocation';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import { MenuItem } from '@mui/material';
 import { useSelector } from 'react-redux';
-import socketIOClient from 'socket.io-client';
 import EmailIcon from '@mui/icons-material/Email';
 import SmsIcon from '@mui/icons-material/Sms';
 import HistoryIcon from '@mui/icons-material/History';
-import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
-import DomainVerificationIcon from '@mui/icons-material/DomainVerification';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -40,7 +43,6 @@ import Paper from '@mui/material/Paper';
 import BASE_URL from './constantes';
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
-import personIcon from './icons/person.png'
 import addressIcon from './icons/address.png'
 import callIcon from './icons/call.png'
 import dateIcon from './icons/NAISS.png'
@@ -52,6 +54,8 @@ import calendarIcon from './icons/calendar.png'
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import represIcon from './icons/repres.png'
+import emailb from './icons/emailb.png'
+
 const CustomCardWrapper = styled(Card)(({ theme }) => ({
   width: 'calc(33.00% - 16px)',
   margin: theme.spacing(1),
@@ -63,6 +67,7 @@ const CustomCardWrapper = styled(Card)(({ theme }) => ({
     boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
   },
 }));
+
 const CustomCardContent = styled(CardContent)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -75,6 +80,7 @@ const CustomCardActions = styled(CardActions)({
   padding: '8px 16px',
   alignItems: 'center',
 }); 
+
 const CustomButton = styled(Button)({
   fontSize: '0.6rem',
   minWidth: 'auto',
@@ -86,6 +92,7 @@ const GlowingBox = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  // backgroundColor: '#fff', // Default background color
   borderRadius: 20,
   boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)',
   transition: 'box-shadow 0.3s ease-in-out',
@@ -95,25 +102,31 @@ const GlowingBox = styled('div')(({ theme }) => ({
   },
 }));
 
-
-
-
-function CustomCard({ client,selectedClientType,user }) {
-  const [params,setParams]=useState([])
+function CustomCard({ client,user }) {
+  const [params,setParams]=useState([]);
   const [raisonList, setRaisonList] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [openHistoriqueDialog, setOpenHistoriqueDialog] = useState(false);
   const [dateTime, setDateTime] = useState(new Date().toISOString().slice(0, 16));
   const [details, setDetails] = useState('');
+  const [selectedRaison, setSelectedRaison] = useState('');
   const [communicationType, setCommunicationType] = useState('Prespection'); // Added communicationType state
   const [qualificationType, setqualificationType] = useState(''); // Added communicationType state
   const [commandes, setCommandes] = useState([]);
   const [expanded, setExpanded] = useState(null); 
   const [articles, setArticles] = useState({});
   const [qualificationList, setQualificationList] = useState([]);
-  const [selectedQualification,setSelectedQualification]=useState("")
-  const [tarifs,setTarifs]=useState([])
-  const[openTarifDialog,setOpenTarifDialog]=useState(false)
+  const [selectedQualification,setSelectedQualification]=useState("");
+  const [tarifs,setTarifs]=useState([]);
+  const[openTarifDialog,setOpenTarifDialog]=useState(false);
+
+  const tablestyle = {
+    fontWeight: 'bold', 
+    color: '#387ADF',
+     borderRadius: '12px',
+  };
+  
+
   const handleTarifDialogOpen=async()=>{
     try {
       console.log("client",client.CODE_CLIENT)
@@ -135,8 +148,6 @@ function CustomCard({ client,selectedClientType,user }) {
       .catch(error => console.error('Error fetching data:', error)); 
   }, []);
 
-  const [selectedRaison, setSelectedRaison] = useState('');
-
   const handleInputChange = (event) => {
     setSelectedRaison(event.target.value);
   };
@@ -146,15 +157,10 @@ useEffect(() => {
     const qualificationIds = params
       .filter(param => param.ID_RAISON === selectedRaison.ID_RAISON)
       .map(param => param.ID_QUALIFICATION);
-
   } 
-
 }, [selectedRaison, params, qualificationList]);
 
-
-
   useEffect(()=> {
-      
     axios.get(`${BASE_URL}/api/raisonQualifications`)
     .then(response => {
       setRaisonList(response.data);
@@ -170,6 +176,8 @@ useEffect(() => {
       .then(response => {setRaisonList(response.data)
         console.log ("sahar",response.data)
       }
+
+      
     )
 
       .catch(error => console.error('Error fetching data:', error));
@@ -187,7 +195,7 @@ useEffect(() => {
     try {
       console.log("client",client.CODE_CLIENT)
       const result = await axios.get(`${BASE_URL}/api/cmdClients`,{ params: {
-        base:selectedClientType==="clientsFdm"?"fdm":"cspd",code:client.CODE_CLIENT
+        base:"cspd",code:client.CODE_CLIENT
       }
       });
       console.log("result",result.data)
@@ -205,7 +213,7 @@ useEffect(() => {
       const result = await axios.get(`${BASE_URL}/api/articlescmd`, {
         params: {
           reference: command.NUM_BLC,
-           base:selectedClientType==="clientsFdm"?"fdm":"cspd"
+           base:"cspd"
         }
       });
       console.log("result",result)
@@ -224,147 +232,101 @@ useEffect(() => {
     console.log('Details:', details);
     console.log('Communication Type:', communicationType);
     console.log('Qualification:', qualificationType);
-
     setOpenDialog(false);
   };
-
-  const sendEmail = () => {
-    window.location.href = `mailto:${client.EMAIL_CLIENT}`;
-  };
-
   const makeCall = () => {
     window.location.href = `tel:${client.TEL_CLIENT_L}`;
   };
-
   const sendSMS = () => {
     window.location.href = `sms:${client.TEL_CLIENT_L}`;
   };
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-  //Mailing 
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [loginmail, setLoginmail] = useState('');
-  const [username, setUsername] = useState('');
+
+//mailing module 
+const [messages, setMessages] = useState('');
+const [codeSent, setCodeSent] = useState();
+const handleSendCode = async(e) => {
   
-  const [messages, setMessages] = useState('');
-  const [codeSent, setCodeSent] = useState();
-  
-  const handleSendCode = async(e) => {
-    
     let loginmail = (client.TEL_CLIENT_F)
-  
     let code = (client.CHAMP_2_CLIENT)
-  
     let username = (client.NOM_PRENOM)
- 
-  // alert(JSON.stringify(client))
-
-      return await axios.post('http://192.168.1.170:3200/signin', { email:client.EMAIL,loginmail, username,code }, {
-              headers: {
-                  "Content-Type": "application/json",
-                  'Authorization': ''
-              }
-          })
-          .then(res => {
-              alert(res.data)
-              setMessages(res.data);
-              setCodeSent(true);
-          })
-          .catch(error => {
-              alert(error)
-              setMessages('Error sending verification code');
-          });
-  }
-
-
+  
+    return await axios.post('http://192.168.1.170:3200/signin', { email:client.EMAIL,loginmail, username,code }, {
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': ''
+            }
+        })
+        .then(res => {
+            alert(res.data)
+            setMessages(res.data);
+            setCodeSent(true);
+        })
+        .catch(error => {
+            alert(error)
+            setMessages('Error sending verification code');
+        });
+}
   return (
-    
-    <CustomCardWrapper style={{ textAlign: 'center' }}>
+    <CustomCardWrapper style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent' }}>
       <CustomCardContent>
-      <GlowingBox  style={{ backgroundColor:client.BLOQUER_CLIENT?"red":"green"}}>
-    
+      <GlowingBox  style={{ backgroundColor:client.CC_BLOQUER?"red":"#7695FF" , borderRadius:'11px'}}>
       <Typography
-  variant="h6"
-  component="div"
-  align="center"
-  style={{
+    variant="h6"
+    component="div"
+    align="center"
+    style={{
     color: "white",
     fontWeight: 'bold',
-    textAlign: 'center',
-    fontSize: '1.2rem',
+    fontSize: '1rem',
   }}
 >
-  {client.INTITULE_CLIENT} <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>({client.INTITULE_GR})</span>
-
-   
-</Typography>
+ 
+  {client.INTITULE_CLIENT.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())} 
+  <span style={{ fontSize: '0.8rem', fontWeight: 'normal' , textAlign:'center '}}>({client.INTITULE_GR.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())})</span>
+  </Typography>
+          {client.CC_BLOQUER &&(
+          <BlockIcon style={{ marginLeft: '8px', fontSize: '1.5rem' ,color:"white"}} />
+        )}
         </GlowingBox>
-      {/*    {client.BLOQUER_CLIENT && (
-      <Typography 
-        variant="body2" 
-        color="text.secondary" 
-        style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          fontWeight: "bold", 
-          marginTop: "10px", 
-          color: "red" 
-        }}
-      >
-        Client bloqué car la facture n'est pas reglée dépuis  {client.CL_FACT_NR} jours
-      </Typography>
-    )} */}
-    
-      
-        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px" }}>
-          <img src={callIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-          <Button onClick={makeCall} variant="text" color="primary">
+        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <LocalPhoneIcon/>
+          <Button onClick={makeCall} variant="text" color="primary" style={{fontWeight: 'bold' , fontSize:'16px'}}>
             {client.TEL_CLIENT_F}
           </Button>
         </Typography>
-        
-        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
-          <img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-          {client.ADR_C_FACT_1}
+        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10 ,color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <PlaceIcon/>
+          {client.ADR_C_FACT_1.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())}
         </Typography>
-        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
-          <img src={represIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-          {client.INTITULE_REPRES}
+        <Typography  variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10 ,color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <PersonIcon/>
+          {client.INTITULE_REPRES.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())}
         </Typography>
-        <Typography id="x" variant="body2" color="text.secondary"  style={{ display: "flex", alignItems: "center", marginBottom: 10}}>
-        <img src={emailb} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-          {client.EMAIL} 
-          <Button   onClick = {handleSendCode } size="small" style={{ color: '#FF8C00', fontSize: '0.55rem' }}>
-           Mot de passe oublié
+        <Typography id="x" variant="body2" color="text.secondary"  style={{ display: "flex", alignItems: "center", marginBottom: 10,fontWeight: 'bold' , fontSize:'16px'}} >
+        <EmailIcon/>          {client.ADR_C_FACT_3} 
+          <Button onClick = {handleSendCode }  style={{ color: '#FF8C00',fontWeight: 'bold' , fontSize:'14px',textTransform: 'none' }}>
+            Mot de passe oublié
           </Button>
         </Typography>
         <>
           {client.NUM_DER_BON ? (
             <Typography variant="body2" color="text.secondary">
               <Grid container style={{ marginTop: '10px', color: "black", alignItems: 'flex-start', fontFamily: 'sans-serif', display: 'inline-flex', fontWeight: 'bold' }}>
-                <TableContainer component={Paper}>
+                <TableContainer component={Paper} >
                   <Table>
                     <TableHead style={{ fontSize: '10px' }}>
                       <TableRow>
-                        <TableCell style={{ fontSize: '12px' }}>
-                          <img src={dateIcon} alt="person icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />N°
-                        </TableCell>
+                        <TableCell style={{ fontSize: '12px' }}>Derniére commande</TableCell>
                         <TableCell style={{ fontSize: '12px' }}>Date</TableCell>
                         <TableCell style={{ fontSize: '12px' }}>Prix</TableCell>
-                        <TableCell style={{ fontSize: '12px' }}>nb jours</TableCell>
+                        <TableCell style={{ fontSize: '12px' }}>Nombre des jours</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       <TableRow key={client.ID_CLIENT} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell style={{ fontWeight: 'bold', color: '#387ADF', borderRadius: '12px' }}>{client.NUM_DER_BON}</TableCell>
-                        <TableCell style={{ fontWeight: 'bold', color: 'black', borderRadius: '12px' }}>{new Date(client.DATE_DER_BON).toLocaleDateString('fr-FR')}</TableCell>
-                        <TableCell style={{ fontWeight: 'bold', color: 'green', borderRadius: '12px' }}>{client.TOT_TTC_BLC}</TableCell>
+                        <TableCell style={{...tablestyle}}>{client.NUM_DER_BON}</TableCell>
+                        <TableCell style={{...tablestyle}} >{new Date(client.DATE_DER_BON).toLocaleDateString('fr-FR')}</TableCell>
+                        <TableCell  style={{...tablestyle}}>{client.TOT_TTC_BLC}</TableCell>
                         <TableCell style={{ fontWeight: 'bold', color: 'red', borderRadius: '12px' }}>{client.NBR_JOURS}</TableCell>
                       </TableRow>
                     </TableBody>
@@ -379,15 +341,16 @@ useEffect(() => {
                   <Table>
                     <TableHead style={{ fontSize: '10px' }}>
                       <TableRow>
-                        <TableCell style={{ width: '600px ', fontSize: '12px', textAlign: 'center' }}>
-                          <img src={dateIcon} alt="person icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
+                        <TableCell style={{ width: '600px ', fontSize: '12px', textAlign: 'center' ,color: '#545454', fontWeight:'bold',}}>
+                        <TipsAndUpdatesIcon  style={{fontSize: '25px', textAlign: 'center' ,color: '#7695FF'}} />
                           Info commande
                         </TableCell>
                       </TableRow>
                     </TableHead> 
                     <TableBody>
                       <TableRow key={client.ID_CLIENT} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell style={{ fontWeight: 'bold', color: '#5E6073', borderRadius: '12px', textAlign: 'center' }}> <ProductionQuantityLimitsIcon style={{ color: "#5E6073" }} /> Aucune commande! </TableCell>
+                        <TableCell style={{ fontWeight: 'bold', color: '#5E6073', borderRadius: '12px', textAlign: 'center' }}>
+                         <ProductionQuantityLimitsIcon style={{ color: "#5E6073" }} /> Aucune commande! </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -396,33 +359,36 @@ useEffect(() => {
             </Typography>
           )}
         </>
-        <Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold"}}>
-          <img src={payIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+        {/*<Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold",color: '#545454',fontSize:'16px'}}>
+        <PaymentIcon style={{ color: '#545454',marginRight:'5px' }}/>
        Mode de réglement: {client.LIBEL_REGL_C}
         </Typography>
-        <Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold"}}>
-          <img src={calendarIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-       Nbr jr echéance : {client.ECHEANCE_REG_C}
+        <Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold",color: '#545454',fontSize:'16px'}}>
+        <RestoreIcon style={{ color: '#545454' , marginRight:'5px'}}/>
+       Nombre des jours d'échéance : {client.ECHEANCE_REG_C}
         </Typography>
-     
-      </CustomCardContent>
+        <Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold",marginTop:"10px",color:"red"}}>
+         
+        Bloquer le client si facture non réglé depuis plus de : {client.CL_FACT_NR}
+        </Typography>*/}
+      </CustomCardContent> 
 
-      <CustomCardActions style={{ width: "max-content", textAlign: 'center', display: 'flex' }}>
-        <CustomButton style={{ color: "green" }} startIcon={<PhoneForwardedIcon />} size="medium" onClick={handleDialogOpen}> Sortant </CustomButton>
-        <CustomButton style={{ color: "green" }} startIcon={<PhoneCallbackIcon />} size="medium" onClick={handleDialogOpen}> Entrant </CustomButton>
-
-        <CustomButton style={{ color: "#EF9C66" }} startIcon={<EmailIcon />} /*onClick={handleEmailDialogOpen}*/ size="medium">Email</CustomButton>
-        <CustomButton startIcon={<SmsIcon />} size="medium" onClick={sendSMS}>SMS</CustomButton>
-        <CustomButton style={{ color: "#478CCF" }} startIcon={<HistoryIcon />} onClick={()=>handleHistoriqueDialogOpen()} size="medium">Historique</CustomButton>
-        {selectedClientType==="clientsCspd" && (
-        <CustomButton style={{ color: "#478CCF",marginLeft:"8px" }} startIcon={<PriceChangeIcon />} onClick={()=>handleTarifDialogOpen()} size="medium">Tarifs</CustomButton>
-      )}
+      <CustomCardActions   style={{
+    width: "100%", // Full width to allow centering
+    textAlign: 'center', // Center text alignment (optional, depending on content)
+    display: 'flex',
+    justifyContent: 'center', // Center items horizontally
+    alignItems: 'center' // Center items vertically if needed
+  }}>
+        <CustomButton style={{ color: "green" , textTransform: 'none', fontSize:'14px', fontWeight:'bold'  , textTransform: 'none'}} startIcon={<PhoneForwardedIcon />} size="medium" onClick={handleDialogOpen}> Sortant </CustomButton>
+        <CustomButton style={{ color: "green",fontSize:'14px', fontWeight:'bold' , textTransform: 'none' }} startIcon={<PhoneCallbackIcon />} size="medium" onClick={handleDialogOpen}> Entrant </CustomButton>
+        <CustomButton style={{ color: "#EF9C66",fontSize:'14px', fontWeight:'bold' , textTransform: 'none' }} startIcon={<EmailIcon />} size="medium">Email</CustomButton>
+        <CustomButton style={{ color: "#478CCF" ,fontSize:'14px', fontWeight:'bold' , textTransform: 'none'}} startIcon={<HistoryIcon />} onClick={()=>handleHistoriqueDialogOpen()} size="medium">Historique</CustomButton>
       </CustomCardActions>
 
       <Dialog open={openDialog} onClose={handleDialogClose}
         maxWidth="md"
         fullWidth>
-
         <DialogTitle>
           Détails de la Communication
           <Button onClick={handleDialogClose} style={{ position: 'absolute', right: '8px', top: '8px' }}>
@@ -601,7 +567,7 @@ useEffect(() => {
               </CardContent>
               <Collapse in={expanded === command.NUM_BLC} timeout="auto" unmountOnExit>
                 <Box sx={{ p: 2 }}>
-                  <Table>
+                <Table>
                     <TableHead>
                       <TableRow>
                       <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Article</TableCell>
@@ -626,7 +592,7 @@ useEffect(() => {
                   </Table>
                 </Box>
               </Collapse>
-            
+           
               </Card>
     
       );
@@ -644,10 +610,6 @@ useEffect(() => {
           Tarifs par famille 
         </DialogTitle>
         <DialogContent>
-       
-   
-    
-  
         <TableContainer style={{  maxHeight: '80%', overflowY: 'auto', border: '1px solid black' }}>
 
                   <Table>
@@ -669,12 +631,6 @@ useEffect(() => {
                     </TableBody>
                   </Table>
                 </TableContainer>
-             
-           
-             
-     
-
-
         </DialogContent>
         <DialogActions>
           <Button onClick={()=>setOpenTarifDialog(false)} color="primary">
@@ -687,118 +643,106 @@ useEffect(() => {
 }
 
 
-const CardContainer = ({ searchTerm,selectedClientType,selectedTri }) => {
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [raisonList, setRaisonList] = useState([]);
-  const user = useSelector((state) => state.user);
 
+const CardContainer = ({ searchTerm }) => {
+    const [clients, setClients] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [total, setTotal] = useState(0);
+    const [filterName, setFilterName] = useState(''); // Nom à filtrer
+    const [filteredClients, setFilteredClients] = useState([]);
+    const user = useSelector((state) => state.user);
+    const fetchPart = async () => {
+        const URL = `${BASE_URL}/api/clientsPartenaires`;
+        console.log('query debug', URL);
+        setLoading(true);
+        try {
+            const params = {
+                page: page,
+                pageSize: pageSize,
+                searchTerm: searchTerm,
+            };
 
-  const [total, setTotal] = useState(0);
+            const response = await axios.get(URL, { params });
+            console.log('API response data:', response.data);
+            setClients(response.data.clients);
+            setTotal(response.data.total);
+            setLoading(false);
 
-  const fetchPart = async () => {
-    const URL = `${BASE_URL}/api/${selectedClientType}`;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setError('There was an error fetching family clients');
+            setLoading(false);
+        }
+    };
 
-    setLoading(true);
-    try {
-      const params = {
-        page: page,
-        pageSize: pageSize,
-        searchTerm: searchTerm,
-        selectedTri:selectedTri
-      };
+    useEffect(() => {
+        fetchPart();
+    }, [page, pageSize, searchTerm]); // Re-fetch data when page, pageSize, or searchTerm changes
 
-      if (user.ROLE === "collaborateur" && selectedClientType==="clientsCspd") {
-        params.repres = user.COMMERCIAL_OK;
-      }
+    useEffect(() => {
+        const filtered = clients.filter(client => 
+            client && client.INTITULE_GR === "FAMILLE"
+        );
+        console.log('Filtered clients:', filtered);
+        setFilteredClients(filtered);
+    }, [clients]); // Only filter when clients change
 
-      const response = await axios.get(URL, { params });
-      setClients(response.data.clients);
-      setTotal(response.data.total);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setError('There was an error fetching the clients!');
-      setLoading(false);
+    const handleChangePage = (event, newPage) => setPage(newPage);
+    const handleChangeRowsPerPage = (event) => {
+        setPageSize(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    if (loading) {
+        return <div> 
+          <Box sx={{ display: 'flex' }}>
+        <CircularProgress />
+      </Box></div>;
     }
 
-  
-  };
+    if (error) {
+        return <div>{error}</div>;
+    }
 
-  useEffect(() => {
-    fetchPart();
-  }, [page, pageSize, searchTerm, selectedClientType,selectedTri]);
-
-const handleChangePage = (event, newPage) => setPage(newPage);
-const handleChangeRowsPerPage = (event) => {
-  setPageSize(parseInt(event.target.value, 10));
-  setPage(0);
+    return (
+        <div style={{ overflowY: 'auto', maxHeight: 'auto' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                {filteredClients.length > 0 ? (
+                    filteredClients.map(client => (
+                        <CustomCard key={client.ID_CLIENT} name={client.INTITULE_GR} client={client} user={user} />
+                    ))
+                ) : (
+                    <p>No clients match the filter.</p>
+                )}
+            </Box>
+            <Box
+                sx={{
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    backgroundColor: '#fff',
+                    boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
+                    padding: '8px 16px',
+                    zIndex: 1000,
+                }}
+            >
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 50, 100, 150, 200]}
+                    component="div"
+                    count={total}
+                    rowsPerPage={pageSize}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+            </Box>
+        </div>
+    );
 };
 
-if (loading) {
-  return <div>Loading...</div>;
-}
-
-if (error) {
-  return <div>{error}</div>;
-}
-
-return (
-  <div style={{ overflowY: 'auto', maxHeight: 'auto' }}>
-    {/* <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-      <FormControlLabel
-        control={
-          <Checkbox
-            name="clientsFdm"
-            checked={selectedClientType === 'clientsFdm'}
-            onChange={handleCheckboxChange}
-          />
-        }
-        label="Clients FDM"
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            name="clientsCspd"
-            checked={selectedClientType === 'clientsCspd'}
-            onChange={handleCheckboxChange}
-          />
-        }
-        label="Clients CSPD"
-      />
-    </Box> */}
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-      {clients.map(client => (
-        <CustomCard key={client.ID_CLIENT} client={client} selectedClientType={selectedClientType} user={user} />
-      ))}
-    </Box>
-    <Box
-    sx={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      width: '100%',
-      backgroundColor: '#fff',
-      boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
-      padding: '8px 16px',
-      zIndex: 1000,
-    }}
-  >
-    <TablePagination
-      rowsPerPageOptions={[10, 25, 50, 100, 150, 200]}
-      component="div"
-      count={total}
-      rowsPerPage={pageSize}
-      page={page}
-      onPageChange={handleChangePage}
-      onRowsPerPageChange={handleChangeRowsPerPage}
-    />
-  </Box>
-  </div>
-);
-};
 export default CardContainer;
 

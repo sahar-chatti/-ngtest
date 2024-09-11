@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import BlockIcon from '@mui/icons-material/Block';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
-import {Checkbox,Collapse,} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -25,20 +26,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import Rating from '@mui/material/Rating';
 import Pagination from '@mui/material/Pagination';
 import TablePagination from '@mui/material/TablePagination';
-import { Select, MenuItem, InputLabel } from '@mui/material';  
+import { Select, MenuItem, InputLabel } from '@mui/material'; 
 import { useSelector } from 'react-redux';
 import personIcon from './icons/person.png'
-import admin from './icons/user (1).png'
-import addressIcon from './icons/maps-and-flags.png'
-import mailIcon from './icons/email.png'
-import naisIcon from './icons/calendar (1).png'
-import user from './icons/user.png'
-import callIcon from './icons/phone-call.png'
+import statusIcon from './icons/status.png'
+import addressIcon from './icons/address.png'
+import mailIcon from './icons/mail.png'
+import naisIcon from './icons/dateanniv.png'
+import callIcon from './icons/call.png'
 import userIcon from './icons/user.png'
-import dateIcon from './icons/history (1).png'
-
-import { RadioGroup, FormControlLabel, Radio } from '@mui/material';
-
+import dateIcon from './icons/NAISS.png'
+import PersonIcon from '@mui/icons-material/Person';
 import {
   Grid
   
@@ -46,7 +44,7 @@ import {
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import socketIOClient from 'socket.io-client';
 import Paper from '@mui/material';
-import { Password, TroubleshootOutlined } from '@mui/icons-material';
+import { Password } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { InfoOutlined } from '@mui/icons-material'; 
@@ -59,7 +57,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Autocomplete,
+  
  
   Tooltip,
   useTheme,
@@ -70,10 +68,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SearchIcon from '@mui/icons-material/Search';
 import BASE_URL from './constantes';
 import { Await } from 'react-router-dom';
-import io from 'socket.io-client';
-  
-
-
+import DeleteIcon from '@mui/icons-material/Delete';
 const GlowingBox = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -131,8 +126,8 @@ const GreenButton = styled(CustomButton)(({ theme }) => ({
   },
 }));
 
-//debut function customcard
-function CustomCard({ client,setClients,user ,fetchPart,setCollab}) {
+
+function CustomCard({ client,setClients,user ,fetchPart}) {
   const theme = useTheme();
   const [openDialog, setOpenDialog] = useState(false);
   const [dateTime, setDateTime] = useState('');
@@ -141,71 +136,22 @@ function CustomCard({ client,setClients,user ,fetchPart,setCollab}) {
   const [selectValue2, setSelectValue2] = useState('');
   const [selectValue3, setSelectValue3] = useState('');
   const [detailsCommunication, setDetailsCommunication] = useState('');
+  
   const [raisonList, setRaisonList] = useState([]);
   const [qualificationList, setQualificationList] = useState([]);
   const [selectedPartenaire, setSelectedPartenaire] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [selectedQualification,setSelectedQualification]=useState("")
-  const [selectedRaison,setSelectedRaison]=useState("")
-  const [statuts,setStatus]=useState([])
-  const [params,setParams]=useState([])
-  const [filteredQualificationList, setFilteredQualificationList] = useState([]);
-  const [contrat, setContrat] = useState(client.CONTRAT);
-  const[selectedFile,setSelectedFile]=useState(null)
-  const contratUrl = client.CONTRAT ? `http://192.168.1.195/api/Requests/contrat_partenaires/${client.CONTRAT}` : null;
-  const [filteredRaisons,setFilteredRaisons]=useState([])
-  const [list,setList]=useState([])
-  const [savePart,setSavePart]=useState(false)
-  const [cv,setCv] = useState(client.CV);
-  const[selectedCv,setSelectedCv]=useState(null)
-
-  // const handleCheckboxChange = (e) => {
-  //   const isChecked = e.target.checked;
-
-  //   // Mettre à jour l'état des clients
-  //   setClients(prevClients => 
-  //     prevClients.map(item =>
-  //       item.id === client.id ? { ...item, collab: isChecked } : item
-  //     )
-  //   );
-  // };
-
-  // pour recupere les paretnaires selectionner pour l'affecter a un collaborateur
-
-
-const [selectedClientIds, setSelectedClientIds] = useState([]);
-
-const handleCheckboxChange = (clientId, isSelected) => {
-  setSelectedClientIds(prevSelected => {
-    const updatedSelection = isSelected
-    ? [...prevSelected, clientId] // Ajoute l'ID à la liste
-    : prevSelected.filter(id => id !== clientId); 
-
-
-  // Affiche les IDs sélectionnés dans la console immédiatement après la mise à jour
-  console.log('Selected Client IDs (immediate):', updatedSelection);
-
-  return updatedSelection;
-});
-};
-
-
-useEffect(() => {
-  console.log('Selected Client IDs(useEffect):', selectedClientIds);
-}, [selectedClientIds]); 
-
-
-  /// fin 
-
-
-  const handleCollabChange = (index, isChecked) => {
-    setClients(prevClients => {
-      const updatedClients = [...prevClients];
-      updatedClients[index] = { ...updatedClients[index], collab: isChecked };
-      return updatedClients;
-    });
-  };
-
+const [selectedQualification,setSelectedQualification]=useState("")
+const [selectedRaison,setSelectedRaison]=useState("")
+const [statuts,setStatus]=useState([])
+const [params,setParams]=useState([])
+const [filteredQualificationList, setFilteredQualificationList] = useState([]);
+const [contrat, setContrat] = useState(client.CONTRAT);
+const[selectedFile,setSelectedFile]=useState(null)
+  const contratUrl = client.CONTRAT ? `https://api.click.com.tn/Requests/contrat_partenaires/${client.CONTRAT}` : null;
+const [filteredRaisons,setFilteredRaisons]=useState([])
+const [list,setList]=useState([])
+const [savePart,setSavePart]=useState(false)
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -213,93 +159,87 @@ useEffect(() => {
       console.log("file",file.name)
       setContrat(file.name);
     }
-    
   };
-  
-  const handleCvUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedCv(file);
-      console.log("file",file.name)
-      setCv(file.name);
-    }
-  };const handleSaveContrat = async () => {
-    if (!selectedFile && !selectedCv) {
-      alert('Veuillez télécharger un contrat ou bien cv');
-      return;
-    }
-  
-    try {
-   
-      const uploadFile = async (url, formData) => {
-        const response = await axios.post(url, formData);
-        console.log("response",response)
-        if (response.status === 200) {
-          return true;
-        } else {
-          console.error('Erreur lors de l\'envoi du fichier :', response.data.message);
-          alert(`Échec de l'enregistrement : ${response.data.message}`);
-          return false;
-        }
-      };
-  
+const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+const [clientToDelete, setClientToDelete] = useState(null);
+
+const handleOpenDeleteDialog = (client) => {
+  setClientToDelete(client);
+  setOpenDeleteDialog(true);
+};
+
+const handleCloseDeleteDialog = () => {
+  setOpenDeleteDialog(false);
+  setClientToDelete(null);
+};
+
+const handleConfirmDelete = async () => {
+  try {
+    await axios.post('http://192.168.1.195/api/Requests/jeux.php?action=delete-profil-inv', {
+      id: clientToDelete.ID_INVESTISSEUR
+    });
+
+    await axios.delete(`${BASE_URL}/api/deleteInv/${clientToDelete.ID_INVESTISSEUR}`);
+
+    fetchPart(); 
+    handleCloseDeleteDialog(); 
+  } catch (error) {
+    console.error('Failed to delete partner:', error);
+  }
+};
+
+  const handleSaveContrat = async () => {
+    if (selectedFile) {
     
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-  
-        
-        await axios.put(`${BASE_URL}/api/updatePartContrat`, {
-          id: client.ID_PARTENAIRE,
-          contrat: selectedFile.name,
-        });
-  
-       
-        const id = statuts.find((s) => s.AVANCEMENT === 'Contrat signé');
-        await axios.put(
-          `${BASE_URL}/api/updatePartStatus`,
-          { id: client.ID_PARTENAIRE, id_statut: id?.ID_STATUT }
-        );
-  
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      //const response = await axios.post('https://api.click.com.tn/upload_contrat.php', formData);
       
-        const contractUploadSuccess = await uploadFile('http://192.168.1.195/api/Requests/upload_contrat.php', formData);
-        if (contractUploadSuccess) {
-          alert('Contrat enregistré avec succès !');
-          fetchPart();
-        }
-      }
-  
-     
-      if (selectedCv) {
-        const formDataCv = new FormData();
-        formDataCv.append('file', selectedCv);
-  
-       
-        await axios.put(`${BASE_URL}/api/updatePartCv`, {
-          id: client.ID_PARTENAIRE,
-          cv: selectedCv.name
+        await axios.put(`${BASE_URL}/api/updateInvContrat`, {
+          id: client.ID_INVESTISSEUR,
+          contrat: selectedFile.name, // Update with the new file name
         });
-  
-       
-        const cvUploadSuccess = await uploadFile('http://192.168.1.195/api/Requests/upload_cv.php', formDataCv);
-        if (cvUploadSuccess) {
-          alert('Cv enregistré avec succès !');
-          fetchPart();
-        }
-      }
+        console.log(statuts)
+        const id=statuts.filter((s)=>s.AVANCEMENT==='Contrat signé')
+        console.log(id)
+        await axios.put(
+          `${BASE_URL}/api/updateInvStatus`,
+          { id: client.ID_INVESTISSEUR, id_statut: id[0]?.ID_STATUT }
+        );
+        setSavePart(true)
+
+        alert('Contrat enregistré avec succès !');
+        fetchPart(); // Refresh the client data after saving
+      
     } catch (error) {
       console.error('Erreur lors de l\'envoi du fichier :', error);
-      alert('Échec de l\'enregistrement du fichier.');
+      alert('Échec de l\'enregistrement du contrat.');
     }
+ 
   };
-  
-  
+  if(client.CONTRAT && client.CONTRAT!==""){
+
+    const id=statuts.filter((s)=>s.AVANCEMENT==='Contrat signé')
+        console.log(id)
+        await axios.put(
+          `${BASE_URL}/api/updateInvStatus`,
+          { id: client.ID_INVESTISSEUR, id_statut: id[0]?.ID_STATUT }
+        );
+        setSavePart(true)
+
+        alert('Contrat signé avec succès !');
+        fetchPart();
+  }
+}
   const handleAcceptPart =async()=>{ 
     const id=statuts.filter((s)=>s.AVANCEMENT==='En cours de signature')
     console.log(id)
     await axios.put(
-      `${BASE_URL}/api/updatePartStatus`,
-      { id: client.ID_PARTENAIRE, id_statut: id[0]?.ID_STATUT }
+      `${BASE_URL}/api/updateInvStatus`,
+      { id: client.ID_INVESTISSEUR, id_statut: id[0]?.ID_STATUT }
     );
     await fetchPart()
     setOpenInfoDialogue(false)
@@ -342,9 +282,8 @@ useEffect(() => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-
   const [openPartSuccess, setOpenPartSuccess] = useState(false);
-  const [openCommSuccess, setOpenCommSuccess] = useState(false);
+const [openCommSuccess, setOpenCommSuccess] = useState(false);
   const [communications,setCommunications]=useState([])
   const[typeAppel,setTypeAppel]=useState("")
    const handleOpenDialog = async (client,type) => {
@@ -358,8 +297,8 @@ useEffect(() => {
         console.log("start")
       
         await axios.put(
-          `${BASE_URL}/api/updatePartUser`,
-          {id:client.ID_PARTENAIRE, USER_IN_CHARGE: user.LOGIN }
+          `${BASE_URL}/api/updateInvUser`,
+          {id:client.ID_INVESTISSEUR, USER_IN_CHARGE: user.LOGIN }
         );
         console.log("end")
   
@@ -368,9 +307,9 @@ useEffect(() => {
       }
     } 
     const coms=await axios.get(
-      `${BASE_URL}/api/getComPart`,{
+      `${BASE_URL}/api/getComInv`,{
         params: {
-          id: client.ID_PARTENAIRE
+          id: client.ID_INVESTISSEUR
         }
       }
     );
@@ -382,12 +321,12 @@ useEffect(() => {
       try {
         console.log("start saving");
         await axios.post(
-          `${BASE_URL}/api/savePartenaire`,
-          {id:client.ID_PARTENAIRE, user: user.LOGIN, name: client.NOM_PRENOM, tel: client.NUMERO_TELEPHONE, adresse: client.ADRESSE, password: client.MOT_DE_PASSE }
+          `${BASE_URL}/api/saveInvestisseur`,
+          {id:client.ID_INVESTISSEUR, user: user.LOGIN, name: client.NOM_PRENOM, tel: client.NUMERO_TELEPHONE, adresse: client.ADRESSE, password: client.MOT_DE_PASSE }
         );
         console.log("end");
         setOpenPartSuccess(true);
-        setClients(prevClients => prevClients.filter(c => c.ID_PARTENAIRE !== client.ID_PARTENAIRE));
+        setClients(prevClients => prevClients.filter(c => c.ID_INVESTISSEUR !== client.ID_INVESTISSEUR));
       } catch (error) {
         console.error('Error updating partenaire:', error);
       }
@@ -401,9 +340,9 @@ useEffect(() => {
       try {
         console.log("start create");
         await axios.post(
-          `${BASE_URL}/api/CreateCommunication`,
+          `${BASE_URL}/api/CreateCommunicationInv`,
           {
-            ID_PARTENAIRE: client.ID_PARTENAIRE,
+            ID_INVESTISSEUR: client.ID_INVESTISSEUR,
             ID_STATUT: selectedQualification.UPDATE_STATUS,
             ID_RAISON: selectedRaison.ID_RAISON,
             ID_QUALIFICATION: selectedQualification.ID_QUALIFICATION,
@@ -415,8 +354,8 @@ useEffect(() => {
         );
         console.log("end");
         await axios.put(
-          `${BASE_URL}/api/updatePartStatus`,
-          { id: client.ID_PARTENAIRE, id_statut: selectedQualification.UPDATE_STATUS }
+          `${BASE_URL}/api/updateInvStatus`,
+          { id: client.ID_INVESTISSEUR, id_statut: selectedQualification.UPDATE_STATUS }
         );
 await fetchPart()
         setOpenCommSuccess(true);
@@ -477,37 +416,15 @@ const onClose =()=>{
 // console.log("matchingStatut",matchingStatut)
 // const backgroundColor = matchingStatut ? matchingStatut.COULEUR : 'white';
 
-const cvUrl = client.CV ? `http://192.168.1.195/api/Requests/cv_partenaires/${client.CV}` : null;
-
- {/* const [isSelected, setIsSelected] = useState(false);
-const [selectedEmails, setSelectedEmails] = useState([]);
-
-const handleCheckboxChange = (event) => {
-  const isChecked = event.target.checked;
-  setIsSelected(isChecked);
-
-  if (isChecked) {
-    // Add the email to the selected emails list
-    setSelectedEmails((prevEmails) => {
-      const updatedEmails = [...prevEmails, client.EMAIL];
-      console.log('Selected emails after adding:', updatedEmails); // Display the updated selected emails
-      return updatedEmails;
-    });
-  } else {
-    // Remove the email from the selected emails list
-    setSelectedEmails((prevEmails) => {
-      const updatedEmails = prevEmails.filter((item) => item !== client.EMAIL);
-      console.log('Selected emails after removing:', updatedEmails); // Display the updated selected emails
-      return updatedEmails;
-    });
+const cvUrl = client.CV ? `https://api.click.com.tn/Requests/cv_partenaires/${client.CV}` : null;
+const parseAndJoin = (field) => {
+  try {
+    return JSON.parse(field).join(', ');
+  } catch (e) {
+    return field;
   }
-
-    console.log('Checkbox is checked:', isChecked); // Display if the checkbox is checked or not
-    console.log('Selected emails:', selectedEmails); // Display the selected emails
-  };
-const label = { inputProps: { 'aria-label': 'Checkbox demo' } };*/}
-
-//email 
+};
+//mailing
 const [email, setEmail] = useState('');
 const [code, setCode] = useState('');
 const [loginmail, setLoginmail] = useState('');
@@ -518,12 +435,11 @@ const [codeSent, setCodeSent] = useState();
 
 const handleSendCode = async(e) => {
   
-  let loginmail = (client.NUMERO_TELEPHONE)
-
-  let code = (client.MOT_DE_PASSE)
-
-  let username = (client.NOM_PRENOM)
-
+  let loginmail = (client.TEL_CLIENT_F)
+  
+    let code = (client.CHAMP_2_CLIENT)
+  
+    let username = (client.NOM_PRENOM)
   
     
        
@@ -547,96 +463,58 @@ const handleSendCode = async(e) => {
            
 
         });
-        
-
 }
 
 
-
-const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-const [clientToDelete, setClientToDelete] = useState(null);
-
-const handleOpenDeleteDialog = (client) => {
-  setClientToDelete(client);
-  setOpenDeleteDialog(true);
-};
-
-const handleCloseDeleteDialog = () => {
-  setOpenDeleteDialog(false);
-  setClientToDelete(null);
-};
-
-const handleConfirmDelete = async () => {
-  try {
-    await axios.post('http://192.168.1.195/api/Requests/jeux.php?action=delete-profil-part', {
-      id: clientToDelete.ID_PARTENAIRE
-    });
-
-    await axios.delete(`${BASE_URL}/api/deletePart/${clientToDelete.ID_PARTENAIRE}`);
-
-    fetchPart(); 
-    handleCloseDeleteDialog(); 
-  } catch (error) {
-    console.error('Failed to delete partner:', error);
-  }
-};
-return (
-  <CustomCardWrapper style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent' , height:'100%' }}>
+return (   
+  <CustomCardWrapper style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent' }}>
     <CustomCardContent >
-    <GlowingBox  style={{ backgroundColor:client.COULEUR?client.COULEUR:"white"}}>
+    <GlowingBox  style={{ backgroundColor:client.COULEUR?client.COULEUR:"#ÒC7253E"}}>
           <Typography
-             variant="h6"
-             component="div"
-             align="center"
-             style={{
-             color: "white",
-             fontWeight: 'bold',
-             fontSize: '1rem',
+            variant="h6"
+            component="div"
+            align="center"
+            style={{
+              color:client.COULEUR?"white":'black',
+              fontWeight: 'bolder',
+              textAlign: 'center',
+              fontSize: '1,2rem',
             }}
           >
             {client.AVANCEMENT ? client.LIBELLE : client.STATUS?client.STATUS:"Non encore traité"}
           </Typography>
-          {/* Example icon */}
         </GlowingBox>
-        <Grid container style={{ display: 'flex', alignItems: 'center' }} > 
-        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center",marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
-          <img src={userIcon} alt="person icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
+        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
+          <img src={personIcon} alt="person icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
           {client.NOM_PRENOM}
-        </Typography>
-       
-        </Grid> 
-        <Typography color="text.secondary" gutterBottom style={{ display: "flex", alignItems: "center", marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        </Typography> 
+        <Typography color="text.secondary" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10}}>
           <img src={callIcon} alt="call icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
           {client.NUMERO_TELEPHONE}
         </Typography>
-        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center",marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
           <img src={naisIcon} alt="birth icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
           {formatDate(client.DATE_NAISSANCE)}
         </Typography>
-        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10}}>
           <img src={addressIcon} alt="address icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
           {client.ADRESSE}
         </Typography>
-        <Typography id="x" variant="body2" color="text.secondary"  style={{ display: "flex", alignItems: "center", marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10}}>
           <img src={mailIcon} alt="email icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
-          {client.EMAIL} 
-          <Button   onClick = {handleSendCode } size="small" style={{ color: '#FF8C00',fontWeight: 'bold' , fontSize:'12px',textTransform: 'none' }}>
+          {client.EMAIL}
+          <Button   onClick = {handleSendCode } size="small" style={{ color: '#FF8C00', fontSize: '0.55rem' }}>
            Mot de passe oublié
           </Button>
         </Typography>
-        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
           <img src={dateIcon} alt="email icon" style={{ marginRight: 8, width: "20px" ,height: "20px" }} />
         {formatDate(client.DATE_COMMUNICATION)}
         </Typography>
-        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginTop:"10px",color: client.COULEUR?client.COULEUR:"white",fontWeight: 'bold' , fontSize:'16px' }}>
-          <img src={admin} alt="user icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
-          <span style={{fontWeight:"bold"}}> {client.USER_IN_CHARGE}  </span>
-         { /*<input  type="checkbox"  
-            checked={client.setCollab} onChange={(e)=>setCollab(e.target.checked)}
-              
-                        style={{ marginRight: 8 }} />*/}
+        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10}}>
+          <img src={userIcon} alt="user icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
+          <span style={{fontWeight:"bold"}}> {client.USER_IN_CHARGE} </span>
         </Typography>
-       
       </CustomCardContent>  
           <CustomCardActions>
           {client.AVANCEMENT === "Contrat signé" && (
@@ -650,58 +528,36 @@ return (
           size="small"
           disabled={user.ROLE==="collaborateur"?client.USER_IN_CHARGE !== null && client.USER_IN_CHARGE !== user.LOGIN:false}
           style={{
-          textTransform: 'none', fontSize:'14px', fontWeight:'bold'  , textTransform: 'none',
+            backgroundColor:  'white',
             color: client.USER_IN_CHARGE !== null && client.USER_IN_CHARGE !== user.LOGIN ? 'grey' : 'green',
           }}
           onClick={() => handleOpenDialog(client,'appel sortant')}
         >
-         Sortant
+          Sortant
         </GreenButton>
         <GreenButton
           startIcon={<PhoneCallbackIcon />}
           size="small"
           disabled={user.ROLE==="collaborateur"?client.USER_IN_CHARGE !== null && client.USER_IN_CHARGE !== user.LOGIN:false}
           style={{
-            textTransform: 'none', fontSize:'14px', fontWeight:'bold'  , textTransform: 'none',
-              color: client.USER_IN_CHARGE !== null && client.USER_IN_CHARGE !== user.LOGIN ? 'grey' : 'green',
-            }}
+            backgroundColor:  'white',
+            color: client.USER_IN_CHARGE !== null && client.USER_IN_CHARGE !== user.LOGIN ? 'grey' : 'green',
+          }}
           onClick={() => handleOpenDialog(client,'appel entrant')}
         >
          Entrant
         </GreenButton>
         <Typography variant="body2" color="text.secondary" onClick={() => setOpenInfoDialogue(true)} >
-          <Button startIcon={<EmailIcon />} size="small" style={{ color: '#FF8C00', textTransform: 'none', fontSize:'14px', fontWeight:'bold'  , textTransform: 'none', }}>
+          <Button startIcon={<EmailIcon />} size="small" style={{ color: '#FF8C00', fontSize: '0.75rem' }}>
             Document
           </Button>
         </Typography>
         <Typography variant="body2" color="text.secondary"  onClick={() => handleOpenDeleteDialog(client)} >
-          <Button startIcon={<DeleteIcon />} size="small" style={{ color: 'red', textTransform: 'none', fontSize:'14px', fontWeight:'bold'  , textTransform: 'none',}}>
+          <Button startIcon={<DeleteIcon />} size="small" style={{ color: 'red', fontSize: '0.75rem' }}>
             Supprimer
           </Button>
         </Typography>
-     
-        {/* <Typography size="medium"  style={{ color: "#478CCF", fontSize:'12px',marginLeft:'-5px' }}>
-     <Checkbox {...label}  checked={isSelected} // Contrôle si la case est cochée
-              onChange={handleCheckboxChange} /> Sélectionner
-        </Typography>*/}
-      </CustomCardActions> 
-      <Dialog
-  open={openDeleteDialog}
-  onClose={handleCloseDeleteDialog}
->
-  <DialogTitle>Confirmation</DialogTitle>
-  <DialogContent>
-    <Typography>Êtes-vous sûr de vouloir supprimer ce partenaire?</Typography>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleCloseDeleteDialog} color="primary">
-      Non
-    </Button>
-    <Button onClick={handleConfirmDelete} color="error">
-      Oui
-    </Button>
-  </DialogActions>
-</Dialog>
+      </CustomCardActions>
       <Dialog
   open={openDialog}
   onClose={handleCloseDialog}
@@ -856,75 +712,41 @@ return (
         <Grid container spacing={2} style={{display:"flex",flexDirection:"column"}}>
           <Grid item xs={12} md={12}>
           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
-          <Typography variant="h6">CV</Typography>
-            <TextField
-              margin="dense"
-              id="niveau-scolaire"
-              label="Niveau Scolaire"
-              type="text"
-              fullWidth 
-              value={client.NIVEAU_SCOLAIRE}
-              
-            />
-            <TextField
-              margin="dense"
-              id="formations"
-              label="Formations"
-              type="text"
-              fullWidth
-              multiline
-              rows={4}
-              value={client.FORMATION}
-              
-            />
-         <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} md={6}>
-          {contratUrl ? (
-            <a href={contratUrl} target="_blank" rel="noopener noreferrer">
-              <TextField
-                margin="dense"
-                id="cv"
-                label="CV"
-                type="text"
-                fullWidth
-                value={cv || "cv non disponible"}
-                style={{ cursor: 'pointer', color: 'blue' }}
-                disabled={!client.CV}
-              />
-            </a>
-          ) : (
-            <TextField
-              margin="dense"
-              id="cv"
-              label="CV"
-              type="text"
-              fullWidth
-              value={cv || "cv non disponible"}
-              disabled
-            />
-          )}
-        </Grid>
-       
-         <Grid item xs={12} md={4}>
-         <IconButton
-           style={{ color: 'blue', width: '100%', height: '100%' }}
-           onClick={() => document.getElementById('cv-input').click()}
-         >
-           <CloudUploadIcon />
-         </IconButton>
-         <input 
-           type="file"
-           id="cv-input"
-           style={{ display: 'none' }}
-           onChange={handleCvUpload}
-         />
-       </Grid>
-        
-      
-  
-  
-       </Grid>
-            </Box>
+  <Typography variant="h6">Détails d'investissement</Typography>
+  <TextField
+    margin="dense"
+    id="type-investissement"
+    label="Type d'investissement"
+    type="text"
+    fullWidth
+    value={client.TYPE}
+  />
+  <Box sx={{ mt: 2 }}>
+    <Typography variant="h6">Détails</Typography>
+    {client.OPTION_INV && (
+      <Typography margin="dense">Option choisie: {client.OPTION_INV}</Typography>
+    )}
+    {client.MARQUES && client.MARQUES.length>0 && (
+      <Typography margin="dense">
+        Marques sélectionnées: {client.MARQUES.join(', ')}
+      </Typography>
+    )}
+    {client.AUTREMARQUES && client.AUTREMARQUES.length > 0 && (
+      <Typography margin="dense">
+        Autres marques sélectionnées: {client.AUTREMARQUES.join(', ')}
+      </Typography>
+    )}
+    {client.DOMAIN && (
+      <Typography margin="dense">Domaine suggéré: {client.DOMAIN}</Typography>
+    )}
+    {client.DETAILS && (
+      <Typography margin="dense">Détails: {client.DETAILS}</Typography>
+    )}
+    {client.AUTREMARQUE && (
+      <Typography margin="dense">Autre marque: {client.AUTREMARQUE}</Typography>
+    )}
+  </Box>
+</Box>
           </Grid>
            <Grid item xs={12} md={12} >
           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
@@ -956,7 +778,7 @@ return (
             />
           )}
         </Grid>
-       
+        {user.ROLE==="collaborateur" && (
          <Grid item xs={12} md={4}>
          <IconButton
            style={{ color: 'blue', width: '100%', height: '100%' }}
@@ -964,24 +786,24 @@ return (
          >
            <CloudUploadIcon />
          </IconButton>
-         <input 
+         <input
            type="file"
            id="file-input"
            style={{ display: 'none' }}
            onChange={handleFileUpload}
          />
        </Grid>
-        
-       {(user.ROLE === "administrateur" && client.CONTRAT==='')&& (
+        )}
+       {user.ROLE === "administrateur" && (
   <Grid item xs={12} md={5}>
     <Button
       variant="contained"
       color="success" // You can change this to any color you prefer
       startIcon={<CheckCircleIcon />} // Adds the icon to the start of the button
-      style={{ width: '100%', height: '100%', fontSize: '16px' }}
+      style={{ width: '350px', height: '100%', fontSize: '14px' }}
       onClick={handleAcceptPart}
     >
-      Accepter comme partenaire
+      Accepter comme investisseur
     </Button>
   </Grid>
 )}
@@ -990,7 +812,7 @@ return (
             </Box>
           </Grid>
           <DialogActions>
-          {(savePart || client.CONTRAT!=='') && (
+          {savePart  && (
           <Button
                     variant="contained"
                     size="small"
@@ -1010,10 +832,11 @@ return (
                     onMouseOut={(e) => {
                       e.currentTarget.style.backgroundColor = "white";
                     }}
-                    onClick={()=>handleSavePart(client)}
+                    onClick={()=>handleSavePart()}
                     >
-          Enregistrer comme partenaire</Button> 
+          Enregistrer comme investisseur</Button> 
           )}
+           {user.ROLE==="collaborateur" && (
         <Button
                     variant="contained"
                     size="small"
@@ -1035,8 +858,8 @@ return (
                     }}
                     onClick={()=>handleSaveContrat(client)}
                     >
-          Enregistrer</Button> 
-       
+          Enregistrer contrat</Button> 
+           )}
         </DialogActions> 
          </Grid> 
       </DialogContent>
@@ -1053,7 +876,7 @@ return (
   </DialogTitle>
   <DialogContent>
     <DialogContentText style={{ textAlign: 'center', fontSize: '16px' }}>
-      Partenaire enregistré avec succès.
+      Investisseur enregistré avec succès.
     </DialogContentText>
   </DialogContent>
   <DialogActions style={{ justifyContent: 'center' }}>
@@ -1097,7 +920,6 @@ return (
 }
 
 function CardContainer({searchTerm,selectedAvancement,setTotalObj}) {
-  const [listclient, setListclient]=useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -1107,11 +929,10 @@ const [userAffected,setUserAffected]=useState(false)
 const [total, setTotal] = useState(0);
 const user = useSelector((state) => state.user);
 // const [searchTerm, setSearchTerm] = useState('');
-
 const fetchPart=async()=>{
-  const URL=user.ROLE==="collaborateur"?`${BASE_URL}/api/partenairesCollaborateur`:`${BASE_URL}/api/partenaires`
+  const URL=user.ROLE==="collaborateur"?`${BASE_URL}/api/investisseursCollaborateur`:`${BASE_URL}/api/partenaires
+  `
   setLoading(true);
-  console.log('clientttt:',URL)
   try {
     const params = {
       page: page,
@@ -1126,69 +947,46 @@ const fetchPart=async()=>{
   
     const response = await axios.get(URL ,{ params });
     console.log(response.data)
-//copy array
-    let listClient=[...response.data.clients]
-    let listFinale=[]
-
-    console.log("listClient")
-
-    listClient.map((row)=>{
-      listFinale.push({...row,selectedCli:false,collab:false,})
-     
-    })
-console.log("listclient",listFinale)
-
-
-
-    setClients(listFinale);
+    setClients(response.data.clients);
     setTotal(response.data.total);
-    setTotalObj("par",response.data.total);
+    setTotalObj("inv",response.data.total);
     setLoading(false);
   } catch (error) {
     console.error('Error fetching data:', error);
     setError('There was an error fetching the clients!');
     setLoading(false);
   }
-      
+     
 }
-
-const handleCollabChange = (index, isChecked) => {
-  setClients(prevClients => {
-    const updatedClients = [...prevClients];
-    updatedClients[index] = { ...updatedClients[index], collab: isChecked };
-    return updatedClients;
-  });
+  
+const updateClient = (id, USER_IN_CHARGE) => {
+  setClients(prevClients =>
+    prevClients.map(client =>
+      client.ID_INVESTISSEUR === id
+        ? { ...client, USER_IN_CHARGE }
+        : client
+    )
+  );
 };
 
-    const updateClient = (id, USER_IN_CHARGE) => {
-      setClients(prevClients =>
-        prevClients.map(client =>
-          client.ID_PARTENAIRE === id
-            ? { ...client, USER_IN_CHARGE }
-            : client
-        )
-      );
-    };
-    
-    useEffect(() => {
-      fetchPart();
-    }, [page, pageSize, searchTerm,selectedAvancement]);
-    
-    useEffect(() => {
-      const socket = new WebSocket('ws://localhost:8000');
-    
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'update_partenaire') {
-          updateClient(data.id, data.USER_IN_CHARGE);
-        }
-      };
-    
-      return () => {
-        socket.close();
-      };
-    }, []); 
- 
+useEffect(() => {
+  fetchPart();
+}, [page, pageSize, searchTerm,selectedAvancement]);
+
+useEffect(() => {
+  const socket = new WebSocket('ws://localhost:8000');
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'update_investisseur') {
+      updateClient(data.id, data.USER_IN_CHARGE);
+    }
+  };
+
+  return () => {
+    socket.close();
+  };
+}, []);
   const handleChangePage = (event, newPage) => setPage(newPage);
 
   const handleChangeRowsPerPage = (event) => {
@@ -1196,13 +994,13 @@ const handleCollabChange = (index, isChecked) => {
     setPage(0);
   };
 
- 
 
-  const filteredClients =clients
-
+  //const clients = clients
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div> <Box sx={{ display: 'flex' }}>
+    <CircularProgress />
+  </Box></div>;
   }
 
   if (error) {
@@ -1214,33 +1012,14 @@ const handleCollabChange = (index, isChecked) => {
   <Box sx={{ flex: '1 1 auto', 
         maxHeight: `100vh`, 
         overflowY: 'auto',
-      padding: '16px' }}> 
-         {/* <Autocomplete
-          options={avancementOptions}
-          value={selectedAvancement}
-          onChange={handleAvancementChange}
-          renderInput={(params) => <TextField {...params} label="Filtrer par statut" variant="outlined" />}
-          sx={{ marginBottom: '16px',width:"250px",marginLeft:"1%" }}
-        /> */}
+      padding: '16px' }}>
     <Grid container spacing={2}>
-      {filteredClients.map((client,i) => (
+      {clients.map(client => (
         <Grid item xs={12} sm={6} md={4} lg={4} xl={4} key={client.ID_PARTENAIRE}>
        
-          <CustomCard client={client} setClients={setClients} user={user} fetchPart={fetchPart} setCollab={(setCollab)=>{
-          let clientsList=[...clients]
-
-          clientsList[i].collab=setCollab
-          setClients(clientsList);  
-          
-          console.log("yesminetest",clientsList)
-
-          const selectedClients = clientsList.filter(client => client.collab);
-
-          console.log("Clients with collab true only :", selectedClients);
-          }}  /> 
+          <CustomCard client={client} setClients={setClients} user={user} fetchPart={fetchPart} />
         </Grid>
-        ))}
-     
+      ))}
     </Grid>
   </Box>
 
@@ -1258,7 +1037,7 @@ const handleCollabChange = (index, isChecked) => {
     }}
   >
     <TablePagination
-      rowsPerPageOptions={[10, 25, 50, 100, 150, 200]}
+      rowsPerPageOptions={[10, 25]}
       component="div"
       count={total}
       rowsPerPage={pageSize}
@@ -1267,6 +1046,7 @@ const handleCollabChange = (index, isChecked) => {
       onRowsPerPageChange={handleChangeRowsPerPage}
     />
   </Box>
+
 </Box>
 );
 };

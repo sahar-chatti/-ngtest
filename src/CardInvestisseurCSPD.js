@@ -338,7 +338,7 @@ const handleVerifyCode = async(e) => {
     fontSize: '1.2rem',
   }}
 >
-  {client.INTITULE_CLIENT} <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>({client.INTITULE_GR})</span>
+  {client.INTITULE_CLIENT} <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>{client.INTITULE_GR}</span>
 </Typography>
           {/* Example icon */}
           {!client.CC_BLOQUER &&(

@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { useState,useEffect } from 'react';
 import PropTypes from 'prop-types';
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import Tabs from '@mui/material/Tabs';
+import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Radio from '@mui/material/Radio';
@@ -9,6 +11,9 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CardPartenaires from './CardPartenaires'; // Assurez-vous que le chemin est correct pour CardPartenaires
 import ClientList from './ClientList';
+import CardFamille from './cardFamille';
+import AssuredWorkloadRoundedIcon from '@mui/icons-material/AssuredWorkloadRounded';
+import CardFamilleCSPD from './cardFamilledamakCSPD'
 import CommandesList from './CommandesEncours';
 import CardClientsFDM from './CardClientsFDM';
 import Button from '@mui/material/Button';
@@ -28,7 +33,6 @@ import Stock from './Stock'
 import ClientsSearch from './components/clientSearch';
 import ClientsIcon from './icons/addClient.png'
 import family from './icons/people-roof.svg'
-
 import BASE_URL from './constantes';
 import axios from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
@@ -36,7 +40,8 @@ import cliIcon from './icons/clients.png'
 import annulerIcon from './icons/annuler.png'
 import investmentIcon from './icons/investment.png'
 import checkIcon from './icons/check.png'
-
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import { Person } from '@mui/icons-material';
 
 
 
@@ -83,13 +88,10 @@ useEffect(()=>{
 
 },[tot])
 
-  const handleDisplayModeCard = () => {
+  {/*const handleDisplayModeCard = () => {
     setDisplayMode('card');
-  };
+  };*/}
 
-  const handleDisplayModeList = () => {
-    setDisplayMode('list');
-  };
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -247,7 +249,7 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
         style={{marginRight:'20px'}}
       />
     ) : null;
-  const renderFiltredInput = ((index === 0 || index===1) && selectedOption!=='3') ? (
+  const renderFiltredInput = ((index === 0 || index===1 ) && selectedOption!=='3') ? (
       <Autocomplete
           options={avancementOptions}
           value={selectedAvancement}
@@ -285,7 +287,6 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
     >
       {value === index && (
         <Box sx={{ p: 3 }}>
-          
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <RadioGroup
@@ -295,30 +296,42 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
                   value={selectedOption}
                   onChange={handleOptionChange}
                 >
-                  {(index === 0 || index === 1) && (
+                  {(index === 0 || index === 1 ) && (
                     <>
                   <FormControlLabel value="0" control={<Radio />} label="Non Enregistrés" />
                   <FormControlLabel value="1" control={<Radio />} label="Enregistrés" />
+                  <FormControlLabel value="2" control={<Radio />} label="Commandes en cours" />
+                  <FormControlLabel value="3" control={<Radio />} label="Etat de stock" />
                   </>
                   )}
                    {(index === 2 || index === 3) && (
                     <>
                   <FormControlLabel value="1" control={<Radio />} label="Clients" />
-                 
-                  </>
-                  )}
-                  
                   <FormControlLabel value="2" control={<Radio />} label="Commandes en cours" />
                   <FormControlLabel value="3" control={<Radio />} label="Etat de stock" />
-                
-                  
+                  </>
+                  )}
                 </RadioGroup>
 
+                <RadioGroup
+                  row
+                  aria-labelledby="demo-row-radio-buttons-group-label"
+                  name="row-radio-buttons-group"
+                  value={selectedOption}  
+                  onChange={handleOptionChange}
+                >
+                  {(index === 4) && (
+                    <>
+                  <FormControlLabel value="0" control={<Radio />} label="Non Enregistrés" />
+                  <FormControlLabel value="1" control={<Radio />} label="Enregistrés" />
+                  <FormControlLabel value="2" control={<Radio />} label="Commandes en cours" />
+
+                  </>
+                  )}
+                </RadioGroup>
 
                 <Box sx={{ ml: 2 }}>
-                  <Button variant={displayMode === 'card' ? 'contained' : 'outlined'} onClick={handleDisplayModeCard}>
-                    <ViewModuleIcon />
-                  </Button>
+                 
                   <Button
                   variant="outlined"
                   onClick={handleClickOpen}
@@ -332,7 +345,6 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
                   </Button>*/}
                   <div>
 
-                    
                   <Dialog open={open} onClose={handleClose} fullWidth
                     maxWidth="md" 
                     PaperProps={{
@@ -416,16 +428,12 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
     );
   })}
 </TableBody>
-
           </Table>
         </TableContainer>
-
-                  
                   </DialogContent>
                <DialogActions>
                   <Button onClick={handleClose}   color="primary">
                         <img src={annulerIcon} alt="Annuler Icon" style={{ height: '24px', width: '24px', marginRight: '8px' }} />
-
                   </Button>
                   </DialogActions>
                  </Dialog>
@@ -517,14 +525,14 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
               obj.nbr=nn
               setTot(obj)}}/>
           )}
+            {index === 0 && selectedOption === '1' && displayMode === 'card' && (
+            <CardClientsPartenaires displayMode={displayMode}  searchTerm={searchTerm}/>
+          )} 
           {/*{index === 0 && selectedOption === '0' && displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 4 }}>
               <PartenaireList searchTerm={searchTerm} selectedAvancement={selectedAvancement}/>
             </Box>
           )}*/}
-          {index === 0 && selectedOption === '1' && displayMode === 'card' && (
-            <CardClientsPartenaires displayMode={displayMode}  searchTerm={searchTerm}/>
-          )} 
           {/*{index === 0 && selectedOption === '1' && displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
               <ClientPartList />
@@ -541,8 +549,18 @@ const [selectedCodeClient,setSelectedCodeClient]=useState(null)
               obj.nbr=nn
               setTot(obj)}}/>
           )}
-          
-         
+           {/*famille*/}
+           {index === 4 && selectedOption === '1' && displayMode === 'card' && (
+            <CardFamilleCSPD displayMode={displayMode} />
+          )}
+            {index === 4 && selectedOption === '0' && displayMode === 'card' && (
+            <CardFamille displayMode={displayMode} searchTerm={searchTerm} selectedAvancement={selectedAvancement} setTotalObj={(tp,nn)=>{
+              let obj={...tot}
+              obj.typeCli=tp
+              obj.nbr=nn
+              setTot(obj)}}/>
+          )}
+
           {index === 0 && selectedOption === '2' && (
             <CommandesList base={"fdm"} type={"partenaire"} searchTerm={searchTerm} />
           )}
@@ -622,8 +640,8 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
         <Tab
             label={
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '150px' }}>
-            <img src={cliIcon} alt="Clients Icon" style={{ height: '24px', width: '24px', marginRight: '8px' }} />
-            <span>Partenaires</span>
+            <GroupsRoundedIcon style={{marginRight:'0.5em'}}/>
+            <span style={{ marginLeft: '1px', fontWeight: 'bold', textTransform:'none', fontSize:'16px'}}>Partenaires</span>
             <span style={{ marginLeft: '1px'}}>
             <span style={{ marginLeft: '1px', fontWeight: 'bold' }}>
             {
@@ -643,8 +661,8 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
           <Tab 
             label={
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '150px' }}>
-            <img src={investmentIcon} alt="investment Icon" style={{ height: '24px', width: '24px', marginRight: '8px' }} />
-            <span>Investisseurs</span>
+            <AssuredWorkloadRoundedIcon style={{marginRight:'0.5em'}}/>
+            <span style={{ marginLeft: '1px', fontWeight: 'bold', textTransform:'none', fontSize:'16px'}}>Investisseurs</span>
             <span style={{ marginLeft: '1px', fontWeight: 'bold'}}>
             {
             numberCli.length > 0 
@@ -657,13 +675,22 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
             </Box>
             }
             />
-            
-         
 
-          <Tab label="Clients Cspd" />
-          <Tab label="Clients Fdm" />
-          <Tab label="Famille" />
-
+           <Tab  style={{ marginLeft: '1px', fontWeight: 'bold', textTransform:'none', fontSize:'16px'}} 
+          label="Clients CSPD" />
+          <Tab style={{ marginLeft: '1px', fontWeight: 'bold', textTransform:'none', fontSize:'16px'}} 
+          label="Clients FDM" />
+          <Tab 
+            label={
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '150px' }}>
+               <FamilyRestroomIcon/>
+            <span style={{ marginLeft: '1px', fontWeight: 'bold', textTransform:'none', fontSize:'16px'}}>Famille </span>
+            <span style={{ marginLeft: '1px', fontWeight: 'bold'}}>
+           
+            </span>
+            </Box>
+            }
+            />
         </Tabs>
       </Box>
 
@@ -721,13 +748,8 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
           editArray.push({typeCli:TypeCl,Nbr:num})
           newArray=[...editArray]
         }
-        
-    
         setNumberCli(newArray)
       }}  />
-
-
-
 
 
       <CustomTabPanel value={value} index={3} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} setNumber={ (TypeCl,num)=>{
@@ -748,7 +770,24 @@ export default function BasicTabs({searchTerm,setSearchTerm,selectedOption,setSe
     
         setNumberCli(newArray)
       }}  />
-     
+      <CustomTabPanel value={value} index={4} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} setNumber={ (TypeCl,num)=>{
+        let newArray=[...numberCli]
+        let editArray=[]
+
+        let obj=newArray.filter((a)=>a.typeCli==TypeCl)
+
+        if (obj.length==0){
+          newArray.push({typeCli:TypeCl,Nbr:num})
+        }else{
+          editArray=[...numberCli.filter((a)=>a.typeCli!==TypeCl)]
+
+          editArray.push({typeCli:TypeCl,Nbr:num})
+          newArray=[...editArray]
+        }
+        
+    
+        setNumberCli(newArray)
+      }}  />
     </Box>
   );
 }

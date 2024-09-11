@@ -1,6 +1,13 @@
 import * as React from 'react';
 import { useState ,useEffect,useRef} from 'react';
 import { styled, useTheme } from '@mui/material/styles';
+import AssuredWorkloadRoundedIcon from '@mui/icons-material/AssuredWorkloadRounded';
+import RecentActorsIcon from '@mui/icons-material/RecentActors';
+import EmailIcon from '@mui/icons-material/Email';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import CallIcon from '@mui/icons-material/Call';
+import GroupsIcon from '@mui/icons-material/Groups';
+import ContactsIcon from '@mui/icons-material/Contacts';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar from '@mui/material/AppBar';
@@ -35,7 +42,6 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import MailIcon from '@mui/icons-material/Mail';
 import InboxIcon from '@mui/icons-material/Inbox';
 import email from './icons/emailicon.jpg';
-
 import Tooltip from '@mui/material/Tooltip';
 import ClientsIcon from './icons/profile.png';
 import planningIcon from './icons/planning.png'
@@ -163,7 +169,7 @@ const categories = [
   {
     name: 'Contact',
     items: ['Liste des clients'],
-    icon: <img src={ClientsIcon} alt="Clients Icon" style={{ width: '30px', height: '30px' }} />,
+    icon:<ContactsIcon/>,
   },
   // {
   //   name: 'Planning collaborateurs',
@@ -176,7 +182,7 @@ const categories = [
   {
     name: 'Administration',
     items: ['Gestion des utilisateurs', 'Gestion des menus'],
-    icon: <img src={administrationIcon} alt="Clients Icon" style={{ width: '30px', height: '30px' }} />,
+    icon: <img  alt="Clients Icon" style={{ width: '30px', height: '30px' }} />,
   },
   {
     name: 'Paramétrage',
@@ -329,7 +335,7 @@ const clearButtonStyle = {
   fontWeight: 'bold',
   borderRaduis:'20px',
   textAlign: 'end',
-  color: 'white',
+  color: 'red',
   backgroundColor: '#3FA2F6',
   BorderColor:'blue',
   width: '100%' ,
@@ -338,6 +344,7 @@ const clearButtonStyle = {
   transition: 'background-color 0.3s ease',
   fontSize: '13px' // Transition pour un effet plus doux
 };
+
 
 const clearButtonHoverStyle = {
   backgroundColor: '#D1E9F6',
@@ -432,10 +439,10 @@ useEffect(() => {
 
 
 return (
-  <Box sx={{ display: 'flex' }}>
+  <Box sx={{ display: 'flex', backgroundColor:'#F5F7F8'}}>
   
     <CssBaseline />
-    <AppBar position="fixed" open={open}>
+    <AppBar position="fixed" open={open} style={{backgroundColor:'#7695FF'}}>
       <Toolbar>
         <IconButton
           color="inherit"
@@ -531,14 +538,15 @@ return (
       </Toolbar>
     </AppBar>
 
-    <Drawer variant="permanent" open={open}>
-      <DrawerHeader>
+    <Drawer variant="permanent" open={open} style={{backgroundColor:'#F5F7F8'}} >
+      
+      <DrawerHeader  style={{backgroundColor:'#F5F7F8'}}>
         <IconButton onClick={handleDrawerClose}>
           {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </IconButton>
       </DrawerHeader>
       <Divider />
-      <List>
+      <List style={{backgroundColor:'#F5F7F8'}}>
         {/* Contact Category */}
         
           <React.Fragment>
@@ -730,41 +738,7 @@ return (
 
        </>
 )}
-        {/* <Tooltip title="Marketing" placement="right">
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => handleCategoryClick('Marketing')}>
-              <ListItemIcon>
-                <img src={marketing} alt="Marketing Icon" style={{ width: '30px', height: '30px' }} />
-              </ListItemIcon>
-              <ListItemText primary="Marketing" />
-              {openCategory === 'Marketing' ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-          </ListItem>
-        </Tooltip>
-        <Collapse in={openCategory === 'Marketing'} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <Tooltip title="Mailing" placement="right">
-              <ListItem disablePadding>
-                <ListItemButton onClick={() => handleTabClick(0)}>
-                  <ListItemIcon>
-                    <InboxIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Mailing" />
-                </ListItemButton>
-              </ListItem>
-            </Tooltip>
-            <Tooltip title="L'envoi SMS" placement="right">
-              <ListItem disablePadding>
-                <ListItemButton onClick={() => handleTabClick(1)}>
-                  <ListItemIcon>
-                    <MailIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="L'envoi SMS" />
-                </ListItemButton>
-              </ListItem>
-            </Tooltip> */}
-          {/* </List>
-        </Collapse> */}
+
       </List>
     </Drawer>
     <Box
@@ -773,7 +747,7 @@ return (
         display: 'flex',
         flexDirection: 'column',
         flexGrow: 1,
-        bgcolor: 'background.default',
+        bgcolor: '#F5F5F5',
         p: 1,
         transition: theme.transitions.create(['margin'], {
           easing: theme.transitions.easing.sharp,
