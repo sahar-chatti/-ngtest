@@ -4,6 +4,9 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import {  useTheme,Card, CardContent,TableContainer, CardActions,Autocomplete, Button, Typography, IconButton, Box, Collapse, Table, TableBody, TableCell, TableHead, TableRow, Grid ,TablePagination} from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CallIcon from '@mui/icons-material/Call';
+import RenderStockGros from './renderStock';
+import Stock from './Stock';
+
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Dialog from '@mui/material/Dialog';
@@ -36,17 +39,21 @@ import priceIcon from './icons/money.png'
 import blockedIcon from './icons/blockedCli.png'
 import userid from './icons/userid.png'
 import matricule from './icons/id-card.png'
+import {  FormControlLabel, Radio } from '@mui/material';
+import RadioGroup from '@mui/material/RadioGroup';
+import { TransitionProps } from '@mui/material/transitions';
 
 
-
-const CommandesList = ({base,type,searchTerm}) => {
+const CommandesList = ({base,type,searchTerm,c}) => {
   const theme = useTheme();
+  const [openedHistoryCommand,setOpenedHistoryCommand] = useState();
+  const [errorLivraison, setErrorLivraison] = useState('');
 
   const [commandes, setCommandes] = useState([]);
   const [expanded, setExpanded] = useState(null); 
-  // const [communications, setCommunications] = useState([]);
   const [articles, setArticles] = useState({});
   const [openDialog, setOpenDialog] = useState(false);
+  const [targetCommand, setTargetCommand] = useState();
   const [dateTime, setDateTime] = useState('');
   const user = useSelector((state) => state.user);
   const [detailsCommunication, setDetailsCommunication] = useState('');
@@ -55,11 +62,52 @@ const CommandesList = ({base,type,searchTerm}) => {
   const [modePay,setModepay]=useState([])
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [userAffected,setUserAffected]=useState(false)
   const [total, setTotal] = useState(0);
+  const [dateLivraisonPrevue, setDateLivraisonPrevue] = useState('');
+  const [communications,setCommunications]=useState({});
+  const [produit,setProduits]=useState({});
+
   const [tarifs,setTarifs]=useState([])
   const [openTarifDialog,setOpenTarifDialog]=useState(false)
   const [historyDialog,setHistoryDialog]=useState(false)
+
+
+  const resetForm = () => {
+    setDateTime('');
+    setDetailsCommunication('');
+    setAdresseFacturation('');
+    setAdresseLivraison('');
+    setBanque('');
+    setBeneficiaire('');
+    setDateEcheance('');
+    setMatriculeFiscale('');
+    setModeLivraison('');
+    setNumCheque('');
+    setModePaiement('');
+    setDateLivraisonPrevue('');
+};
+
+
+  useEffect(() => {
+    Promise.all(commandes.map(async (command) => {
+      return await axios.get(
+        `${BASE_URL}/api/getComCmd`,{
+          params: {
+            id: command.NUM_CDE_C
+          }
+        }
+      );
+    })).then((communicationsResult) => {
+      setCommunications(
+        communicationsResult.reduce((result, communication) => {
+        if (communication.data.length) {
+          result[communication.data[0].REF_COMMANDE] = communication.data;
+        }
+        return result;
+      }, {}));
+    })
+    
+  }, [commandes]);
   const GlowingBox = styled('div')(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
@@ -81,6 +129,10 @@ const CommandesList = ({base,type,searchTerm}) => {
     height: '50px',
  
   }));
+  const onChange = (event) => {
+    setDateLivraisonPrevue(event.target.value);
+  };
+
   const formatDateTr = (dateString) => {
     if (!dateString) return '';
   
@@ -112,6 +164,7 @@ const CommandesList = ({base,type,searchTerm}) => {
       console.error('Error fetching commands:', error);
     }
   };
+  
   useEffect(() => {
    
   
@@ -119,7 +172,6 @@ const CommandesList = ({base,type,searchTerm}) => {
       try {
         const result = await axios.get(`${BASE_URL}/api/communicationsCmd`);
         console.log("com",result.data)
-//setCommunications(result.data);
       } catch (error) {
         console.error('Error fetching communications:', error);
       }
@@ -132,6 +184,9 @@ const CommandesList = ({base,type,searchTerm}) => {
     .catch(error => console.error('Error fetching data:', error));
     axios.get(`${BASE_URL}/api/transporteur`)
     .then(response => setTransporteurs(response.data))
+    .catch(error => console.error('Error fetching data:', error));
+    axios.get(`${BASE_URL}/api/articles`)
+    .then(response => setProduits(response.data))
     .catch(error => console.error('Error fetching data:', error));
   
     fetchCommandes();
@@ -174,6 +229,8 @@ const CommandesList = ({base,type,searchTerm}) => {
   const [commandTocom,setCommandTocom]=useState("")
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
 
+  
+
 const handleOpenDetailsDialog = () => {
   setOpenDetailsDialog(true);
   console.log("click")
@@ -191,21 +248,34 @@ const handleCloseDetailsDialog = () => {
     }
   };
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return dateString ? new Date(dateString).toLocaleDateString('fr-FR') : '-';
   };
   
-  const handleCloseDialog = () => setOpenDialog(false);
+  
+  const handleCloseDialog = () => {
+    resetForm();
+    setOpenDialog(false);
+};
   
   const [openCommSuccess, setOpenCommSuccess] = useState(false);
 
-  const handleSaveCommunication = async () => {
-    try {
-      if(commandTocom!==""){
-      const response = await axios.post(`${BASE_URL}/api/UpdateOrCreateComCmd`, {
+    const handleSaveCommunication = async () => {
+      // Clear previous errors
+      setErrorLivraison('');
+      resetForm();
+
+      // Check if a date has been selected
+      if (!dateLivraisonPrevue) {
+        console.log("Erreur : dateLivraisonPrevue est vide");
+        setErrorLivraison('Veuillez sélectionner une date de livraison.');       
+         return; // Prevent further execution if validation fails
+      }
+    
+      try {
+ // Check if commandTocom is not an empty string and has necessary properties
+        if (commandTocom && commandTocom.NUM_CDE_C) {
+          // Make the POST request to save or update communication details_CDE_C) {
+        const response = await axios.post(`${BASE_URL}/api/UpdateOrCreateComCmd`, {
         ref_commande: commandTocom.NUM_CDE_C,
         commercial: user.LOGIN, 
         statut: "Validation commerciale",
@@ -221,37 +291,44 @@ const handleCloseDetailsDialog = () => {
         num_cheque: numCheque,
         banque: banque,
         date_echeance: dateEcheance,
-        base:base
+        base: base,
+        dateLivraisonPrevue,
       });
-      console.log('Communication enregistrée avec succès:', response.data.message);
-      setOpenCommSuccess(true);
-      fetchCommandes()
-    }
-      
-    } catch (error) {
-      console.error('Erreur lors de l\'enregistrement de la communication:', error);
-    }
 
+      // Check if the response contains the expected message
+      if (response.data && response.data.message) {
+        console.log('Communication enregistrée avec succès:', response.data.message);
+        setOpenCommSuccess(true);
+        await fetchCommandes(); // Await fetchCommandes if it's an async function
+      } else {
+        console.error('Unexpected response format:', response.data);
+      }
+    } else {
+      console.error('Command to communicate is not properly defined');
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'enregistrement de la communication:', error);
+  } finally {
+    // Reset form fields and close dialog regardless of success or error
     setOpenDialog(false);
     setDateTime('');
     setDetailsCommunication('');
-    setAdresseFacturation("")
-    setAdresseLivraison("")
-    setBanque("")
-    setBeneficiaire("")
-    setDateEcheance("")
-    setMatriculeFiscale("")
-    setModeLivraison("")
-    setNumCheque("")
-    setModePaiement("")
-    
-  };
+    setAdresseFacturation('');
+    setAdresseLivraison('');
+    setBanque('');
+    setBeneficiaire('');
+    setDateEcheance('');
+    setMatriculeFiscale('');
+    setModeLivraison('');
+    setNumCheque('');
+    setModePaiement('');
+  }
+};
+
 
   const handleCloseSuccessDialog = () => {
     setOpenCommSuccess(false);
   };
-
-  const [communications,setCommunications]=useState([])
 
   const handleOpenDialog =async (command) => {
    setCommandTocom(command)
@@ -282,6 +359,9 @@ const handleCloseDetailsDialog = () => {
     } 
   
  
+  };
+  const makeCall = (tel) => {
+    window.location.href = `sip:${tel.replace(/[^0-9]+/g, '')}`;
   };
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
 const [commandToCancel, setCommandToCancel] = useState(null);
@@ -331,19 +411,26 @@ const handleConfirmCancel = async () => {
     fetchCommandes()
   }
 };
-  const handleOpenHistoriqueDialog =async (command) => {
-   
-     const coms=await axios.get(
-       `${BASE_URL}/api/getComCmd`,{
-         params: {
-           id: command.NUM_CDE_C
-         }
-       }
-     );
-     console.log("coms",coms.data)
-     setCommunications(coms.data)
-     setHistoryDialog(true)
-   };
+const handleOpenHistoriqueDialog = (command) => {
+  setOpenedHistoryCommand(command.NUM_CDE_C);
+  
+   setHistoryDialog(true)
+ };
+
+
+{/*const handleOpenHistoriqueDialog = async (command) => {
+  try {
+    setTargetCommand(command);
+    setHistoryDialog(true); // Optionally open the dialog
+  } catch (error) {
+    console.error('Error fetching communications:', error);
+  }
+};*/}
+
+const openDialogIfNeeded = (command) => {
+  // Fetch data without immediately opening the dialog
+  handleOpenHistoriqueDialog(command);
+};
   const getGridSizes = (command) => {
     if (expanded === command.NUM_CDE_C) {
       return { xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }; 
@@ -375,12 +462,22 @@ const handleConfirmCancel = async () => {
     setOpenTarifDialog(true)
   }
   
- 
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const [selectedArticle, setSelectedArticle] = useState(null);
+   
     return (
     
       <Grid container spacing={2} >
       {commandes.map((command) => {
-        const communication = communications.find(comm => comm.ref_commande === command.NUM_CDE_C);
         const etat =command.NUM_CDE_CL?'Livré': command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
         const etatColor = etat==="Non encore traité" ? "red" :etat==="En cours de traitement" ? "orange":etat==="Trait@" ? "green":etat==="Annul@e"?"purple":"blue";
         const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
@@ -396,14 +493,14 @@ const handleConfirmCancel = async () => {
           xl={getGridSizes(command).xl}
           key={command.NUM_CDE_C}
         >
-             <Card style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent', height:'100%' }}
+             <Card style={{backgroundColor:'white', borderRadius:'10px' ,border:'transparent', height:'100%' }}
           sx={{
             height: !isClientDetailsVisible  ? '100%' : '650px',
             transition: 'height 0.3s ease-in-out'
           }}
         >
               <CardContent  sx={{ cursor: 'pointer', position: 'relative', height:type==="partenaire"?'400px':'420px', marginBottom: "20px" }}>
-              <GlowingBox  style={{ backgroundColor:etatColor}}>
+              <GlowingBox  style={{ backgroundColor:etatColor , borderRadius:'10px'}}>
               <Typography
             variant="h6"
             component="div"
@@ -421,7 +518,7 @@ const handleConfirmCancel = async () => {
 
                 <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Commande: {command.NUM_CDE_C}</Typography>
-                  <Typography style={{display:"flex",alignItems:"center",marginBottom:'10px',color: "#3572EF",fontWeight:"bold" }}><img src={userid} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px", color:'#7695FF'}} />Code client: {command.CLIENT_CDE}</Typography>
+           
 
                 {type === "partenaire" && (
         <>
@@ -435,7 +532,7 @@ const handleConfirmCancel = async () => {
       </Typography>
       <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
         <img src={command.BLOQUER_CLIENT === 1 ? blockedIcon : personIcon} alt="status icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-        Client: {command.ADR_C_C_1}
+        Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}
       </Typography>
       {isClientDetailsVisible && (
         <Box
@@ -458,35 +555,54 @@ const handleConfirmCancel = async () => {
             <strong>Échéance:</strong> {command.ECHEANCE_REG_C}
           </Typography>
           <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-            <strong>Encours client:</strong> {Number(command.ENCOURSREG) + Number(command.SOLDE_CLIENT) + Number(command.BLNONFACT)}
+            <strong>Encours client:</strong>{Number(command.ENCOURSREG) + Number(command.SOLDE_CLIENT) + Number(command.BLNONFACT)}
           </Typography>
           <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-            <strong>Encours max:</strong> {command.ENCOURS_MAX_C}
+            <strong>Encours autorisé:</strong> {command.ENCOURS_MAX_C}
           </Typography>
           <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
             <strong>Encours supp:</strong> {command.ENCOURS_SUPP}
           </Typography>
+
         </Box>
       )}
-
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Adresse Client:  {command.ADR_C_C_2} ,{command.ADR_C_C_3 }</Typography>
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={priceIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Total: {command.CC_TOTAL} TND</Typography>
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={matricule} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Matricule : {command.ADR_C_C_3}</Typography>
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={call} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Numéro:{(((command.TEL_CLIENT_F || ' ') + (command.ADR_C_C_2 || ' ')).toString().replace(/\s+/g, '')).slice(0, 8)}
-                </Typography>
+                               
+                <Typography 
+  style={{ 
+    display: "flex", 
+    alignItems: "center", 
+    marginBottom: 10, 
+    marginTop: "10px", 
+    color: '#545454', 
+    fontWeight: 'bold', 
+    fontSize: '16px', 
+    cursor: 'pointer'  
+  }}>                       
+ <img 
+    src={call} 
+    alt="person icon" 
+    style={{ marginRight: 8, width: "25px", height: "25px" }} 
+  />    Numéro: <Button   onClick={() => makeCall(command.TEL_CLIENT_F)} >  
+  {command.TEL_CLIENT_F} </Button> 
+</Typography>  
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={userIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
-                {/* <Typography variant="body2" color="text.secondary" style={{display:"flex",alignItems:"center",fontWeight:"bold"}}
-                 onClick={handleOpenDetailsDialog}>
-          <img src={moneyIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-       Mode de réglement: {command.LIBEL_REGL_C} 
-      
-        </Typography> */}
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}><img src={personIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Date livraison prévue :  {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
+        <span style={{ color: 'red' }}>
+           {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE}
+        </span>
+      ) : (
+        ' '
+      )}</Typography>
                 <IconButton
                   onClick={() => handleCardClick(command)}
                   aria-expanded={expanded === command.NUM_CDE_C}
                   sx={{ position: 'absolute', top: 8, right: 8 }}
                 >
-                  <ExpandMoreIcon style={{color:'white'}} />
+                  <Typography style={{fontSize:'12px', fontWeight:'bold', color:'white'}}> Articles commandés </Typography>
+
                 </IconButton>
               </CardContent>
               <Collapse in={expanded === command.NUM_CDE_C} timeout="auto" unmountOnExit>
@@ -509,29 +625,54 @@ const handleConfirmCancel = async () => {
                     </TableHead>
                     <TableBody>
         {articles.length > 0 && articles.map((article) => {
-                   const modepay = (Number(article.STOCK_PHYSIQUE )+ Number(article.STOCK_AUT_DEPOT)) - (Number(article.CDES_CLIENTS)-Number(article.QTE_CMD_ANNUL));
 
-          const difference = (Number(article.STOCK_PHYSIQUE )+ Number(article.STOCK_AUT_DEPOT)) - (Number(article.CDES_CLIENTS)-Number(article.QTE_CMD_ANNUL));
-//console.log("difference",difference)
+                   const difference = (Number(article.STOCK_PHYSIQUE ) + Number(article.STOCK_AUT_DEPOT)) + Number(article.QTE_CMD_ANNUL) - (Number(article.CDES_CLIENTS));
+                   //console.log("difference",difference)
           return (
             <TableRow key={article.CCL_ARTICLE}>
-              <TableCell>{article.CCL_ARTICLE}</TableCell>
+              <TableCell> <Button onClick={handleClickOpen}>{article.CCL_ARTICLE}</Button>
+              <Dialog
+        open={open}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>{"Caractéristiques produit"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-slide-description">
+          {selectedArticle && <RenderStockGros article={selectedArticle} />}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Fermer</Button>
+        </DialogActions>
+      </Dialog></TableCell>
               <TableCell>{article.CCL_DES_ART}</TableCell>
               <TableCell>{article.CCL_PXU_TTC}</TableCell>
               <TableCell>{article.CCL_QTE_C}</TableCell>
               <TableCell>{article.CCL_MONTANT_TTC}</TableCell>
               <TableCell>{command.LIBEL_REGL_C}</TableCell>
-              <TableCell>{Number(article.CDES_CLIENTS)- Number(article.CCL_QTE_C) - Number(article.QTE_CMD_ANNUL)}</TableCell>
+              <TableCell>{Number(article.CDES_CLIENTS) - Number(article.CDES_ANNUL)}</TableCell>
               <TableCell>{Number(article.CDES_FOURNIS)}</TableCell>
               <TableCell> {formatDate(article.LATEST_DATE_LIV_CF_P)}</TableCell>
-              <TableCell>{article.CCL_TX_REM} %</TableCell>
-
               <TableCell>
-                <img
-                  src={difference >= 0 ? fullbattery : emptybattery}
-                  alt={difference >= 0 ? 'Full Battery' : 'Empty Battery'}
-                  style={{ width: '24px', height: '24px' }}
-                />
+  {[
+    { keyword: "OZKA", amount: 30 },
+    { keyword: "OTANI", amount: 35 },
+    { keyword: "STARMAXX", amount: 30 },
+    { keyword: "STIP", amount: 22.17 },
+    { keyword: "PETLAS", amount: 30 },
+    { keyword: "KUMHO", amount: 33 },
+    { keyword: "SIOC", amount: 20 },
+    { keyword: "ZEETEX", amount: 28 },
+  ].some(({ keyword, amount }) =>
+    ((article.CCL_ARTICLE && article.CCL_ARTICLE.includes(keyword)) ||
+    (article.CCL_DES_ART && article.CCL_DES_ART.includes(keyword))) &&
+    article.CCL_TX_REM === amount
+  ) ? "Comptant" : "à termes"}
+</TableCell> 
+              <TableCell>
+              {difference}
               </TableCell>
             </TableRow>
           );
@@ -605,6 +746,9 @@ const handleConfirmCancel = async () => {
     </Button>
   </DialogActions>
 </Dialog>
+
+
+
   <Dialog open={historyDialog} onClose={()=>setHistoryDialog(false)} maxWidth="lg" fullWidth>
       <DialogTitle>
         Historique de Communication
@@ -677,22 +821,30 @@ const handleConfirmCancel = async () => {
                                             borderBottom: '1px solid rgba(224, 224, 224, 1)',
                                             
                                         }}>Mode de paiement</TableCell>
+
+<TableCell  sx={{
+                                            backgroundColor: theme.palette.primary.main,
+                                            color: theme.palette.common.white,
+                                            fontWeight: 'bold',
+                                            borderBottom: '1px solid rgba(224, 224, 224, 1)',
+                                            
+                                        }}>Date de livraison prévue </TableCell>
                
               </TableRow>
             </TableHead>
             <TableBody>
-              {communications.map((c) => (
-                <TableRow key={c.ID}>
+            {(communications[openedHistoryCommand] ?? []).map((c, i) => (
+                <TableRow key={c.ID + i}>
                   <TableCell>{formatDate(c.DATETIME)}</TableCell>
                   <TableCell>{c.DETAILS_COMMUNICATION}</TableCell>
                   <TableCell>{c?.COMMERCIAL}</TableCell>
                   <TableCell>{c?.MODE_LIV}</TableCell>
-                
                   <TableCell>{c.ADRESSE_LIVRAISON}</TableCell>
                   <TableCell>{c.TRANSP}</TableCell>
                   <TableCell>{c?.BENEFICIAIRE}</TableCell>
-                   <TableCell>{c?.MODE_PAY}</TableCell>
-               
+                  <TableCell>{c?.MODE_PAY}</TableCell>
+                  <TableCell>{c?.DATELIVRAISONPREVUE}</TableCell>
+
                 </TableRow>
               ))}
             </TableBody>
@@ -802,6 +954,28 @@ const handleConfirmCancel = async () => {
         onChange={(e) => setAdresseFacturation(e.target.value)}
         fullWidth
       />
+
+<Typography variant="h6" gutterBottom>
+        Date de livraison prévue
+      </Typography>
+      {errorLivraison && <span style={{ color: 'red' }}>{errorLivraison}</span>}
+
+      <RadioGroup
+        aria-labelledby="demo-row-radio-buttons-group-label"
+        name="row-radio-buttons-group"
+        value={dateLivraisonPrevue}
+        onChange={(e) => {
+          setDateLivraisonPrevue(e.target.value);
+          setErrorLivraison(''); }}
+  
+      >
+        <FormControlLabel value="Indéterminée" control={<Radio />} label="Indéterminée" />
+        <FormControlLabel value="Immediatement" control={<Radio />} label="Immediatement" />
+        <FormControlLabel value="24 H" control={<Radio />} label="24 H" />
+        <FormControlLabel value="48 H" control={<Radio />} label="48 H" />
+        <FormControlLabel value="72 H" control={<Radio />} label="72 H" />
+       </RadioGroup>
+
         </Box>
         <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
           <Typography variant="h6">Détails de paiement</Typography>

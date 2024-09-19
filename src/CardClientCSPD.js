@@ -114,6 +114,7 @@ function CustomCard({ client,selectedClientType,user }) {
   const [selectedQualification,setSelectedQualification]=useState("")
   const [tarifs,setTarifs]=useState([])
   const[openTarifDialog,setOpenTarifDialog]=useState(false)
+
   const handleTarifDialogOpen=async()=>{
     try {
       console.log("client",client.CODE_CLIENT)
@@ -121,7 +122,7 @@ function CustomCard({ client,selectedClientType,user }) {
         code:client.CODE_CLIENT
       }
       });
-      console.log("result",result.data)
+      console.log("resultss",result.data)
       setTarifs(result.data);
     } catch (error) {
       console.error('Error fetching commands:', error);

@@ -215,7 +215,9 @@ useEffect(() => {
     }
     
   };
-  
+  const makeCall = () => {
+    window.location.href = `sip:${client.TEL_CLIENT_F.replace(/[^0-9]+/g, '')}`;
+  };
   const handleCvUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -306,21 +308,25 @@ useEffect(() => {
   }
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/api/RaisonsList`)
+    
+      axios.get(`${BASE_URL}/api/RaisonsList`)
       .then(response => setRaisonList(response.data))
       .catch(error => console.error('Error fetching data:', error));
 
-    axios.get(`${BASE_URL}/api/QualificationAppels`)
+      axios.get(`${BASE_URL}/api/QualificationAppels`)
       .then(response => setQualificationList(response.data))
       .catch(error => console.error('Error fetching data:', error));
+
       axios.get(`${BASE_URL}/api/raisonQualifications`)
-      .then(response => setParams(response.data))
+      .then(response => setParams(response.data)) 
       .catch(error => console.error('Error fetching data:', error));
+
       axios.get(`${BASE_URL}/api/raisonStatuts`)
       .then(response => setList(response.data))
       .catch(error => console.error('Error fetching data:', error));
+
       axios.get(`${BASE_URL}/api/StatutPartenaires`)
-      .then(response => setStatus(response.data))
+      .then(response => setStatus(response.data)) 
       .catch(error => console.error('Error fetching data:', error));
       
       // axios.get(`${BASE_URL}/api/StatutPartenaires`)
@@ -606,8 +612,9 @@ return (
        
         </Grid> 
         <Typography color="text.secondary" gutterBottom style={{ display: "flex", alignItems: "center", marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
-          <img src={callIcon} alt="call icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />
-          {client.NUMERO_TELEPHONE}
+          <img src={callIcon} alt="call icon" style={{ marginRight: 8, width: "20px", height: "20px" }} /><Button onClick={makeCall} variant="text" color="primary" style={{ display: "flex", alignItems: "center", marginTop:"10px",fontWeight: 'bold' , fontSize:'16px' }}>
+          {client.NUMERO_TELEPHONE}          </Button>
+         
         </Typography>
         <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center",marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
           <img src={naisIcon} alt="birth icon" style={{ marginRight: 8, width: "20px", height: "20px" }} />

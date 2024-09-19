@@ -239,8 +239,9 @@ useEffect(() => {
     window.location.href = `mailto:${client.EMAIL_CLIENT}`;
   };
 
+  
   const makeCall = () => {
-    window.location.href = `tel:${client.TEL_CLIENT_L}`;
+    window.location.href = `sip:${client.TEL_CLIENT_F.replace(/[^0-9]+/g, '')}`;
   };
 
   const sendSMS = () => {
@@ -308,7 +309,7 @@ useEffect(() => {
        
         <Typography variant="h6" component="div" gutterBottom  style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
         <LocalPhoneIcon/>
-          <Button onClick={makeCall} variant="text" color="primary" style={{fontWeight: 'bold' , fontSize:'16px'}}>
+        <Button onClick={makeCall} variant="text" color="primary">
             {client.TEL_CLIENT_F}
           </Button>
         </Typography>
@@ -533,8 +534,6 @@ useEffect(() => {
                   <TableCell> </TableCell>
                   <TableCell style={{backgroundColor:'#F5F4F4'}}> </TableCell>
                   <TableCell> </TableCell>
-               
-               
                 </TableRow>
                
             </TableBody>
@@ -682,7 +681,7 @@ const CardContainer = ({ searchTerm }) => {
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
-    const [filterName, setFilterName] = useState(''); // Nom à filtrer
+    const [filterName, setFilterName] = useState('Par'); // Nom à filtrer
     const [filteredClients, setFilteredClients] = useState([]);
     const user = useSelector((state) => state.user);
 
@@ -715,12 +714,15 @@ const CardContainer = ({ searchTerm }) => {
     }, [page, pageSize, searchTerm]); // Re-fetch data when page, pageSize, or searchTerm changes
 
     useEffect(() => {
-        const filtered = clients.filter(client => 
-            client && client.INTITULE_GR === "PARTENAIRE" || client.INTITULE_CLIENT.toUpperCase().startsWith("PAR") 
-        );
-        console.log('Filtered clients:', filtered);
-        setFilteredClients(filtered);
-    }, [clients]); // Only filter when clients change
+      const filtered = clients.filter(client => 
+          client && (
+              (client.INTITULE_GR === "PARTENAIRE" || client.INTITULE_CLIENT.toUpperCase().startsWith("PAR")) 
+              && !client.INTITULE_CLIENT.startsWith("FAM")
+          )
+      );
+      console.log('Filtered clients:', filtered);
+      setFilteredClients(filtered);
+  }, [clients]);
 
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
@@ -739,8 +741,8 @@ const CardContainer = ({ searchTerm }) => {
     return (
         <div style={{ overflowY: 'auto', maxHeight: 'auto' }}>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                {filteredClients.length > 0 ? (
-                    filteredClients.map(client => (
+                {clients.length > 0 ? (
+                    clients.map(client => (
                         <CustomCard key={client.ID_CLIENT} name={client.INTITULE_GR} client={client} user={user} />
                     ))
                 ) : (

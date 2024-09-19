@@ -133,7 +133,7 @@ export default function RenderStockGros({ article }) {
           })}
           <Box display="flex" alignItems="center" mt={2} style={{display:"flex",alignItems:"center"}}>
             <TextField
-              label="qte besoin"
+              label="Quantité  besoin"
               value={qteBesoin}
               onChange={handleQteBesoinChange}
               onKeyDown={handleKeyDown}
