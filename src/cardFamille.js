@@ -469,7 +469,7 @@ const handleSendCode = async(e) => {
 return (   
   <CustomCardWrapper style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent' }}>
     <CustomCardContent >
-    <GlowingBox  style={{ backgroundColor:client.COULEUR?client.COULEUR:"#ÒC7253E"}}>
+    <GlowingBox  style={{ backgroundColor:client.COULEUR?client.COULEUR:"#0C7253E"}}>
           <Typography
             variant="h6"
             component="div"

@@ -43,16 +43,17 @@ import investmentIcon from './icons/investment.png'
 import checkIcon from './icons/check.png'
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import { Person } from '@mui/icons-material';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+//import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+//import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+//import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+//import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 
 function CustomTabPanel({ 
   value,
   index,
   searchTerm,
+  
   setSearchTerm,
   selectedOption,
   setSelectedOption,
@@ -112,9 +113,11 @@ function CustomTabPanel({
   };
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  
+
     // Implement your search logic here
   };
-  const renderSearchInputs = (
+  {/*const renderSearchInputs = (
     <div   style={{marginLeft:'20px', marginTop:'-5PX'}}> 
       
        <LocalizationProvider dateAdapter={AdapterDayjs} >
@@ -128,7 +131,7 @@ function CustomTabPanel({
     </LocalizationProvider>
       
     </div>
-  );
+  );*/}
 
   const avancementOptions = [
     'En cours',
@@ -221,12 +224,11 @@ function CustomTabPanel({
     setPageSize(parseInt(event.target.value, 10));
     setPage(0);
   };
-  
 
-
-  
   // Conditionally render the search input for "Partenaires" tab
   const renderSearchInput =
+
+
     <TextField
 
       variant="outlined"
@@ -244,6 +246,7 @@ function CustomTabPanel({
     />
 
   const renderIconAndText = () => {
+ 
     let label = '';
     if (index === 0) {
       label = `Nombre de partenaires`;
@@ -584,6 +587,7 @@ function CustomTabPanel({
           {/*famille*/}
           {index === 4 && selectedOption === '1' && displayMode === 'card' && (
             <CardFamilleCSPD displayMode={displayMode} />
+            
           )}
           {index === 4 && selectedOption === '0' && displayMode === 'card' && (
             <CardFamille displayMode={displayMode} searchTerm={searchTerm} selectedAvancement={selectedAvancement} setTotalObj={(tp, nn) => {
