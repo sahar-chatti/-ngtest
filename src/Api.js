@@ -1,4 +1,5 @@
 import axios from 'axios';
+import BASE_URL from './constantes';
 
 const API_URL = 'http://192.168.1.170:3300/api';
 
@@ -14,5 +15,22 @@ export const getArticleById = async (articleId, base) => {
     } catch (error) {
         console.error(error);
         return {};
+    }
+};
+
+export const fetchClientsPartenaires = async (page,clientId, pageSize, searchTerm, baseUrl = BASE_URL) => {
+    try {
+        const params = {
+            page: page,
+            pageSize: pageSize,
+            searchTerm: searchTerm,
+        };
+
+        const response = await axios.get(`${baseUrl}/api/clientsPartenaires/${encodeURIComponent(clientId)}`, { params });
+        console.log('API response data:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return { clients: [], total: 0, error: 'There was an error fetching  clients' };
     }
 };

@@ -2,15 +2,13 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
-import { styled, ThemeProvider, createTheme } from '@mui/system';
+import { styled } from '@mui/system';
 import InputLabel from '@mui/material/InputLabel';
 import PlaceIcon from '@mui/icons-material/Place';
-
 import Select from '@mui/material/Select';
-import { MenuItem, responsiveFontSizes } from '@mui/material';
+import { MenuItem } from '@mui/material';
 import { useSelector } from 'react-redux';
 import EmailIcon from '@mui/icons-material/Email';
-import SmsIcon from '@mui/icons-material/Sms';
 import HistoryIcon from '@mui/icons-material/History';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -39,18 +37,11 @@ import Paper from '@mui/material/Paper';
 import BASE_URL from './constantes';
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
-import addressIcon from './icons/address.png'
-import callIcon from './icons/call.png'
 import dateIcon from './icons/NAISS.png'
 import {TablePagination} from '@mui/material';
-import {Checkbox,FormControlLabel,Collapse,IconButton} from '@mui/material';
+import {Collapse,IconButton} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import payIcon from './icons/pay.png'
-import calendarIcon from './icons/calendar.png'
-import BlockIcon from '@mui/icons-material/Block';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import represIcon from './icons/repres.png'
-import emailb from './icons/emailb.png'
+
 const CustomCardWrapper = styled(Card)(({ theme }) => ({
   width: 'calc(33.00% - 16px)',
   margin: theme.spacing(1),
@@ -105,7 +96,7 @@ const GlowingBox = styled('div')(({ theme }) => ({
 
 
 
-function CustomCard({ client,user,emailClients }) {
+function CustomCard({ client }) {
   const [params,setParams]=useState([])
   const [raisonList, setRaisonList] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
@@ -124,46 +115,22 @@ function CustomCard({ client,user,emailClients }) {
   const[openTarifDialog,setOpenTarifDialog]=useState(false);
   const [messages, setMessages] = useState('');
   const [codeSent, setCodeSent] = useState();
-  
-//copy array
-  const handleTarifDialogOpen=async()=>{
-    try {
-      console.log("client",client.CODE_CLIENT)
-      const result = await axios.get(`${BASE_URL}/api/tarifsClient`,{ params: {
-        code:client.CODE_CLIENT
-      }
-      });
-      console.log("result",result.data)
-      setTarifs(result.data);
-    } catch (error) {
-      console.error('Error fetching commands:', error);
-    }
-    setOpenTarifDialog(true)
-  }
-  const tablestyle = {
-    fontWeight: 'bold', 
-    color: '#387ADF',
-     borderRadius: '12px',
-  };
-  
-  //pour remplir raison d'appel
+
   useEffect(() => {
     axios.get(`${BASE_URL}/api/RaisonsList`)
       .then(response => setRaisonList(response.data))
       .catch(error => console.error('Error fetching data:', error));
-
-   
   }, []);
-useEffect(() => {
+
+  useEffect(() => {
   if (selectedRaison) {
     const qualificationIds = params
       .filter(param => param.ID_RAISON === selectedRaison.ID_RAISON)
       .map(param => param.ID_QUALIFICATION);
   } 
-}, [selectedRaison, params, qualificationList]);
+  }, [selectedRaison, params, qualificationList]);
 
   useEffect(()=> {
-
     axios.get(`${BASE_URL}/api/raisonQualifications`)
     .then(response => {
       setRaisonList(response.data);
@@ -182,14 +149,6 @@ useEffect(() => {
       .catch(error => console.error('Error fetching data:', error));
   },[])
 
-  const handleDialogOpen = () => {
-    setOpenDialog(true);
-  };
-
-  const handleDialogClose = () => {
-    setOpenDialog(false);
-  };
-
   const handleHistoriqueDialogOpen = async() => {
     try {
       console.log("client",client.CODE_CLIENT)
@@ -204,10 +163,10 @@ useEffect(() => {
     }
     setOpenHistoriqueDialog(true);
   };
+
   const handleCardClick = async (command) => {
     setExpanded(prev => (prev === command.NUM_BLC ? null : command.NUM_BLC));
     console.log("commandId", command.NUM_BLC);
-  
     try {
       const result = await axios.get(`${BASE_URL}/api/articlescmd`, {
         params: {
@@ -221,7 +180,15 @@ useEffect(() => {
       console.error('Error fetching articles:', error);
     }
   };
-  
+
+  const handleDialogOpen = () => {
+    setOpenDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+  };
+
   const handleHistoriqueDialogClose = () => {
     setOpenHistoriqueDialog(false);
   };
@@ -231,36 +198,18 @@ useEffect(() => {
     console.log('Details:', details);
     console.log('Communication Type:', communicationType);
     console.log('Qualification:', qualificationType);
-
     setOpenDialog(false);
   };
 
-  const sendEmail = () => {
-    window.location.href = `mailto:${client.EMAIL_CLIENT}`;
-  };
-
-  
   const makeCall = () => {
     window.location.href = `sip:${client.TEL_CLIENT_F.replace(/[^0-9]+/g, '')}`;
   };
 
-  const sendSMS = () => {
-    window.location.href = `sms:${client.TEL_CLIENT_L}`;
-  };
-//mailing
-
   const handleSendCode = async(e) => {
-    
     let loginmail = (client.TEL_CLIENT_F)
-  
     let code = (client.CHAMP_2_CLIENT)
-  
     let username = (client.NOM_PRENOM)
-
-         
   // alert(JSON.stringify(client))
-  
-  
       return await axios.post('http://192.168.1.170:3200/signin', { email:client.EMAIL,loginmail, username,code }, {
               headers: {
                   "Content-Type": "application/json",
@@ -275,12 +224,10 @@ useEffect(() => {
           .catch(error => {
               alert(error)
               setMessages('Error sending verification code');
-             
-  
           });
-
   }
 
+  
   return (
     
     <CustomCardWrapper style={{backgroundColor:'white', borderRadius:'15px' ,border:'transparent' }}>
@@ -309,23 +256,20 @@ useEffect(() => {
        
         <Typography variant="h6" component="div" gutterBottom  style={{ display: "flex", alignItems: "center", marginBottom: 10,marginTop:"10px",color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
         <LocalPhoneIcon/>
-        <Button onClick={makeCall} variant="text" color="primary">
-            {client.TEL_CLIENT_F}
-          </Button>
+        <Button onClick={makeCall} variant="text" color="primary">{client.TEL_CLIENT_F}</Button>
         </Typography>
-        <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10 ,color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
+        <Typography variant="h6" component="div" gutterBottom  >
         <PlaceIcon/>
           {client.ADR_C_FACT_1.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())}
         </Typography>
         <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginBottom: 10 ,color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
-        <PersonIcon  />
-          {client.INTITULE_REPRES 
-    ? client.INTITULE_REPRES.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()) 
-    : "N/A" // Valeur par défaut si INTITULE_REPRES est null ou undefined
-  }
+        <PersonIcon  />{client.INTITULE_REPRES 
+        ? client.INTITULE_REPRES.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()) 
+        : "" // Valeur par défaut si INTITULE_REPRES est null ou undefined 
+        }
         </Typography>
         <Typography id="x" variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginBottom: 10 ,color: '#545454',fontWeight: 'bold' , fontSize:'16px' }}>
-        <EmailIcon/>           {client.EMAIL} 
+        <EmailIcon/>{client.EMAIL} 
           <Button   onClick = {handleSendCode } size="small" style={{ color: '#FF8C00',fontWeight: 'bold' , fontSize:'14px',textTransform: 'none' }}>
            Mot de passe oublié
           </Button>
@@ -681,7 +625,6 @@ const CardContainer = ({ searchTerm }) => {
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
-    const [filterName, setFilterName] = useState('Par'); // Nom à filtrer
     const [filteredClients, setFilteredClients] = useState([]);
     const user = useSelector((state) => state.user);
 
@@ -716,11 +659,11 @@ const CardContainer = ({ searchTerm }) => {
     useEffect(() => {
       const filtered = clients.filter(client => 
           client && (
-              (client.INTITULE_GR === "PARTENAIRE" || client.INTITULE_CLIENT.toUpperCase().startsWith("PAR")) 
+              (client.INTITULE_GR === "PARTENAIRE"
+              || client.INTITULE_CLIENT.toUpperCase().startsWith("PAR")) 
               && !client.INTITULE_CLIENT.startsWith("FAM")
           )
       );
-      console.log('Filtered clients:', filtered);
       setFilteredClients(filtered);
   }, [clients]);
 
@@ -743,7 +686,7 @@ const CardContainer = ({ searchTerm }) => {
             <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                 {clients.length > 0 ? (
                     clients.map(client => (
-                        <CustomCard key={client.ID_CLIENT} name={client.INTITULE_GR} client={client} user={user} />
+                        <CustomCard key={client.ID_CLIENT} name={client.INTITULE_GR} client={client} user={user}  />
                     ))
                 ) : (
                     <p>No clients match the filter.</p>

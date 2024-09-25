@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import RenderStockGros from './renderStock';
-import Stock from './Stock';
-
 import {
   Box,
   Button,
@@ -50,6 +48,7 @@ import personIcon from './icons/person.png';
 import call from './icons/telephone_724664.png';
 import userIcon from './icons/user.png';
 import { getArticleById } from "./Api";
+import { fetchClientsPartenaires } from "./Api";
 import { FormControlLabel, Radio } from '@mui/material';
 import RadioGroup from '@mui/material/RadioGroup';
 
@@ -94,9 +93,53 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const [expandedClient, setExpandedClient] = useState(null);
   const [isArticleDialogOpened, setArticleDialogOpened] = React.useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const handleChangePage = (newPage) => setPage(newPage);
+  const [clients, setClients] = useState(null);
+  const [partner, setPartner] = useState([]);
+  const [error, setError] = useState(null);
+  const [clientsData, setClientsData] = useState([]);
+ const client = clientsData[0]; 
 
+  const handleChangePage = (event, newPage) => setPage(newPage);
+ 
+  
 
+  useEffect(() => {
+    // Fetch clients only if commandes is not empty
+    if (commandes.length > 0) {
+        const command = commandes[0]; // Get the first command
+        const clientId = command.CLIENT_CDE; // Extract clientId from command
+
+        const fetchClients = async () => {
+            try {
+                // Call the API with the required parameters
+                const { clients, total, error: apiError } = await fetchClientsPartenaires(page, clientId, pageSize, searchTerm,clientId);
+                console.log("Fetched Clients Data:", clients);
+
+                // Handle API errors
+                if (apiError) {
+                    throw new Error(apiError);
+                }
+
+                // Set the clients data
+                setClientsData(clients);
+            } catch (err) {
+                setError(err.message); // Set error state
+            }
+        };
+        console.log("Fetching clients with params:", {
+          page,
+          clientId,
+          pageSize,
+          searchTerm
+      });
+        fetchClients(); // Call the fetch function
+    }
+}, [commandes, page, pageSize, searchTerm]); // Run effect whenever these dependencies change
+
+ 
+  useEffect(() => {
+    fetchClientsPartenaires();
+}, [page, pageSize, searchTerm]); 
   const resetForm = () => {
     setDateTime('');
     setDetailsCommunication('');
@@ -132,21 +175,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
     })
   }, [commandes]);
 
-
-  const fetchArticleDetails = async (codeArticle) => {
-    setLoading(true);
-    try {
-      const response = await axios.get('/api/articles', {
-        params: { searchTerm: codeArticle }
-      });
-      const foundArticle = response.data.articles[0]; 
-      setSelectedArticle(foundArticle);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des détails de l\'article', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const GlowingBox = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -229,10 +258,13 @@ const CommandesList = ({ base, type, searchTerm }) => {
   };
 
   useEffect(() => {
+   
+  
     const fetchCommunications = async () => {
       try {
         const result = await axios.get(`${BASE_URL}/api/communicationsCmd`);
-        console.log("com", result.data)
+        console.log("com",result.data)
+        //setCommunications(result.data);
       } catch (error) {
         console.error('Error fetching communications:', error);
       }
@@ -362,6 +394,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
       }
     }
   };
+  
   
   const handleTarifDialogOpen = async (command) => {
 
@@ -494,6 +527,9 @@ const CommandesList = ({ base, type, searchTerm }) => {
                     }}
                   > {etat}</Typography>
                 </GlowingBox>
+              
+           
+                
                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
 
                   <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
@@ -546,9 +582,42 @@ const CommandesList = ({ base, type, searchTerm }) => {
 
                   </Box>
                 )}
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Adresse Client:  {command.ADR_C_C_2} ,{command.ADR_C_C_3}</Typography>
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={priceIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Total: {command.CC_TOTAL} TND</Typography>
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={matricule} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Matricule : {command.ADR_C_C_3}</Typography>
+               
+               {client ? (
+    <>
+        <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+            <img src={addressIcon} alt="address icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+            Adresse Client: {client.ADR_C_FACT_1} {/* Corrected from command to client */}
+        </Typography>
+    </>
+) : (
+    <Typography>No client data available.</Typography> )}
+
+    <h2>Clients</h2>
+    {clientsData.length > 0 ? (
+        clientsData.map((client) => (
+            <div key={client.CODE_CLIENT} style={{ marginBottom: '10px', border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
+                <p><strong>Name:</strong> {client.ADR_C_FACT_1}</p>
+                {/* Display other client details here, for example: */}
+                <p><strong>Email:</strong> {client.CLIENT_EMAIL}</p>
+                <p><strong>Phone:</strong> {client.CLIENT_PHONE}</p>
+                {/* Add more details as necessary */}
+            </div>
+        ))
+    ) : (
+        <p>No clients found.</p>
+    )}
+                    <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                        <img src={priceIcon} alt="price icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+                        Total: {command.CC_TOTAL} TND
+                    </Typography>
+                    <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                        <img src={matricule} alt="matricule icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+                        Matricule: {command.ADR_C_C_3}
+                    </Typography>
+               
+            
+ 
                 <Typography
                   style={{
                     display: "flex",
@@ -575,6 +644,8 @@ const CommandesList = ({ base, type, searchTerm }) => {
                 ) : (
                   ' '
                 )}</Typography>
+
+
                 <IconButton
                   onClick={() => handleCardClick(command)}
                   aria-expanded={expanded === command.NUM_CDE_C}

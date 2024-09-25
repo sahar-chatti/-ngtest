@@ -141,7 +141,9 @@ function CustomCard({ article,tarifs,type,base }) {
     try {
       const result = await axios.get(`${BASE_URL}/api/promoByArticle`, {
         params: { famille: FAMILLE } 
+      
       });
+      console.log( 'pp', setPromotions)
       setPromotions(result.data);
     } catch (error) {
       console.error('Error fetching promotions:', error);

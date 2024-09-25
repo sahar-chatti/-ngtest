@@ -9,65 +9,66 @@ import Box from '@mui/material/Box';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import CardPartenaires from './CardPartenaires'; // Assurez-vous que le chemin est correct pour CardPartenaires
+import CardPartenaires from './CardPartenaires';
 import ClientList from './ClientList';
 import CardFamille from './cardFamille';
 import AssuredWorkloadRoundedIcon from '@mui/icons-material/AssuredWorkloadRounded';
 import CardFamilleCSPD from './cardFamilledamakCSPD'
 import CommandesList from './CommandesEncours';
-import CardClientsFDM from './CardClientsFDM';
 import Button from '@mui/material/Button';
-import ClientListFDM from './ClientFDMList';
-import ClientPartList from './ClientsPartenairesList';
 import CardClientsPartenaires from './CardClientsPartenaires'
-import ListInvestisseursCSPD from './ListInvestisseursCSPD';
 import CardInvestisseursCSPD from './CardInvestisseurCSPD';
-import PartenaireList from './PartenairesList';
 import CardClientsCSPD from './CardClientCSPD';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import ViewListIcon from '@mui/icons-material/ViewList';
 import SearchIcon from '@mui/icons-material/Search';
-import { TextField, IconButton, Autocomplete, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Dialog, DialogContent, DialogTitle, DialogActions, Paper, TableContainer, InputAdornment } from '@mui/material';
+import { 
+  TextField, 
+  IconButton, 
+  Autocomplete, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TablePagination, 
+  TableRow, 
+  Dialog, 
+  DialogContent, 
+  DialogTitle, 
+  DialogActions, 
+  Paper, 
+  TableContainer} from '@mui/material';
 import CardInvestisseur from './CardInvestisseurs'
 import Stock from './Stock'
-import ClientsSearch from './components/clientSearch';
-import ClientsIcon from './icons/addClient.png'
-import family from './icons/people-roof.svg'
 import BASE_URL from './constantes';
 import axios from 'axios';
-import dayjs from 'dayjs';
 import CloseIcon from '@mui/icons-material/Close';
-import cliIcon from './icons/clients.png'
 import annulerIcon from './icons/annuler.png'
-import investmentIcon from './icons/investment.png'
 import checkIcon from './icons/check.png'
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
-import { Person } from '@mui/icons-material';
-//import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-//import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-//import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-//import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 
 function CustomTabPanel({ 
   value,
   index,
   searchTerm,
-  
   setSearchTerm,
   selectedOption,
   setSelectedOption,
   setNumber,}) {
-    // State for date picker
   const [selectedDate, setSelectedDate] = useState(null);
-  // to change collab 
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [repres, setRepres] = useState([])
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [selectedAvancement, setSelectedAvancement] = React.useState('');
+  const [selectedTri, setSelectedTri] = React.useState('');
+  const [selectedRotation, setSelectedRotation] = React.useState('');
+  const [selectedClient, setSelectedClient] = React.useState(null);
+  const [clients, setClients] = useState([]);
+  const [searchClient, setSearchClient] = useState('')
   const handleClickOpen = () => {
     setOpen(true);
     fetchUsers();
-    
   };
 
   const handleClose = () => {
@@ -80,17 +81,12 @@ function CustomTabPanel({
   };
 
   // fin 
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [tot, setTot] = useState({ typeCli: '', nbr: 0 })
   const [displayMode, setDisplayMode] = React.useState('card'); // État pour gérer le mode d'affichage
   //const [selectedOption, setSelectedOption] = React.useState('0'); // État pour gérer l'option sélectionnée (0 pour Non Enregistrés, 1 pour Enregistrés)
   //const [searchTerm,setSearchTerm]=React.useState("")
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [tot, setTot] = useState({ typeCli: '', nbr: 0 })
-
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
+  
   const fetchUsers = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/users`);
@@ -102,10 +98,12 @@ function CustomTabPanel({
   };
 
   useEffect(() => {
-
     setNumber(tot.typeCli, tot.nbr)
-
   }, [tot])
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -114,12 +112,10 @@ function CustomTabPanel({
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   
-
     // Implement your search logic here
   };
   {/*const renderSearchInputs = (
-    <div   style={{marginLeft:'20px', marginTop:'-5PX'}}> 
-      
+    <div style={{marginLeft:'20px', marginTop:'-5PX'}}> 
        <LocalizationProvider dateAdapter={AdapterDayjs} >
       <DemoContainer components={['DatePicker']}>
       <DatePicker 
@@ -127,9 +123,9 @@ function CustomTabPanel({
         value={selectedDate}
         onChange={handleDateChange}
         renderInput={(params) => <TextField {...params} sx={{ width: '300px' }} />}
-      />      </DemoContainer>
+      /> 
+      </DemoContainer>
     </LocalizationProvider>
-      
     </div>
   );*/}
 
@@ -153,16 +149,7 @@ function CustomTabPanel({
     'rotation moyenne',
     'faible rotation'
   ]
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [userAffected, setUserAffected] = useState(false)
-  const [total, setTotal] = useState(0);
-  const [selectedAvancement, setSelectedAvancement] = React.useState('');
-  const [selectedTri, setSelectedTri] = React.useState('');
-  const [selectedRotation, setSelectedRotation] = React.useState('');
-  const [selectedClient, setSelectedClient] = React.useState(null);
-  const [clients, setClients] = useState([]);
-  const [searchClient, setSearchClient] = useState('')
+ 
 
   const handleAffectCollab = (user) => {
     if (user) {
@@ -173,7 +160,6 @@ function CustomTabPanel({
       // setSelectedRepres(representant);
     }
   }
-  //const clients = clients
   const handleTriChange = (event, value) => {
     setSelectedTri(value);
   };
@@ -230,7 +216,6 @@ function CustomTabPanel({
 
 
     <TextField
-
       variant="outlined"
       placeholder="Rechercher "
       value={searchTerm}
@@ -246,18 +231,15 @@ function CustomTabPanel({
     />
 
   const renderIconAndText = () => {
- 
     let label = '';
     if (index === 0) {
       label = `Nombre de partenaires`;
     } else if (index === 1) {
       label = `Nombre d'investisseurs `;
     }
-
     if (selectedAvancement) {
       label += ` ${selectedAvancement}`;
     }
-
     return (
       null
     )
@@ -309,14 +291,14 @@ function CustomTabPanel({
       sx={{ width: "250px", marginRight: "20px" }}
     />
   ) : null;
+
+
   return (
     <div
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-     
-
     >
       {value === index && (
         <Box sx={{ p: 3 }}>
@@ -610,8 +592,11 @@ function CustomTabPanel({
           {index === 3 && selectedOption === '2' && (
             <CommandesList base={"fdm"} type={"client"} searchTerm={searchTerm} />
           )}
+           {index === 4 && selectedOption === '2' && (
+            <CommandesList base={"fdm"} type={"famille"} searchTerm={searchTerm} />
+          )}
 
-          {/*} {index === 1 && selectedOption === '1' && displayMode === 'list' && (
+          {/* {index === 1 && selectedOption === '1' && displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
               <ListInvestisseursCSPD />
             </Box>
@@ -723,7 +708,6 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
                 <FamilyRestroomIcon />
                 <span style={{ marginLeft: '1px', fontWeight: 'bold', textTransform: 'none', fontSize: '16px' }}>Famille </span>
                 <span style={{ marginLeft: '1px', fontWeight: 'bold' }}>
-
                 </span>
               </Box>
             }

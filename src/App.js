@@ -9,6 +9,12 @@ import BasicTabs from './TabsClients';
 import BASE_URL from './constantes';
 import axios from 'axios';
 import Notification from './components/notification';
+
+
+const wsInvestisseur = new WebSocket('ws://localhost:8020');
+const wsPartenaire = new WebSocket('ws://localhost:8080');
+
+
 function App() {
   useEffect(() => {
     // Function to handle notification clicks
@@ -22,9 +28,7 @@ function App() {
       }
     };
   
-    
-    const wsPartenaire = new WebSocket('ws://localhost:8080');
-  
+   
     wsPartenaire.onopen = () => {
       console.log('Connected to WebSocket server for new_partenaire');
     };
@@ -53,7 +57,6 @@ function App() {
     };
   
     
-    const wsInvestisseur = new WebSocket('ws://localhost:8020');
   
     wsInvestisseur.onopen = () => {
       console.log('Connected to WebSocket server for new_investisseur');

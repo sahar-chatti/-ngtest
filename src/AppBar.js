@@ -1,12 +1,6 @@
 import * as React from 'react';
 import { useState ,useEffect,useRef} from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import AssuredWorkloadRoundedIcon from '@mui/icons-material/AssuredWorkloadRounded';
-import RecentActorsIcon from '@mui/icons-material/RecentActors';
-import EmailIcon from '@mui/icons-material/Email';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import CallIcon from '@mui/icons-material/Call';
-import GroupsIcon from '@mui/icons-material/Groups';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
@@ -32,27 +26,14 @@ import ListStatutPart from './ListStatutPart';
 import Collapse from '@mui/material/Collapse';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import EventIcon from '@mui/icons-material/Event';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import CampaignIcon from '@mui/icons-material/Campaign';
 import MailIcon from '@mui/icons-material/Mail';
-import InboxIcon from '@mui/icons-material/Inbox';
 import email from './icons/emailicon.jpg';
 import Tooltip from '@mui/material/Tooltip';
 import ClientsIcon from './icons/profile.png';
-import planningIcon from './icons/planning.png'
-import tasksIcon from './icons/task.png'
 import administrationIcon from './icons/system-administrator.png'
 import settings from './icons/settings.png'
-import schedule from './icons/schedule.png'
-import marketing from './icons/video.png'
 import UserManagement from './UserManagement';
 import { useSelector } from 'react-redux';
-import BusinessIcon from '@mui/icons-material/Business';
 import userIcon from './icons/userIcon.png'
 import clientList from './icons/lis.png'
 import callSettings from './icons/callsetting.png'
@@ -69,12 +50,9 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import axios from 'axios';
 import BASE_URL from './constantes';
 import { Badge, Popover ,Avatar, Button} from '@mui/material';
-import CardPartenaire from './CardPartenaires';
-import CardInvestisseur from './CardInvestisseurs';
 import cmdIcon from './icons/cmd.png'
 import personIcon from './icons/per.png'
-import { BorderColor, Margin } from '@mui/icons-material';
-//import { makeStyles } from '@mui/styles';
+
 const drawerWidth = 340;
 
 const openedMixin = (theme) => ({
@@ -213,12 +191,7 @@ export default function MiniDrawer() {
 
 console.log("user",user)
 
-const handleDrawerOpen = () => {
-  setOpen(true);
-}; 
-const handleDrawerClose = () => {
-  setOpen(false);
-};
+
 
 //ouvrir les notificaion
 const handleCategoryClick = (category) => {
@@ -231,7 +204,12 @@ const handleCategoryClick = (category) => {
   }
 };
 
-
+const handleDrawerOpen = () => {
+  setOpen(true);
+}; 
+const handleDrawerClose = () => {
+  setOpen(false);
+};
 const handleTabClick = (index) => {
   setSelectedTab(index);
 };
@@ -408,7 +386,7 @@ const prevNotificationLength = useRef(0);
 
     fetchNotifications();
 
-  
+
     const intervalId = setInterval(fetchNotifications, 50000);
 
     return () => clearInterval(intervalId); 
