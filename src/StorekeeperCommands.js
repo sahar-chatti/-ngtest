@@ -219,25 +219,29 @@ const CommandesList = ({ base, type, searchTerm }) => {
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
   };
 
-  const fetchCommandes = async () => {
-    try {
-      const url = type === "partenaire" ? 
-      `${BASE_URL}/api/cmdPartenairesEncours` : type === "investisseur" ? 
+const fetchCommandes = async () => {
+  try {
+    const url = type === "partenaire" ? 
+      `${BASE_URL}/api/cmdPartenairesEncours` : 
+      type === "investisseur" ? 
       `${BASE_URL}/api/cmdInvestisseursEncours` : 
-      `${BASE_URL}/api/cmdClientsEncours/${base}`
-      const params = {
-        page: page,
-        pageSize: pageSize,
-        searchTerm: searchTerm
+      `${BASE_URL}/api/cmdClientsEncours/${base}`;
 
-      };
-      const result = await axios.get(url, { params });
-      setCommandes(result.data.commandes);
-      setTotal(result.data.total);
-    } catch (error) {
-      console.error('Error fetching commands:', error);
-    }
-  };
+    const params = {
+      page: page,
+      pageSize: pageSize,
+      searchTerm: searchTerm,
+      cc_champ_3: "traité" // Ajout du filtre pour cc_champ_3
+    };
+
+    const result = await axios.get(url, { params });
+    setCommandes(result.data.commandes);
+    setTotal(result.data.total);
+  } catch (error) {
+    console.error('Error fetching commands:', error);
+  }
+};
+
   
   const handleCardClick = async (command) => {
     setExpanded(prev => (prev === command.NUM_CDE_C ? null : command.NUM_CDE_C));
@@ -332,7 +336,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement de la communication:', error);
     } finally {
-      // Reset form fields and close dialog regardless of success or error
       setOpenDialog(false);
       setDateTime('');
       setDetailsCommunication('');
@@ -355,7 +358,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
           `${BASE_URL}/api/updateEtatCmd`,
           { reference: commandToCancel.NUM_CDE_C, etat: "Annulée", base: base }
         );
-
 
       } catch (err) {
         console.error('Erreur lors de l\'annulation de la commande:', err);
@@ -382,13 +384,10 @@ const CommandesList = ({ base, type, searchTerm }) => {
     if (!command.CC_CHAMP_3) {
       try {
         console.log("start")
-
         await axios.put(
           `${BASE_URL}/api/updateEtatCmd`,
           { reference: command.NUM_CDE_C, etat: "En cours de traitement", base: base }
         );
-
-
       } catch (error) {
         console.error('Error updating partenaire:', error);
       }
@@ -445,24 +444,15 @@ const CommandesList = ({ base, type, searchTerm }) => {
     setOpenCancelDialog(false);
     setCommandToCancel(null);
   };
-
   
   const handleOpenHistoriqueDialog = (command) => {
     setOpenedHistoryCommand(command.NUM_CDE_C);
     setHistoryDialog(true)
   };
 
-  const openDialogIfNeeded = (command) => {
-    // Fetch data without immediately opening the dialog
-    handleOpenHistoriqueDialog(command);
-  };
-  
-
   const handleClientClick = (commandId) => {
     setExpandedClient(prev => (prev === commandId ? null : commandId));
   };
-
-  
 
   const openArticleDialog = (articleId) => {
     if (articleId) {
@@ -478,19 +468,15 @@ const CommandesList = ({ base, type, searchTerm }) => {
     setArticleDialogOpened(false);
   };
 
-  {/*const handleOpenHistoriqueDialog = async (command) => {
-  try {
-    setTargetCommand(command);
-    setHistoryDialog(true); // Optionally open the dialog
-  } catch (error) {
-    console.error('Error fetching communications:', error);
-  }
-};*/}
+ 
 
   return (
 
     <Grid container spacing={2} >
-      {commandes.map((command) => {
+          {commandes
+    .filter((command) => command.CC_CHAMP_3 === "Traité") 
+    .map((command) => {
+      
         const etat = command.NUM_CDE_CL ? 'Livré' : command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
         const etatColor = etat === "Non encore traité" ? "red" : etat === "En cours de traitement" ? "orange" : etat === "Trait@" ? "green" : etat === "Annul@e" ? "purple" : "blue";
         const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;

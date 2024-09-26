@@ -31,7 +31,7 @@ const [selectedRepres,setSelectedRepres]=useState(null)
   const togglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
-  const roleOptions = ["administrateur", "collaborateur", "directeur financier administratif","commercial", "logistique", "directeur commercial administratif","directeur communication"];
+  const roleOptions = ["administrateur", "collaborateur",  "directeur commercial ","directeur communication", "magasinier"];
 
   useEffect(() => {
     fetchUsers();

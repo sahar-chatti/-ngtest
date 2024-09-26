@@ -19,7 +19,10 @@ import Button from '@mui/material/Button';
 import CardClientsPartenaires from './CardClientsPartenaires'
 import CardInvestisseursCSPD from './CardInvestisseurCSPD';
 import CardClientsCSPD from './CardClientCSPD';
+import Storekeeper from './Storekeeper';
+
 import SearchIcon from '@mui/icons-material/Search';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import { 
   TextField, 
   IconButton, 
