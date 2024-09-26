@@ -132,6 +132,7 @@ const CardContainer = ({ searchTerm, setBoite, selectedAll }) => {
       listMail += row.EMAIL + ';'
     })
     setBoite(listMail)
+    console.log('boite email1', listMail)
 
   }, [clients])
 
@@ -142,6 +143,8 @@ const CardContainer = ({ searchTerm, setBoite, selectedAll }) => {
     })
 
     setClients(newClient)
+    console.log('new client', newClient)
+    console.log('boite emails2', selectedAll)
 
   }, [selectedAll])
 
@@ -163,7 +166,10 @@ const CardContainer = ({ searchTerm, setBoite, selectedAll }) => {
       let FinalList = []
       console.log("listClient")
       clientsList.map((row, i) => {
-        FinalList.push({ ...row, selectedCli: false, EMAIL: i == 0 ? 'dev1cspd@gmail.com' : i == 1 ? 'dev1cspd@gmail.com' : 'sahar.chatti@isimg.tn' })
+        FinalList.push({
+           ...row, 
+           selectedCli: false,
+            EMAIL: i == 0 ? 'dev1cspd@gmail.com' : i == 1 ? 'dev1cspd@gmail.com' : 'sahar.chatti@isimg.tn' })
 
       })
       console.log("listclient", FinalList)
@@ -203,7 +209,9 @@ const CardContainer = ({ searchTerm, setBoite, selectedAll }) => {
     <div style={{ overflowY: 'auto', maxHeight: 'auto' }}>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
         {clients.map((client, i) => (
-          <CustomCard key={client.ID_CLIENT} client={client} user={user} setSelectedCli={(setSelectedCli) => {
+          <CustomCard key={client.ID_CLIENT}
+           client={client} user={user}
+            setSelectedCli={(setSelectedCli) => {
             let clientsList = [...clients]
             clientsList[i].selectedCli = setSelectedCli
             setClients(clientsList);

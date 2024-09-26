@@ -82,22 +82,6 @@ function CustomTabPanel({
 
   const handleDialogOpen = () => setDialogOpen(true);
 
-  const handleDialogClose = () => setDialogOpen(false);
-
-  const handleSearchClientChange = (event) => {
-    setSearchClient(event.target.value);
-    setPage(0);
-  };
-
-  const handleSelectClient = (client) => {
-    setSelectedClient(client.CODE_CLIENT);
-  };
-  const handleConfirmSelection = () => {
-    if (selectedClient) {
-
-      setDialogOpen(false);
-    }
-  };
 
   const handleChangePage = (event, newPage) => setPage(newPage);
 
@@ -232,10 +216,12 @@ function CustomTabPanel({
                 name="row-radio-buttons-group"
                 value={selectedValue}
                 onChange={handleOptionChange}
+                defaultValue="Enregistrés"
+
               >
                 {(index === 0 || index === 1) && (
                   <>
-                    <FormControlLabel value="option1" control={<Radio />} label="Enregistrés" />
+                    <FormControlLabel value="1" control={<Radio />} label="Enregistrés" />
                   </>
                 )}
                 {(index === 2 || index === 3) && (
@@ -335,11 +321,11 @@ function CustomTabPanel({
           )}
 
           {index === 2 && selectedOption === '1' && displayMode === 'card' && (
-            <CardClientsCSPD selectedClientType={"clientsCspd"} displayMode={displayMode} searchTerm={searchTerm} />
+            <CardClientsCSPD  selectedAll={allSelected} selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode} searchTerm={searchTerm} setBoite={(setBoite) => setBoiteMail(setBoite)}  />
           )}
           
           {index === 3 && selectedOption === '1' && displayMode === 'card' && (
-            <CardClientsCSPD selectedClientType={"clientsFdm"} searchTerm={searchTerm} displayMode={displayMode} />
+            <CardClientsCSPD  selectedAll={allSelected} selectedClientType={"clientsFdm"}  setOpen={handleClickOpen}  searchTerm={searchTerm} displayMode={displayMode} setBoite={(setBoite) => setBoiteMail(setBoite)}  />
           )}
 
         </Box>
@@ -355,7 +341,6 @@ CustomTabPanel.propTypes = {
 };
 
 export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, setSelectedOption, value, setValue, }) {
-  //const [value, setValue] = React.useState(0);
 
   const handleChange = (newValue) => {
     console.log("value", newValue)
@@ -370,7 +355,6 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
           <Tab label="Investisseurs" />
           <Tab label="Clients Cspd" />
           <Tab label="Clients Fdm" />
-          <Tab label="Famille" />
         </Tabs>
       </Box>
 
