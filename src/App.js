@@ -55,9 +55,7 @@ function App() {
     wsPartenaire.onclose = () => {
       console.log('Disconnected from WebSocket server for new_partenaire');
     };
-  
-    
-  
+
     wsInvestisseur.onopen = () => {
       console.log('Connected to WebSocket server for new_investisseur');
     };

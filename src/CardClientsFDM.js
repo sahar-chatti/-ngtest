@@ -19,6 +19,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import BASE_URL from './constantes';
+
 const CustomCardWrapper = styled(Card)(({ theme }) => ({
   width: 'calc(25% - 16px)', // 25% width to fit 4 cards per row
   margin: theme.spacing(1),
@@ -40,15 +41,15 @@ const CustomCardContent = styled(CardContent)({
 const CustomCardActions = styled(CardActions)({
   display: 'flex',
   justifyContent: 'space-between',
-  padding: '8px 16px', // Add padding to evenly distribute buttons inside the card
+  padding: '8px 16px', 
 });
 
 const CustomButton = styled(Button)({
-  fontSize: '0.6rem', // Adjust button font size as needed
-  minWidth: 'auto', // Allow button width to adjust to content
+  fontSize: '0.6rem',
+  minWidth: 'auto', 
   display: 'flex',
   alignItems: 'center',
-  padding: '2px', // Reduce padding to make buttons smaller
+  padding: '2px', 
 });
 
 function CustomCard({ client }) {
@@ -65,11 +66,7 @@ function CustomCard({ client }) {
   };
 
   const handleSaveCommunication = () => {
-    // Ici, vous pouvez gérer l'enregistrement des détails de la communication
-    // par exemple, envoyer au serveur, mettre à jour l'état, etc.
     console.log('Enregistrer la communication:', { dateTime, details });
-
-    // Fermer le dialogue
     setOpen(false);
   };
 

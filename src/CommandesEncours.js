@@ -36,7 +36,6 @@ import { styled } from '@mui/material/styles';
 import { useSelector } from 'react-redux';
 import BASE_URL from './constantes';
 import dateIcon from './icons/NAISS.png';
-import addressIcon from './icons/address.png';
 import midbattery from './icons/batterie orangé.png';
 import blockedIcon from './icons/blockedCli.png';
 import cardIcon from './icons/credit-card.png';
@@ -93,7 +92,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const [expandedClient, setExpandedClient] = useState(null);
   const [isArticleDialogOpened, setArticleDialogOpened] = React.useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const [clients, setClients] = useState(null);
   const [partner, setPartner] = useState([]);
   const [error, setError] = useState(null);
   const [clientsData, setClientsData] = useState([]);
@@ -104,26 +102,24 @@ const CommandesList = ({ base, type, searchTerm }) => {
   
 
   useEffect(() => {
-    // Fetch clients only if commandes is not empty
+    
     if (commandes.length > 0) {
-        const command = commandes[0]; // Get the first command
-        const clientId = command.CLIENT_CDE; // Extract clientId from command
+        const command = commandes[0];
+        const clientId = command.CLIENT_CDE; 
 
         const fetchClients = async () => {
             try {
-                // Call the API with the required parameters
+       
                 const { clients, total, error: apiError } = await fetchClientsPartenaires(page, clientId, pageSize, searchTerm,clientId);
                 console.log("Fetched Clients Data:", clients);
 
-                // Handle API errors
                 if (apiError) {
                     throw new Error(apiError);
                 }
 
-                // Set the clients data
                 setClientsData(clients);
             } catch (err) {
-                setError(err.message); // Set error state
+                setError(err.message);
             }
         };
         console.log("Fetching clients with params:", {
@@ -132,10 +128,9 @@ const CommandesList = ({ base, type, searchTerm }) => {
           pageSize,
           searchTerm
       });
-        fetchClients(); // Call the fetch function
+        fetchClients();
     }
-}, [commandes, page, pageSize, searchTerm]); // Run effect whenever these dependencies change
-
+}, [commandes, page, pageSize, searchTerm]);
  
   useEffect(() => {
     fetchClientsPartenaires();
@@ -176,6 +171,27 @@ const CommandesList = ({ base, type, searchTerm }) => {
   }, [commandes]);
 
   
+  useEffect(() => {
+    Promise.all(commandes.map(async (command) => {
+      return await axios.get(
+        `${BASE_URL}/api/clientsPartenaires`, {
+        params: {
+          id: command.ADR_C_C_1
+        }
+      }
+      );
+    })).then((partnersResult) => {
+      setPartner(
+        partnersResult.reduce((result, partner) => {
+          if (partner.data.length) {
+            result[partner.data[0].ADR_C_C_1] = partner.data;
+          }
+          return result;
+         
+        }, {}));
+    })
+    console.log('helll',partner.data)
+  }, [commandes]);
 
   const GlowingBox = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -259,12 +275,10 @@ const CommandesList = ({ base, type, searchTerm }) => {
 
   useEffect(() => {
    
-  
     const fetchCommunications = async () => {
       try {
         const result = await axios.get(`${BASE_URL}/api/communicationsCmd`);
         console.log("com",result.data)
-        //setCommunications(result.data);
       } catch (error) {
         console.error('Error fetching communications:', error);
       }
@@ -283,21 +297,17 @@ const CommandesList = ({ base, type, searchTerm }) => {
     fetchCommunications();
   }, [page, pageSize, searchTerm]);
   const handleSaveCommunication = async () => {
-    // Clear previous errors
     setErrorLivraison('');
     resetForm();
-
-    // Check if a date has been selected
+ 
     if (!dateLivraisonPrevue) {
       console.log("Erreur : dateLivraisonPrevue est vide");
       setErrorLivraison('Veuillez sélectionner une date de livraison.');
-      return; // Prevent further execution if validation fails
+      return; 
     }
 
     try {
-      // Check if commandTocom is not an empty string and has necessary properties
       if (commandTocom && commandTocom.NUM_CDE_C) {
-        // Make the POST request to save or update communication details_CDE_C) {
         const response = await axios.post(`${BASE_URL}/api/UpdateOrCreateComCmd`, {
           ref_commande: commandTocom.NUM_CDE_C,
           commercial: user.LOGIN,
@@ -317,8 +327,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
           base: base,
           dateLivraisonPrevue,
         });
-
-        // Check if the response contains the expected message
         if (response.data && response.data.message) {
           console.log('Communication enregistrée avec succès:', response.data.message);
           setOpenCommSuccess(true);
@@ -332,7 +340,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement de la communication:', error);
     } finally {
-      // Reset form fields and close dialog regardless of success or error
       setOpenDialog(false);
       setDateTime('');
       setDetailsCommunication('');
@@ -388,7 +395,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
           { reference: command.NUM_CDE_C, etat: "En cours de traitement", base: base }
         );
 
-
       } catch (error) {
         console.error('Error updating partenaire:', error);
       }
@@ -400,7 +406,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
 
     try {
       console.log("client", command.CODE_CLIENT)
-
       const result = await axios.get(`${BASE_URL}/api/tarifsClient`, {
         params: {
           code: command.CODE_CLIENT
@@ -446,30 +451,21 @@ const CommandesList = ({ base, type, searchTerm }) => {
     setCommandToCancel(null);
   };
 
-  
   const handleOpenHistoriqueDialog = (command) => {
     setOpenedHistoryCommand(command.NUM_CDE_C);
     setHistoryDialog(true)
   };
 
-  const openDialogIfNeeded = (command) => {
-    // Fetch data without immediately opening the dialog
-    handleOpenHistoriqueDialog(command);
-  };
-  
-
   const handleClientClick = (commandId) => {
     setExpandedClient(prev => (prev === commandId ? null : commandId));
   };
-
-  
 
   const openArticleDialog = (articleId) => {
     if (articleId) {
       getArticleById(articleId, 'cspd').then((article) => {
         setSelectedArticle(article);
         setArticleDialogOpened(true);
-      }); // Use CODE_ARTICLE from the article parameter
+      });
     } else {
       console.error("Mismatch between CCL_ARTICLE and CODE_ARTICLE, or article is undefined");
     }
@@ -477,15 +473,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const handleCloseArticleDialog = () => {
     setArticleDialogOpened(false);
   };
-
-  {/*const handleOpenHistoriqueDialog = async (command) => {
-  try {
-    setTargetCommand(command);
-    setHistoryDialog(true); // Optionally open the dialog
-  } catch (error) {
-    console.error('Error fetching communications:', error);
-  }
-};*/}
 
   return (
 
@@ -583,7 +570,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                   </Box>
                 )}
                
-          
+            {/**/ }   
     
                     <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                         <img src={priceIcon} alt="price icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />

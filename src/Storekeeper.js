@@ -93,6 +93,7 @@ function CustomTabPanel({
     />
   ) : null;
 
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -115,9 +116,7 @@ function CustomTabPanel({
         <Box sx={{ p: 3 }}>
 
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: "flex-end" }}>
-             
               {renderSelectClImage}
               {renderSearchInput}
             </Box>
@@ -126,8 +125,7 @@ function CustomTabPanel({
           {index === 0 && selectedOption === '0' && displayMode === 'card' && (
             <div></div>
           )}
-          
-    
+
           {index === 0 &&  displayMode === 'card' && (
             <StorekeeperCommands  selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode} searchTerm={searchTerm}   />
           )}
@@ -145,7 +143,6 @@ CustomTabPanel.propTypes = {
 };
 
 export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, setSelectedOption, value, setValue, }) {
-
   const handleChange = (newValue) => {
     console.log("value", newValue)
     setValue(newValue)
@@ -156,13 +153,9 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={(e, newValue) => handleChange(newValue)} aria-label="basic tabs example">
           <Tab label="Clients Cspd" {...a11yProps(0)} />
-    
         </Tabs>
       </Box>
-
       <CustomTabPanel value={value} index={0} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
-      
-
     </Box>
   );
 }
