@@ -18,6 +18,7 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
 import axios from 'axios';
 import CallIcon from '@mui/icons-material/Call';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -95,46 +96,52 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const [partner, setPartner] = useState([]);
   const [error, setError] = useState(null);
   const [clientsData, setClientsData] = useState([]);
- const client = clientsData[0]; 
+  const [selectedCommands, setSelectedCommands] = useState([]); // To store selected command IDs
+  const [assignedList, setAssignedList] = useState(""); // To store concatenated command IDs
+  const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+  const client = clientsData[0];
+  const [users, setUsers] = useState([]);
+  const [idAssigner, setIdAssigner] = useState('');
+  const [idCommand, setIdCommand] = useState('');
+  const [idCollaborator, setIdCollaborator] = useState('');
 
+  const collabs = [1, 2];
   const handleChangePage = (event, newPage) => setPage(newPage);
- 
-  
 
   useEffect(() => {
-    
+
     if (commandes.length > 0) {
-        const command = commandes[0];
-        const clientId = command.CLIENT_CDE; 
+      const command = commandes[0];
+      const clientId = command.CLIENT_CDE;
 
-        const fetchClients = async () => {
-            try {
-       
-                const { clients, total, error: apiError } = await fetchClientsPartenaires(page, clientId, pageSize, searchTerm,clientId);
-                console.log("Fetched Clients Data:", clients);
+      const fetchClients = async () => {
+        try {
 
-                if (apiError) {
-                    throw new Error(apiError);
-                }
+          const { clients, total, error: apiError } = await fetchClientsPartenaires(page, clientId, pageSize, searchTerm, clientId);
+          console.log("Fetched Clients Data:", clients);
 
-                setClientsData(clients);
-            } catch (err) {
-                setError(err.message);
-            }
-        };
-        console.log("Fetching clients with params:", {
-          page,
-          clientId,
-          pageSize,
-          searchTerm
+          if (apiError) {
+            throw new Error(apiError);
+          }
+
+          setClientsData(clients);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+      console.log("Fetching clients with params:", {
+        page,
+        clientId,
+        pageSize,
+        searchTerm
       });
-        fetchClients();
+      fetchClients();
     }
-}, [commandes, page, pageSize, searchTerm]);
- 
+  }, [commandes, page, pageSize, searchTerm]);
+
   useEffect(() => {
     fetchClientsPartenaires();
-}, [page, pageSize, searchTerm]); 
+  }, [page, pageSize, searchTerm]);
   const resetForm = () => {
     setDateTime('');
     setDetailsCommunication('');
@@ -148,7 +155,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
     setNumCheque('');
     setModePaiement('');
     setDateLivraisonPrevue('');
-  }    
+  }
 
   useEffect(() => {
     Promise.all(commandes.map(async (command) => {
@@ -170,7 +177,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
     })
   }, [commandes]);
 
-  
+
   useEffect(() => {
     Promise.all(commandes.map(async (command) => {
       return await axios.get(
@@ -187,10 +194,10 @@ const CommandesList = ({ base, type, searchTerm }) => {
             result[partner.data[0].ADR_C_C_1] = partner.data;
           }
           return result;
-         
+
         }, {}));
     })
-    console.log('helll',partner.data)
+    console.log('helll', partner.data)
   }, [commandes]);
 
   const GlowingBox = styled('div')(({ theme }) => ({
@@ -232,29 +239,48 @@ const CommandesList = ({ base, type, searchTerm }) => {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
+
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
   };
 
   const fetchCommandes = async () => {
     try {
-      const url = type === "partenaire" ? 
-      `${BASE_URL}/api/cmdPartenairesEncours` : type === "investisseur" ? 
-      `${BASE_URL}/api/cmdInvestisseursEncours` : 
-      `${BASE_URL}/api/cmdClientsEncours/${base}`
+      const url = type === "partenaire" ?
+        `${BASE_URL}/api/cmdPartenairesEncours` : type === "investisseur" ?
+          `${BASE_URL}/api/cmdInvestisseursEncours` :
+          `${BASE_URL}/api/cmdClientsEncours/${base}`
       const params = {
         page: page,
         pageSize: pageSize,
         searchTerm: searchTerm
 
       };
+      //ajouter le checkbox
       const result = await axios.get(url, { params });
+      let commandsList = [...result.data.commandes]
+      let finalCommandList = []
+      console.log('listcom')
+      commandsList.map((row, i) => {
+        finalCommandList.push({
+          ...row,
+          assignedCommand: false,
+        })
+        console.log("listcomm", finalCommandList)
+
+      })
       setCommandes(result.data.commandes);
       setTotal(result.data.total);
     } catch (error) {
       console.error('Error fetching commands:', error);
     }
   };
-  
+
+  useEffect(() => {
+    const list = selectedCommands.join(';');
+    setAssignedList(list);
+    console.log('assignedcommands', list);
+  }, [selectedCommands]);
+
   const handleCardClick = async (command) => {
     setExpanded(prev => (prev === command.NUM_CDE_C ? null : command.NUM_CDE_C));
     console.log("commandId", command.NUM_CDE_C);
@@ -273,12 +299,26 @@ const CommandesList = ({ base, type, searchTerm }) => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/users`);
+      setUsers(response.data);
+      console.log('users from API test:', response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   useEffect(() => {
-   
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+
     const fetchCommunications = async () => {
       try {
         const result = await axios.get(`${BASE_URL}/api/communicationsCmd`);
-        console.log("com",result.data)
+        console.log("com", result.data)
       } catch (error) {
         console.error('Error fetching communications:', error);
       }
@@ -296,14 +336,16 @@ const CommandesList = ({ base, type, searchTerm }) => {
     fetchCommandes();
     fetchCommunications();
   }, [page, pageSize, searchTerm]);
+
+
   const handleSaveCommunication = async () => {
     setErrorLivraison('');
     resetForm();
- 
+
     if (!dateLivraisonPrevue) {
       console.log("Erreur : dateLivraisonPrevue est vide");
       setErrorLivraison('Veuillez sélectionner une date de livraison.');
-      return; 
+      return;
     }
 
     try {
@@ -355,6 +397,24 @@ const CommandesList = ({ base, type, searchTerm }) => {
     }
   };
 
+  const submitAssignement = async (e) => {
+    e.preventDefault();
+    const data = {
+      assigner: idAssigner, 
+      command: idCommand,
+      collaborator: idCollaborator,
+    };
+
+    try {
+      const response = await axios.post('/api/AssignCommand', data);
+      console.log(response.data.message); // or update state to show success message
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+
   const handleConfirmCancel = async () => {
     if (commandToCancel) {
       try {
@@ -400,8 +460,8 @@ const CommandesList = ({ base, type, searchTerm }) => {
       }
     }
   };
-  
-  
+
+
   const handleTarifDialogOpen = async (command) => {
 
     try {
@@ -474,9 +534,15 @@ const CommandesList = ({ base, type, searchTerm }) => {
     setArticleDialogOpened(false);
   };
 
+  const handleOpenassign = () => {
+    setOpenDialog(true);
+  };
+  const [responseMessage, setResponseMessage] = useState('');
+
   return (
 
     <Grid container spacing={2} >
+
       {commandes.map((command) => {
         const etat = command.NUM_CDE_CL ? 'Livré' : command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
         const etatColor = etat === "Non encore traité" ? "red" : etat === "En cours de traitement" ? "orange" : etat === "Trait@" ? "green" : etat === "Annul@e" ? "purple" : "blue";
@@ -501,6 +567,24 @@ const CommandesList = ({ base, type, searchTerm }) => {
             >
               <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? '400px' : '420px', marginBottom: "20px" }}>
                 <GlowingBox style={{ backgroundColor: etatColor, borderRadius: '10px' }}>
+
+                  {etat !== 'Traité' && etat !== 'Annulée' && (
+                    <FormControlLabel control={<Checkbox
+                      style={{ color: 'white' }}
+                      {...label}
+                      checked={selectedCommands.includes(command.NUM_CDE_C)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCommands((prev) => [...prev, command.NUM_CDE_C]);
+                        } else {
+                          setSelectedCommands((prev) =>
+                            prev.filter((id) => id !== command.NUM_CDE_C)
+                          );
+                        }
+                      }}
+                    />} />
+                  )}
+
                   <Typography
                     variant="h6"
                     component="div"
@@ -510,13 +594,13 @@ const CommandesList = ({ base, type, searchTerm }) => {
                       fontWeight: 'bold',
                       textAlign: 'center',
                       fontSize: '1.1rem',
-
                     }}
-                  > {etat}</Typography>
+                  >
+                    {etat}
+                  </Typography>
                 </GlowingBox>
-              
-           
-                
+
+
                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
 
                   <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
@@ -569,20 +653,20 @@ const CommandesList = ({ base, type, searchTerm }) => {
 
                   </Box>
                 )}
-               
-            {/**/ }   
-    
-                    <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                        <img src={priceIcon} alt="price icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                        Total: {command.CC_TOTAL} TND
-                    </Typography>
-                    <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                        <img src={matricule} alt="matricule icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                        Matricule: {command.ADR_C_C_3}
-                    </Typography>
-               
-            
- 
+
+                {/**/}
+
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                  <img src={priceIcon} alt="price icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+                  Total: {command.CC_TOTAL} TND
+                </Typography>
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                  <img src={matricule} alt="matricule icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+                  Matricule: {command.ADR_C_C_3}
+                </Typography>
+
+
+
                 <Typography
                   style={{
                     display: "flex",
@@ -651,7 +735,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                               <Button onClick={() => openArticleDialog(cardItem?.CCL_ARTICLE)}>{cardItem.CCL_ARTICLE}</Button>
                             </TableCell>
 
-                            <TableCell>{cardItem.CCL_DES_ART}</TableCell>          
+                            <TableCell>{cardItem.CCL_DES_ART}</TableCell>
                             <TableCell>{cardItem.CCL_PXU_TTC}</TableCell>
                             <TableCell>{cardItem.CCL_QTE_C}</TableCell>
                             <TableCell>{cardItem.CCL_MONTANT_TTC}</TableCell>
@@ -1134,56 +1218,56 @@ const CommandesList = ({ base, type, searchTerm }) => {
               <Typography>Chargement des données...</Typography>
             ) : selectedArticle ? (
               <div>
-                       {selectedArticle.CODE_ARTICLE&& (
-                        <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Code Article :</span> {selectedArticle.CODE_ARTICLE}
-</Typography>
-)}
- {selectedArticle.INTIT_ARTICLE&& (
-                          <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Description :</span> {selectedArticle.INTIT_ARTICLE}
-  </Typography>
-)}
-{selectedArticle.ART_GR3_DESC&& (
-                          <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Vitesse:</span>  {selectedArticle.ART_GR3_DESC}
-  </Typography>
-)}
-{selectedArticle.ART_GR2_DESC&& (
-                        <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Charge :</span>  {selectedArticle.ART_GR2_DESC}
-  </Typography>
-)}
-{selectedArticle.INTIT_ART_3 && (
-                        <Typography style={{ color: 'black', fontWeight: 'bold' , color:'red',marginBottom:'0.5em'}}>
-    {selectedArticle.INTIT_ART_3}
-  </Typography>
-)}
-{selectedArticle.INTIT_ART_2 && (
-                          <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2'}}>NB :</span>  {selectedArticle.INTIT_ART_2}
-  </Typography>
-)}
- <RenderStockGros article={selectedArticle} />  
+                {selectedArticle.CODE_ARTICLE && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Code Article :</span> {selectedArticle.CODE_ARTICLE}
+                  </Typography>
+                )}
+                {selectedArticle.INTIT_ARTICLE && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Description :</span> {selectedArticle.INTIT_ARTICLE}
+                  </Typography>
+                )}
+                {selectedArticle.ART_GR3_DESC && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Vitesse:</span>  {selectedArticle.ART_GR3_DESC}
+                  </Typography>
+                )}
+                {selectedArticle.ART_GR2_DESC && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Charge :</span>  {selectedArticle.ART_GR2_DESC}
+                  </Typography>
+                )}
+                {selectedArticle.INTIT_ART_3 && (
+                  <Typography style={{ color: 'black', fontWeight: 'bold', color: 'red', marginBottom: '0.5em' }}>
+                    {selectedArticle.INTIT_ART_3}
+                  </Typography>
+                )}
+                {selectedArticle.INTIT_ART_2 && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2' }}>NB :</span>  {selectedArticle.INTIT_ART_2}
+                  </Typography>
+                )}
+                <RenderStockGros article={selectedArticle} />
 
- {selectedArticle.file && (
-            <Box
-              component="img"
-              alt={selectedArticle.INTIT_ARTICLE}
-              src={`https://api.click.com.tn/imgmobile/${selectedArticle.file}`}
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                borderRadius: '8px',
-                marginTop: '16px',
-              }}
-            />
-          )}  </div>
+                {selectedArticle.file && (
+                  <Box
+                    component="img"
+                    alt={selectedArticle.INTIT_ARTICLE}
+                    src={`https://api.click.com.tn/imgmobile/${selectedArticle.file}`}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      marginTop: '16px',
+                    }}
+                  />
+                )}  </div>
             ) : (
               <Typography>Aucune donnée disponible pour cet article.</Typography>
             )}
-                  
+
 
           </DialogContentText>
         </DialogContent>

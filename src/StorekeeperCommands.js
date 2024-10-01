@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import RenderStockGros from './renderStock';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import {
   Box,
   Button,
@@ -45,12 +48,15 @@ import matricule from './icons/id-card.png';
 import emptybattery from './icons/low-battery.png';
 import priceIcon from './icons/money.png';
 import personIcon from './icons/person.png';
-import call from './icons/telephone_724664.png';
 import userIcon from './icons/user.png';
 import { getArticleById } from "./Api";
+import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
 import { fetchClientsPartenaires } from "./Api";
 import { FormControlLabel, Radio } from '@mui/material';
 import RadioGroup from '@mui/material/RadioGroup';
+import LocalMallIcon from '@mui/icons-material/LocalMall';
+import PersonIcon from '@mui/icons-material/Person';
+import PaidIcon from '@mui/icons-material/Paid';
 
 
 const CommandesList = ({ base, type, searchTerm }) => {
@@ -98,7 +104,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const [error, setError] = useState(null);
   const [clientsData, setClientsData] = useState([]);
  const client = clientsData[0]; 
-
   const handleChangePage = (event, newPage) => setPage(newPage);
  
   
@@ -492,14 +497,14 @@ const fetchCommandes = async () => {
             xl={getGridSizes(command).xl}
             key={command.NUM_CDE_C}
           >
-            <Card style={{ backgroundColor: 'white', borderRadius: '10px', border: 'transparent', height: '100%' }}
+            <Card style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent' }}
               sx={{
                 height: !isClientDetailsVisible ? '100%' : '650px',
                 transition: 'height 0.3s ease-in-out'
               }}
             >
-              <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? '400px' : '420px', marginBottom: "20px" }}>
-                <GlowingBox style={{ backgroundColor: etatColor, borderRadius: '10px' }}>
+              <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? '400px' : '350px', marginBottom: "20px" }}>
+                <GlowingBox style={{ backgroundColor: "#7695FF", borderRadius: '10px' }}>
                   <Typography
                     variant="h6"
                     component="div"
@@ -518,65 +523,24 @@ const fetchCommandes = async () => {
                 
                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
 
-                  <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Commande: {command.NUM_CDE_C}</Typography>
-
-
-                {type === "partenaire" && (
-                  <>
-
-                  </>
-                )}
-
+                <LocalMallIcon style={{marginRight:'0.3em'}}/>  Commande: {command.NUM_CDE_C}</Typography>
+                
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                  <img src={dateIcon} alt="date icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Date: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6}
+                <CalendarMonthIcon style={{marginRight:'0.3em'}}/> Date: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6}
                 </Typography>
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
-                  <img src={command.BLOQUER_CLIENT === 1 ? blockedIcon : personIcon} alt="status icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "#545454", fontWeight: "bold" }} >
+                <PersonIcon style={{marginRight:'0.3em'}}/>     
+                 <span style={{  color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }}>Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}</span>       
                 </Typography>
-                {isClientDetailsVisible && (
-                  <Box
-                    sx={{
-                      padding: '16px',
-                      borderTop: '1px solid #ccc',
-                      marginTop: '10px',
-                      backgroundColor: '#f9f9f9',
-                      marginBottom: "10px"
-                    }}
-                    onClick={() => handleClientClick(command.NUM_CDE_C)}
-                  >
-                    <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                      <strong>Mode de règlement:</strong> {command.LIBEL_REGL_C}
-                    </Typography>
-                    <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                      <strong>{command.CL_CHAMP_11}</strong>
-                    </Typography>
-                    <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                      <strong>Échéance:</strong> {command.ECHEANCE_REG_C}
-                    </Typography>
-                    <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                      <strong>Encours client:</strong> {/*command.ENCOURSREG*/}{Number(command.ENCOURSREG) + Number(command.SOLDE_CLIENT) + Number(command.BLNONFACT)}
-                    </Typography>
-                    <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                      <strong>Encours autorisé:</strong> {command.ENCOURS_MAX_C}
-                    </Typography>
-                    <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                      <strong>Encours supp:</strong> {command.ENCOURS_SUPP}
-                    </Typography>
-
-                  </Box>
-                )}
                
-          
-    
+               
+
                     <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                        <img src={priceIcon} alt="price icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                        Total: {command.CC_TOTAL} TND
+                    <PaidIcon style={{marginRight:'0.3em'}}/>     
+                    Total: {command.CC_TOTAL} TND
                     </Typography>
                     <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                        <img src={matricule} alt="matricule icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+                    <BrandingWatermarkIcon style={{marginRight:'0.3em'}}/>     
                         Matricule: {command.ADR_C_C_3}
                     </Typography>
                
@@ -593,15 +557,13 @@ const fetchCommandes = async () => {
                     fontSize: '16px',
                     cursor: 'pointer'
                   }}>
-                  <img
-                    src={call}
-                    alt="person icon"
-                    style={{ marginRight: 8, width: "25px", height: "25px" }}
-                  />    Numéro: <Button onClick={() => makeCall(command.TEL_CLIENT_F)} >
+                                     <CallIcon style={{marginRight:'0.3em'}}/>     
+                                     Numéro: <Button onClick={() => makeCall(command.TEL_CLIENT_F)} >
                     {command.TEL_CLIENT_F} </Button>
                 </Typography>
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={userIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={personIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />Date livraison prévue :  {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
+                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                <LocalShippingIcon style={{marginRight:'0.3em'}}/>     
+                Date livraison prévue :  {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
                   <span style={{ color: 'red' }}>
                     {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE}
                   </span>
@@ -609,6 +571,9 @@ const fetchCommandes = async () => {
                   ' '
                 )}</Typography>
 
+<Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+<SupportAgentIcon style={{marginRight:'0.3em'}}/>     
+Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
 
                 <IconButton
                   onClick={() => handleCardClick(command)}

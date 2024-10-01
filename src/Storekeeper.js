@@ -2,9 +2,9 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import BASE_URL from './constantes';
 import axios from 'axios';
+import SupliersCommands  from './SupliersCommands';
 import StorekeeperCommands from './StorekeeperCommands';
 import PropTypes from 'prop-types';
-import cliIcon from './icons/clients.png'
 import SearchIcon from '@mui/icons-material/Search';
 import {
   TextField,
@@ -26,11 +26,9 @@ function CustomTabPanel({
    }) {
   const [displayMode, setDisplayMode] = useState('card');
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [tot, setTot] = useState(0)
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
-  const [selectedAvancement, setSelectedAvancement] = useState('');
   const [selectedClient, setSelectedClient] = useState(null);
   const [clients, setClients] = useState([]);
   const [searchClient, setSearchClient] = useState('')
@@ -125,11 +123,16 @@ function CustomTabPanel({
           {index === 0 && selectedOption === '0' && displayMode === 'card' && (
             <div></div>
           )}
+          {index === 1 && selectedOption === '0' && displayMode === 'card' && (
+            <div></div>
+          )}
 
           {index === 0 &&  displayMode === 'card' && (
             <StorekeeperCommands  selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode} searchTerm={searchTerm}   />
           )}
-          
+          {index === 1 &&  displayMode === 'card' && (
+            <SupliersCommands selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode} searchTerm={searchTerm}   />
+          )}
         </Box>
       )}
     </div>
@@ -153,9 +156,13 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={(e, newValue) => handleChange(newValue)} aria-label="basic tabs example">
           <Tab label="Clients Cspd" {...a11yProps(0)} />
+          <Tab label="Fournisseur" {...a11yProps(0)} />
+
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+      <CustomTabPanel value={value} index={1} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+
     </Box>
   );
 }

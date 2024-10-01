@@ -373,6 +373,7 @@ if(type==='partenaire' ){
       console.log("code client",codeCli)
 fetchTarifs()
     },[codeCli])
+    
     const fetchArticles = async () => {
       const URL = `${BASE_URL}/api/articles`;
       setLoading(true);
