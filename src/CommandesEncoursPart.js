@@ -663,11 +663,11 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                 </Typography>
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                   <img src={matricule} alt="matricule icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Matricule: {command.ADR_C_C_3}
+                  Adresse: {command.ADR_C_C_3}
                 </Typography>
 
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                Adresses Client: {command.ADR_C_C_2}</Typography>
+                Bénéficiaire: {command.ADR_C_C_2}</Typography>
 
 
                 <Typography

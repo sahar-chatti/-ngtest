@@ -590,7 +590,7 @@ export default function MiniDrawer() {
                   <ListItem disablePadding>
                     <ListItemButton onClick={() => handleCategoryClick('Magasin')}>
                       <ListItemIcon>
-                      <InventoryIcon/>
+                      <StorefrontIcon/>
                       </ListItemIcon>
                       <ListItemText primary="Magasin" />
                       {openCategory == 'Magasin'}
@@ -669,7 +669,7 @@ export default function MiniDrawer() {
                 <Tooltip title="Magasin" placement="right">
                   <ListItem disablePadding>
                     <ListItemButton onClick={() => handleCategoryClick('Magasin')}>
-                      <InventoryIcon />
+                      <StorefrontIcon />
                       <ListItemIcon>
                       </ListItemIcon>
                       <ListItemText primary="Magasin" />
@@ -748,7 +748,7 @@ export default function MiniDrawer() {
               <Tooltip title="Magasin" placement="right">
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleCategoryClick('Magasin')}>
-                    <InventoryIcon style={{color:'#4379F2'}}/>
+                    <StorefrontIcon style={{color:'#4379F2'}}/>
                     <ListItemIcon>
                     </ListItemIcon>
                     <ListItemText primary="Magasin" />
@@ -901,7 +901,7 @@ export default function MiniDrawer() {
               <Tooltip title="Magasin" placement="right">
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleCategoryClick('Magasin')}>
-                    <InventoryIcon />
+                    <StorefrontIcon/>
                     <ListItemIcon>
                     </ListItemIcon>
                     <ListItemText primary="Magasin" />

@@ -15,6 +15,9 @@ import CardFamille from './cardFamille';
 import AssuredWorkloadRoundedIcon from '@mui/icons-material/AssuredWorkloadRounded';
 import CardFamilleCSPD from './cardFamilledamakCSPD'
 import CommandesList from './CommandesEncours';
+import CommandesListFDM from './CommandesEncoursFDM';
+import CommandesListPart from './CommandesEncoursPart';
+
 import Button from '@mui/material/Button';
 import CardClientsPartenaires from './CardClientsPartenaires'
 import CardInvestisseursCSPD from './CardInvestisseurCSPD';
@@ -291,16 +294,6 @@ function CustomTabPanel({
                 )}
               </RadioGroup>
 
-
-                     <TextField
-                        style={{ marginTop: '5px', width: '300px' }}
-                        placeholder=""
-                        size="small"
-                        variant="outlined"
-                        value={assignedList}
-                        onChange={(e) => setAssignedList(e.target.value)}
-                      />
-
               <RadioGroup
                 row
                 aria-labelledby="demo-row-radio-buttons-group-label"
@@ -528,7 +521,7 @@ function CustomTabPanel({
           )}
 
           {index === 0 && selectedOption === '2' && (
-            <CommandesList base={"fdm"} type={"partenaire"} searchTerm={searchTerm} setAssigned={ setAssignedList} />
+            <CommandesListPart base={"fdm"} type={"partenaire"} searchTerm={searchTerm} setAssigned={ setAssignedList} />
           )}
           {index === 1 && selectedOption === '2' && (
             <CommandesList base={"cspd"} type={"investisseur"} searchTerm={searchTerm} setAssigned={ setAssignedList} />
@@ -537,7 +530,7 @@ function CustomTabPanel({
             <CommandesList base={"cspd"} type={"client"} searchTerm={searchTerm} setAssigned={ setAssignedList}/>
           )}
           {index === 3 && selectedOption === '2' && (
-            <CommandesList base={"fdm"} type={"client"} searchTerm={searchTerm} setAssigned={ setAssignedList}/>
+            <CommandesListFDM base={"fdm"} type={"client"} searchTerm={searchTerm} setAssigned={ setAssignedList}/>
           )}
            {index === 4 && selectedOption === '2' && (
             <CommandesList base={"fdm"} type={"famille"} searchTerm={searchTerm} setAssigned={(setAssigned) => setAssignedList(setAssigned)} />
