@@ -486,8 +486,24 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   };
 
   const formatDate = (dateString) => {
-    return dateString ? new Date(dateString).toLocaleDateString('fr-FR') : '-';
+    if (!dateString) return '-';
+    
+    const [datePart, timePart] = dateString.split('T');
+    const [year, month, day] = datePart.split('-');
+    const [hour, minute, second] = timePart.split('.')[0].split(':'); // Remove milliseconds if present
+    
+    const date = new Date(year, month - 1, day, hour, minute, second);
+    
+    const formattedDate = date.toLocaleString('fr-FR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      
+    });
+  
+    return formattedDate;
   };
+  
 
   const handleCloseDialog = () => {
     resetForm();
@@ -605,7 +621,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
 
                   <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Commande: {command.NUM_CDE_C}</Typography>
+                  Commande:  {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6} - {command.NUM_CDE_C}</Typography>
 
 
                 {type === "partenaire" && (
@@ -614,10 +630,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                   </>
                 )}
 
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                  <img src={dateIcon} alt="date icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Date: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6}
-                </Typography>
+              
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
                   <img src={command.BLOQUER_CLIENT === 1 ? blockedIcon : personIcon} alt="status icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}

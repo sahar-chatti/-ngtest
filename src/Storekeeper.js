@@ -4,6 +4,7 @@ import BASE_URL from './constantes';
 import axios from 'axios';
 import SupliersCommands  from './SupliersCommands';
 import StorekeeperCommands from './StorekeeperCommands';
+import StoreStock from './StoreStock';
 import PropTypes from 'prop-types';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -126,12 +127,18 @@ function CustomTabPanel({
           {index === 1 && selectedOption === '0' && displayMode === 'card' && (
             <div></div>
           )}
+             {index === 2 && selectedOption === '0' && displayMode === 'card' && (
+            <div></div>
+          )}
 
           {index === 0 &&  displayMode === 'card' && (
             <StorekeeperCommands  selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode} searchTerm={searchTerm}   />
           )}
           {index === 1 &&  displayMode === 'card' && (
             <SupliersCommands selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode} searchTerm={searchTerm}   />
+          )}
+           {index === 2 &&  displayMode === 'card' && (
+            <StoreStock selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode}   />
           )}
         </Box>
       )}
@@ -157,11 +164,13 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
         <Tabs value={value} onChange={(e, newValue) => handleChange(newValue)} aria-label="basic tabs example">
           <Tab label="Clients Cspd" {...a11yProps(0)} />
           <Tab label="Fournisseur" {...a11yProps(0)} />
+          <Tab label="Stock magasin" {...a11yProps(0)} />
 
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
       <CustomTabPanel value={value} index={1} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+      <CustomTabPanel value={value} index={2} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
 
     </Box>
   );

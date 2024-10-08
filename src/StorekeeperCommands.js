@@ -479,7 +479,7 @@ const fetchCommandes = async () => {
 
     <Grid container spacing={2} >
           {commandes
-    .filter((command) => command.CC_CHAMP_3 === "Traité") 
+    .filter((command) => command.CC_CHAMP_3 === "Traité" || command.CC_CHAMP_3 === "Livré" && command.CC_VALIDE === 1) 
     .map((command) => {
       
         const etat = command.NUM_CDE_CL ? 'Livré' : command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
@@ -523,11 +523,9 @@ const fetchCommandes = async () => {
                 
                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
 
-                <LocalMallIcon style={{marginRight:'0.3em'}}/>  Commande: {command.NUM_CDE_C}</Typography>
+                <LocalMallIcon style={{marginRight:'0.3em'}}/>  Commande: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6} -  {command.NUM_CDE_C} </Typography>
                 
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                <CalendarMonthIcon style={{marginRight:'0.3em'}}/> Date: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6}
-                </Typography>
+              
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "#545454", fontWeight: "bold" }} >
                 <PersonIcon style={{marginRight:'0.3em'}}/>     
                  <span style={{  color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }}>Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}</span>       

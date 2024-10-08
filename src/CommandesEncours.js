@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import RenderStockGros from './renderStock';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import {
   Box,
   Button,
@@ -73,6 +74,8 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [dateLivraisonPrevue, setDateLivraisonPrevue] = useState('');
+  const [etatsCommande, setEtatsCommande] = useState('');
+
   const [communications, setCommunications] = useState({});
   const [tarifs, setTarifs] = useState([])
   const [openTarifDialog, setOpenTarifDialog] = useState(false)
@@ -357,6 +360,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           statut: "Validation commerciale",
           datetime: dateTime,
           details_communication: detailsCommunication,
+          etatsCommande,
           mode_livraison: modeLivraison.ID,
           adresse_livraison: adresseLivraison,
           transporteur: transporteur.ID,
@@ -486,9 +490,27 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   };
 
   const formatDate = (dateString) => {
-    return dateString ? new Date(dateString).toLocaleDateString('fr-FR') : '-';
+    if (!dateString) return '-';
+    
+    const [datePart, timePart] = dateString.split('T');
+    const [year, month, day] = datePart.split('-');
+    const [hour, minute, second] = timePart.split('.')[0].split(':'); 
+    
+    const date = new Date(year, month - 1, day, hour, minute, second);
+        const formattedDate = date.toLocaleString('fr-FR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  
+    return formattedDate;
   };
-
+  
+  
   const handleCloseDialog = () => {
     resetForm();
     setOpenDialog(false);
@@ -541,15 +563,32 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const [responseMessage, setResponseMessage] = useState('');
 
   return (
-
-    <Grid container spacing={2} >
-
+    <Grid container spacing={2}>
       {commandes.map((command) => {
-        const etat = command.NUM_CDE_CL ? 'Livré' : command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
-        const etatColor = etat === "Non encore traité" ? "red" : etat === "En cours de traitement" ? "orange" : etat === "Trait@" ? "green" : etat === "Annul@e" ? "purple" : "blue";
+        const etat =
+          command.ETAT_CDE_C ==='LT' &&  command.CC_VALIDE !== 0
+            ? 'Livré'
+            : command.CC_CHAMP_3
+            ? command.CC_CHAMP_3
+            : "Non encore traité";
+  
+        // Update the etatColor logic
+        const etatColor =
+          etat === "Non encore traité"
+            ? "red"
+            :etat === "Livré"
+            ? "#7695FF"
+            : etat === "En cours de traitement"
+            ? "orange"
+            : etat === "Traité" && command.CC_VALIDE !== 0 // Check if it's treated and valid
+            ? "green"
+            : etat === "Annulée"
+            ? "purple"
+            : "blue";
+  
         const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
         console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
-
+  
         return (
           <Grid
             item
@@ -560,64 +599,78 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
             xl={getGridSizes(command).xl}
             key={command.NUM_CDE_C}
           >
-            <Card style={{ backgroundColor: 'white', borderRadius: '10px', border: 'transparent', height: '100%' }}
+            <Card
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '10px',
+                border: 'transparent',
+                height: '100%',
+              }}
               sx={{
                 height: !isClientDetailsVisible ? '100%' : '650px',
-                transition: 'height 0.3s ease-in-out'
+                transition: 'height 0.3s ease-in-out',
               }}
             >
-              <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? '400px' : '420px', marginBottom: "20px" }}>
+              <CardContent
+                sx={{
+                  cursor: 'pointer',
+                  position: 'relative',
+                  height: type === "partenaire" ? '400px' : '420px',
+                  marginBottom: "20px",
+                }}
+              >
                 <GlowingBox style={{ backgroundColor: etatColor, borderRadius: '10px' }}>
+                 {/*{etat !== 'Traité' && etat !== 'Annulée' && (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          style={{ color: 'white' }}
+                          {...label}
+                          checked={selectedCommands.includes(command.NUM_CDE_C)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedCommands((prev) => [...prev, command.NUM_CDE_C]);
+                            } else {
+                              setSelectedCommands((prev) =>
+                                prev.filter((id) => id !== command.NUM_CDE_C)
+                              );
+                            }
+                          }}
+                        />
+                      }
+                    />
+                  )} */} 
+  
 
-                  {etat !== 'Traité' && etat !== 'Annulée' && (
-                    <FormControlLabel control={<Checkbox
-                      style={{ color: 'white' }}
-                      {...label}
-                      checked={selectedCommands.includes(command.NUM_CDE_C)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedCommands((prev) => [...prev, command.NUM_CDE_C]);
-                        } else {
-                          setSelectedCommands((prev) =>
-                            prev.filter((id) => id !== command.NUM_CDE_C)
-                          );
-                        }
-                      }}
-                    />} />
-                  )}
+<Typography
+  variant="h6"
+  component="div"
+  align="center"
+  style={{
+    color: "white",
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: '1.1rem',
+  }}
+>
+  {etat}  
+  <span style={{marginLeft:'1em', fontSize:'0.8em'}}>
+    {etat === 'Traité' ? 
+      (command.CC_VALIDE === 0 ? '(non validée) ' : '(validée)') 
+      : ''
+    }
+  </span>
+</Typography>
 
-                  <Typography
-                    variant="h6"
-                    component="div"
-                    align="center"
-                    style={{
-                      color: "white",
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      fontSize: '1.1rem',
-                    }}
-                  >
-                    {etat}
-                  </Typography>
                 </GlowingBox>
-
+               
 
                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
 
                   <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Commande: {command.NUM_CDE_C}</Typography>
+                  Commande: {formatDate(command.DATE_CDE_C)}  -{command.NUM_CDE_C}</Typography>
 
-
-                {type === "partenaire" && (
-                  <>
-
-                  </>
-                )}
-
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                  <img src={dateIcon} alt="date icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Date: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6}
-                </Typography>
+                
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
                   <img src={command.BLOQUER_CLIENT === 1 ? blockedIcon : personIcon} alt="status icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}
@@ -655,7 +708,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                   </Box>
                 )}
 
-              
+                {/**/}
 
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                   <img src={priceIcon} alt="price icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
@@ -696,7 +749,22 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                 ) : (
                   ' '
                 )}</Typography>
-
+                {communications[command.NUM_CDE_C]?.find(communication => communication.ETAT_COMMANDE?.length) && (
+  <Typography 
+   
+      style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}
+   
+  > <ErrorOutlineIcon/>
+    Détails d'état :  
+    {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
+      <span style={{ color: 'red',marginRight:'0.8em' }}>
+        {communications[command.NUM_CDE_C]?.find(communication => communication.ETAT_COMMANDE?.length)?.ETAT_COMMANDE}
+      </span>
+    ) : (
+      ' '
+    )}
+  </Typography>
+)}
 
                 <IconButton
                   onClick={() => handleCardClick(command)}
@@ -900,7 +968,9 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
 
-                    }}>Mode de livraison</TableCell>
+                    }}>Mode de livraison
+                    
+                    </TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
@@ -914,7 +984,8 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
 
-                    }}>Transporteur</TableCell>
+                    }}>Transporteur
+                    </TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
@@ -945,13 +1016,14 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                     <TableRow key={c.ID + i}>
                       <TableCell>{formatDate(c.DATETIME)}</TableCell>
                       <TableCell>{c.DETAILS_COMMUNICATION}</TableCell>
+                      <TableCell>{c.ETAT_COMMANDE}</TableCell>
                       <TableCell>{c?.COMMERCIAL}</TableCell>
-                      <TableCell>{c?.MODE_LIV}</TableCell>
+                      <TableCell>{c?.MODE_LIV} </TableCell>
                       <TableCell>{c.ADRESSE_LIVRAISON}</TableCell>
                       <TableCell>{c.TRANSP}</TableCell>
                       <TableCell>{c?.BENEFICIAIRE}</TableCell>
                       <TableCell>{c?.MODE_PAY}</TableCell>
-                      <TableCell>{c?.DATELIVRAISONPREVUE}</TableCell>
+                      <TableCell>{c.DATELIVRAISONPREVUE}</TableCell>
 
                     </TableRow>
                   ))}
@@ -961,6 +1033,9 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           </Box>
         </DialogContent>
       </Dialog>
+
+
+
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="lg" fullWidth>
         <DialogTitle>
           Communication de {commandTocom ? commandTocom.NUM_CDE_C : ''}
@@ -992,21 +1067,69 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
             value={detailsCommunication}
             onChange={(e) => setDetailsCommunication(e.target.value)}
           />
-          <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
-            <Typography variant="h6">Détails de livraison</Typography>
-            <InputLabel id="select-label-1">Mode de livraison</InputLabel>
-            <Select
-              labelId="select-label-1"
-              id="select-1"
-              // value={modeLivraison}
-              value={modeLivraison}
-              onChange={(e) => setModeLivraison(e.target.value)}
-              fullWidth
+           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
+            <Typography variant="h6">Détails d'état</Typography>
+            <RadioGroup
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+              value={etatsCommande}
+              onChange={(e) => {
+                setEtatsCommande(e.target.value);
+              }}
+
             >
-              {modeLiv.map((raison) => (
-                <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
-              ))}
-            </Select>
+              <FormControlLabel value="En attente de confirmation" control={<Radio />} label="En attente de confirmation" />
+              <FormControlLabel value="Coordination Logistique" control={<Radio />} label="Coordination Logistique" />
+              <FormControlLabel value="Problème d'échéance" control={<Radio />} label="Problème d'échéance" />
+            </RadioGroup>
+          </Box>
+          <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
+  <Typography variant="h6">Détails de livraison</Typography>
+  <InputLabel id="select-label-1">Mode de livraison</InputLabel>
+  <Select
+    labelId="select-label-1"
+    id="select-1"
+    value={modeLivraison}
+    onChange={(e) => setModeLivraison(e.target.value)}
+    fullWidth
+  >
+    {modeLiv.map((raison) => (
+      <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
+    ))}
+  </Select>
+  {modeLivraison?.LIBELLE === 'Nos Moyens' && (
+    <>
+      <TextField
+        margin="dense"
+        id="num-cheque"
+        label="Num chéque"
+        fullWidth
+        value={numCheque}
+        onChange={(e) => setNumCheque(e.target.value)}
+      />
+      <TextField
+        margin="dense"
+        id="banque"
+        label="Banque"
+        fullWidth
+        value={banque}
+        onChange={(e) => setBanque(e.target.value)}
+      />
+      <TextField
+        margin="dense"
+        id="date-echeance"
+        label="Date échéance"
+        type="date"
+        fullWidth
+        value={dateEcheance}
+        onChange={(e) => setDateEcheance(e.target.value)}
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+    </>
+  )}
+
             {/* <TextField
             margin="dense"
             id="mode-livraison"

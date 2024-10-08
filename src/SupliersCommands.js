@@ -37,16 +37,13 @@ const CommandesList = ({ type, searchTerm }) => {
     const [expanded, setExpanded] = useState(null);
     const [page, setPage] = useState(0);
     const theme = useTheme();
-
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [isArticleDialogOpened, setArticleDialogOpened] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(21);
     const [total, setTotal] = useState(0);
     const [articles, setArticles] = useState([]);
     const [text, setText] = useState('');
-
-    const [commandesDetails, setCommandesDetails] = useState([]);
 
     const handleChangeText = (event) => {
         setText(event.target.value);
@@ -147,7 +144,6 @@ const CommandesList = ({ type, searchTerm }) => {
             getArticleById(articleId, 'cspd').then((article) => {
                 setSelectedArticle(article);
                 setArticleDialogOpened(true);
-                // Initialiser les nouveaux états avec les valeurs actuelles de l'article
                 setNewEmplacement(article.EMPLACEMENT_ART || '');
                 setNewRayon(article.RAYON_ARTICLE || '');
             });

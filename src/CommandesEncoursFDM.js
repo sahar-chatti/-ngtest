@@ -485,8 +485,26 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     };
 
     const formatDate = (dateString) => {
-        return dateString ? new Date(dateString).toLocaleDateString('fr-FR') : '-';
-    };
+        if (!dateString) return '-';
+        
+        const [datePart, timePart] = dateString.split('T');
+        const [year, month, day] = datePart.split('-');
+        const [hour, minute, second] = timePart.split('.')[0].split(':'); 
+        
+        const date = new Date(year, month - 1, day, hour, minute, second);
+            const formattedDate = date.toLocaleString('fr-FR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+      
+        return formattedDate;
+      };
+      
 
     const handleCloseDialog = () => {
         resetForm();
@@ -539,15 +557,33 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     };
     const [responseMessage, setResponseMessage] = useState('');
 
-    return (
-
-        <Grid container spacing={2} >
-
-            {commandes.map((command) => {
-                const etat = command.NUM_CDE_CL ? 'Livré' : command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
-                const etatColor = etat === "Non encore traité" ? "red" : etat === "En cours de traitement" ? "orange" : etat === "Trait@" ? "green" : etat === "Annul@e" ? "purple" : "blue";
-                const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
-                console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
+   return (
+        <Grid container spacing={2}>
+          {commandes.map((command) => {
+            const etat =
+              command.ETAT_CDE_C ==='LT' &&  command.CC_VALIDE !== 0
+                ? 'Livré'
+                : command.CC_CHAMP_3
+                ? command.CC_CHAMP_3
+                : "Non encore traité";
+      
+            // Update the etatColor logic
+            const etatColor =
+              etat === "Non encore traité"
+                ? "red"
+                :etat === "Livré"
+                ? "#7695FF"
+                : etat === "En cours de traitement"
+                ? "orange"
+                : etat === "Traité" && command.CC_VALIDE !== 0 // Check if it's treated and valid
+                ? "green"
+                : etat === "Annulée"
+                ? "purple"
+                : "blue";
+      
+            const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
+            console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
+      
 
                 return (
                     <Grid
@@ -568,22 +604,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                             <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? '400px' : '380px', marginBottom: "20px" }}>
                                 <GlowingBox style={{ backgroundColor: etatColor, borderRadius: '10px' }}>
 
-                                    {etat !== 'Traité' && etat !== 'Annulée' && (
-                                        <FormControlLabel control={<Checkbox
-                                            style={{ color: 'white' }}
-                                            {...label}
-                                            checked={selectedCommands.includes(command.NUM_CDE_C)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedCommands((prev) => [...prev, command.NUM_CDE_C]);
-                                                } else {
-                                                    setSelectedCommands((prev) =>
-                                                        prev.filter((id) => id !== command.NUM_CDE_C)
-                                                    );
-                                                }
-                                            }}
-                                        />} />
-                                    )}
+                                   
 
                                     <Typography
                                         variant="h6"
@@ -603,7 +624,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
 
                                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                                     <ShoppingBagIcon style={{ marginRight: '0.3em' }} />
-                                    Commande:   {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6} -  {command.NUM_CDE_C}  </Typography>
+                                    Commande:   {formatDate(command.DATE_CDE_C)}  -  {command.NUM_CDE_C}  </Typography>
 
                                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
                                     <PermIdentityIcon style={{ marginRight: '0.3em' }} />

@@ -10,9 +10,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BASE_URL from './constantes';
 const RaisonStatuts = () => {
-  const [users, setUsers] = useState([]);
-  const theme = useTheme();
-    const matches = useMediaQuery(theme.breakpoints.down('md'));
+const [users, setUsers] = useState([]);
+const theme = useTheme();
+const matches = useMediaQuery(theme.breakpoints.down('md'));
   const [openDialog, setOpenDialog] = useState(false);
   const [currentUser, setCurrentUser] = useState({ID:'', ID_RAISON:'',
 ID_STATUT:''});
