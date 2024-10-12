@@ -57,20 +57,22 @@ function CustomTabPanel({
 
 
   const renderSearchInput =
-    <TextField
-      variant="outlined"
-      placeholder="Rechercher "
-      value={searchTerm}
-      onChange={handleSearchChange}
-      InputProps={{
-        endAdornment: (
-          <IconButton>
-            <SearchIcon />
-          </IconButton>
-        ),
-      }}
-      sx={{ width: "300px" }}
-    />
+    (index === 0 || index === 1) && ( // Only show search input for Clients Cspd and Supliers tabs
+      <TextField
+        variant="outlined"
+        placeholder="Rechercher "
+        value={searchTerm}
+        onChange={handleSearchChange}
+        InputProps={{
+          endAdornment: (
+            <IconButton>
+              <SearchIcon />
+            </IconButton>
+          ),
+        }}
+        sx={{ width: "300px" }}
+      />
+    );
 
  
   const renderSelectClImage = (index === 2 && selectedOption === '3') ? (

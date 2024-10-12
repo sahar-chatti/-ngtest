@@ -21,6 +21,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 import BASE_URL from './constantes';
 
@@ -43,20 +44,17 @@ const BasicTable = () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/stockStore`, {
         params: {
-          page: page + 1, // Use page + 1 if your API expects a 1-based index
+          page,
           pageSize,
-          searchTerm,
+          codeArticle: searchTerm,
         },
       });
-      
-      console.log('API Response:', response.data); // Log the response for debugging
 
-      if (response.data && Array.isArray(response.data.articles)) {
+      console.log('API Response:', response.data);
+
+      if (response.data && response.data.articles) {
         setArticles(response.data.articles);
-        setTotal(response.data.total || response.data.articles.length);
-      } else if (Array.isArray(response.data)) {
-        setArticles(response.data);
-        setTotal(response.data.length);
+        setTotal(response.data.total);
       } else {
         throw new Error('Unexpected API response format');
       }
@@ -78,7 +76,12 @@ const BasicTable = () => {
 
   const handleChangeRowsPerPage = (event) => {
     setPageSize(parseInt(event.target.value, 10));
-    setPage(0); // Reset to the first page when changing rows per page
+    setPage(0);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(0);
   };
 
   const openArticleDialog = (article) => {
@@ -107,19 +110,15 @@ const BasicTable = () => {
         EMPLACEMENT_ART: newEmplacement,
         RAYON_ARTICLE: newRayon
       };
-
       await axios.post(`${BASE_URL}/api/updateEmplacementMagasin/${articleId}`, data);
-
       setSelectedArticle({
         ...selectedArticle,
         EMPLACEMENT_ART: newEmplacement,
         RAYON_ARTICLE: newRayon
       });
-
       setArticleDialogOpened(false);
       alert('Article mis à jour avec succès');
-
-      fetchArticles(); // Fetch updated articles
+      fetchArticles();
     } catch (error) {
       console.error('Erreur lors de la mise à jour de l\'article:', error);
       alert(`Échec de la mise à jour de l'article: ${error.message}`);
@@ -127,58 +126,77 @@ const BasicTable = () => {
   };
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Article</TableCell>
-            <TableCell align="right">Code article</TableCell>
-            <TableCell align="right">Emplacement</TableCell>
-            <TableCell align="right">Rayon</TableCell>
-            <TableCell align="right">Stock actuel</TableCell>
-            <TableCell align="right">Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {loading ? (
+    <Box>
+      <Box display="flex" alignItems="center" mb={2}>
+        <SearchIcon />
+        <TextField
+          label="Rechercher un article"
+          variant="outlined"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          fullWidth
+          style={{ marginLeft: '10px' }}
+        />
+      </Box>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
             <TableRow>
-              <TableCell colSpan={6} align="center">
-                <CircularProgress />
-              </TableCell>
+              <TableCell>Article</TableCell>
+              <TableCell align="right">Code article</TableCell>
+              <TableCell align="right">Emplacement</TableCell>
+              <TableCell align="right">Rayon</TableCell>
+              <TableCell align="right">Stock actuel</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
-          ) : error ? (
-            <TableRow>
-              <TableCell colSpan={6} align="center" style={{ color: 'red' }}>
-                {error}
-              </TableCell>
-            </TableRow>
-          ) : articles.length > 0 ? (
-            articles.map((article) => (
-              <TableRow key={article.CODE_ARTICLE}>
-                <TableCell component="th" scope="row">
-                  {article.INTIT_ARTICLE}
-                </TableCell>
-                <TableCell align="right">{article.CODE_ARTICLE}</TableCell>
-                <TableCell align="right">{article.EMPLACEMENT_ART}</TableCell>
-                <TableCell align="right">{article.RAYON_ARTICLE}</TableCell>
-                <TableCell align="right">{article.STOCK_PHYSIQUE}</TableCell>
-                <TableCell align="right">
-                  <Button onClick={() => openArticleDialog(article)}>
-                    <AddCircleIcon />
-                  </Button>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <CircularProgress />
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6} align="center">No articles found.</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-
-      
-
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center" style={{ color: 'red' }}>
+                  {error}
+                </TableCell>
+              </TableRow>
+            ) : articles.length > 0 ? (
+              articles.map((article) => (
+                <TableRow key={article.CODE_ARTICLE}>
+                  <TableCell component="th" scope="row">
+                    {article.INTIT_ARTICLE}
+                  </TableCell>
+                  <TableCell align="right">{article.CODE_ARTICLE}</TableCell>
+                  <TableCell align="right">{article.EMPLACEMENT_ART}</TableCell>
+                  <TableCell align="right">{article.RAYON_ARTICLE}</TableCell>
+                  <TableCell align="right">{article.STOCK_PHYSIQUE}</TableCell>
+                  <TableCell align="right">
+                    <Button onClick={() => openArticleDialog(article)}>
+                      <AddCircleIcon />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} align="center">No articles found.</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={total}
+        rowsPerPage={pageSize}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
       <Dialog
         open={isArticleDialogOpened}
         onClose={handleCloseArticleDialog}
@@ -195,7 +213,6 @@ const BasicTable = () => {
             {selectedArticle?.CODE_ARTICLE} : {selectedArticle?.INTIT_ARTICLE}
           </Typography>
         </DialogTitle>
-
         <DialogContent>
           <DialogContentText>
             <div>
@@ -208,7 +225,6 @@ const BasicTable = () => {
                 fullWidth
               />
               <p>Rayon actuel : {selectedArticle?.RAYON_ARTICLE || "Pas d'information sur le rayon."}</p>
-
               <TextField
                 style={{ marginTop: 20 }}
                 label="Emplacement"
@@ -218,20 +234,18 @@ const BasicTable = () => {
                 fullWidth
               />
               <p>Emplacement actuel : {selectedArticle?.EMPLACEMENT_ART || "Pas d'information sur l'emplacement."}</p>
-
               <Typography style={{ color: 'black', fontSize: '1.2em', fontWeight: '20px' }}>
                 <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Stock actuel:</span> {selectedArticle?.STOCK_PHYSIQUE}
               </Typography>
             </div>
           </DialogContentText>
         </DialogContent>
-
         <DialogActions>
           <Button onClick={handleCloseArticleDialog}>Fermer</Button>
           <Button onClick={handleUpdateArticle} color="primary">Modifier</Button>
         </DialogActions>
       </Dialog>
-    </TableContainer>
+    </Box>
   );
 };
 

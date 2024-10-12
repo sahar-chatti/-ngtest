@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import { forwardRef } from 'react';
+
 import RenderStockGros from './renderStock';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import PrintIcon from '@mui/icons-material/Print';
 import {
   Box,
   Button,
@@ -57,10 +60,13 @@ import RadioGroup from '@mui/material/RadioGroup';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
 import PaidIcon from '@mui/icons-material/Paid';
-
+import entete from '../src/images/sahar up.png';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const CommandesList = ({ base, type, searchTerm }) => {
   const theme = useTheme();
+
+  
   const [openedHistoryCommand, setOpenedHistoryCommand] = useState();
   const [errorLivraison, setErrorLivraison] = useState('');
   const [loading, setLoading] = useState(false);
@@ -103,48 +109,49 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const [partner, setPartner] = useState([]);
   const [error, setError] = useState(null);
   const [clientsData, setClientsData] = useState([]);
- const client = clientsData[0]; 
+  const client = clientsData[0];
   const handleChangePage = (event, newPage) => setPage(newPage);
- 
-  
+
+
+
 
   useEffect(() => {
     // Fetch clients only if commandes is not empty
     if (commandes.length > 0) {
-        const command = commandes[0]; // Get the first command
-        const clientId = command.CLIENT_CDE; // Extract clientId from command
+      const command = commandes[0]; // Get the first command
+      const clientId = command.CLIENT_CDE; // Extract clientId from command
 
-        const fetchClients = async () => {
-            try {
-                // Call the API with the required parameters
-                const { clients, total, error: apiError } = await fetchClientsPartenaires(page, clientId, pageSize, searchTerm,clientId);
-                console.log("Fetched Clients Data:", clients);
+      const fetchClients = async () => {
+        try {
+          // Call the API with the required parameters
+          const { clients, total, error: apiError } = await fetchClientsPartenaires(page, clientId, pageSize, searchTerm, clientId);
+          console.log("Fetched Clients Data:", clients);
 
-                // Handle API errors
-                if (apiError) {
-                    throw new Error(apiError);
-                }
+          // Handle API errors
+          if (apiError) {
+            throw new Error(apiError);
+          }
 
-                // Set the clients data
-                setClientsData(clients);
-            } catch (err) {
-                setError(err.message); // Set error state
-            }
-        };
-        console.log("Fetching clients with params:", {
-          page,
-          clientId,
-          pageSize,
-          searchTerm
+          // Set the clients data
+          setClientsData(clients);
+        } catch (err) {
+          setError(err.message); // Set error state
+        }
+      };
+      console.log("Fetching clients with params:", {
+        page,
+        clientId,
+        pageSize,
+        searchTerm
       });
-        fetchClients(); // Call the fetch function
+      fetchClients(); // Call the fetch function
     }
-}, [commandes, page, pageSize, searchTerm]); // Run effect whenever these dependencies change
+  }, [commandes, page, pageSize, searchTerm]); // Run effect whenever these dependencies change
 
- 
+
   useEffect(() => {
     fetchClientsPartenaires();
-}, [page, pageSize, searchTerm]); 
+  }, [page, pageSize, searchTerm]);
   const resetForm = () => {
     setDateTime('');
     setDetailsCommunication('');
@@ -158,7 +165,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
     setNumCheque('');
     setModePaiement('');
     setDateLivraisonPrevue('');
-  }    
+  }
 
   useEffect(() => {
     Promise.all(commandes.map(async (command) => {
@@ -180,7 +187,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
     })
   }, [commandes]);
 
-  
+
 
   const GlowingBox = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -224,30 +231,30 @@ const CommandesList = ({ base, type, searchTerm }) => {
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
   };
 
-const fetchCommandes = async () => {
-  try {
-    const url = type === "partenaire" ? 
-      `${BASE_URL}/api/cmdPartenairesEncours` : 
-      type === "investisseur" ? 
-      `${BASE_URL}/api/cmdInvestisseursEncours` : 
-      `${BASE_URL}/api/cmdClientsEncours/${base}`;
+  const fetchCommandes = async () => {
+    try {
+      const url = type === "partenaire" ?
+        `${BASE_URL}/api/cmdPartenairesEncours` :
+        type === "investisseur" ?
+          `${BASE_URL}/api/cmdInvestisseursEncours` :
+          `${BASE_URL}/api/cmdClientsEncours/${base}`;
 
-    const params = {
-      page: page,
-      pageSize: pageSize,
-      searchTerm: searchTerm,
-      cc_champ_3: "traité" // Ajout du filtre pour cc_champ_3
-    };
+      const params = {
+        page: page,
+        pageSize: pageSize,
+        searchTerm: searchTerm,
+        cc_champ_3: "traité" // Ajout du filtre pour cc_champ_3
+      };
 
-    const result = await axios.get(url, { params });
-    setCommandes(result.data.commandes);
-    setTotal(result.data.total);
-  } catch (error) {
-    console.error('Error fetching commands:', error);
-  }
-};
+      const result = await axios.get(url, { params });
+      setCommandes(result.data.commandes);
+      setTotal(result.data.total);
+    } catch (error) {
+      console.error('Error fetching commands:', error);
+    }
+  };
 
-  
+
   const handleCardClick = async (command) => {
     setExpanded(prev => (prev === command.NUM_CDE_C ? null : command.NUM_CDE_C));
     console.log("commandId", command.NUM_CDE_C);
@@ -267,12 +274,12 @@ const fetchCommandes = async () => {
   };
 
   useEffect(() => {
-   
-  
+
+
     const fetchCommunications = async () => {
       try {
         const result = await axios.get(`${BASE_URL}/api/communicationsCmd`);
-        console.log("com",result.data)
+        console.log("com", result.data)
         //setCommunications(result.data);
       } catch (error) {
         console.error('Error fetching communications:', error);
@@ -356,50 +363,7 @@ const fetchCommandes = async () => {
     }
   };
 
-  const handleConfirmCancel = async () => {
-    if (commandToCancel) {
-      try {
-        await axios.put(
-          `${BASE_URL}/api/updateEtatCmd`,
-          { reference: commandToCancel.NUM_CDE_C, etat: "Annulée", base: base }
-        );
 
-      } catch (err) {
-        console.error('Erreur lors de l\'annulation de la commande:', err);
-
-      }
-      setOpenCancelDialog(false);
-      setCommandToCancel(null);
-      fetchCommandes()
-    }
-  };
-  const handleOpenDialog = async (command) => {
-    setCommandTocom(command)
-    setBeneficiaire(command.CC_UTILIS || '');
-    setMatriculeFiscale(
-      `${command.CL_MAT_F1 || ''} ${command.CL_MAT_F2 || ''} ${command.CL_MAT_F3 || ''} ${command.CL_MAT_F4 || ''}`.trim()
-    );
-    setAdresseFacturation(
-      `${command.ADR_C_C_2 || ''}, ${command.ADR_C_C_3 || ''}`.trim()
-    );
-    setOpenDialog(true);
-    console.log("cmd", command)
-
-    setDateTime(new Date().toISOString().slice(0, 16));
-    if (!command.CC_CHAMP_3) {
-      try {
-        console.log("start")
-        await axios.put(
-          `${BASE_URL}/api/updateEtatCmd`,
-          { reference: command.NUM_CDE_C, etat: "En cours de traitement", base: base }
-        );
-      } catch (error) {
-        console.error('Error updating partenaire:', error);
-      }
-    }
-  };
-  
-  
   const handleTarifDialogOpen = async (command) => {
 
     try {
@@ -449,7 +413,7 @@ const fetchCommandes = async () => {
     setOpenCancelDialog(false);
     setCommandToCancel(null);
   };
-  
+
   const handleOpenHistoriqueDialog = (command) => {
     setOpenedHistoryCommand(command.NUM_CDE_C);
     setHistoryDialog(true)
@@ -464,7 +428,7 @@ const fetchCommandes = async () => {
       getArticleById(articleId, 'cspd').then((article) => {
         setSelectedArticle(article);
         setArticleDialogOpened(true);
-      }); // Use CODE_ARTICLE from the article parameter
+      }); 
     } else {
       console.error("Mismatch between CCL_ARTICLE and CODE_ARTICLE, or article is undefined");
     }
@@ -473,224 +437,360 @@ const fetchCommandes = async () => {
     setArticleDialogOpened(false);
   };
 
- 
+
+  const [enteteBase64, setEnteteBase64] = useState('');
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = this.width;
+      canvas.height = this.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(this, 0, 0);
+      const dataURL = canvas.toDataURL('image/png');
+      setEnteteBase64(dataURL);
+    }
+    img.src = entete;
+  }, []);
+
+  const handlePrint = (command) => {
+    const printContent = `
+      <html>
+        <head>
+          <title> </title>
+          <style>
+            @media print {
+              body { -webkit-print-color-adjust: exact; }
+            }
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+            }
+            .header-image {
+              width: 100%;
+              max-height: 100%;
+              object-fit: contain;
+            }
+            .content {
+               margin-top:-800px;
+              padding: 20px;
+            }
+            h1 { color: #ce362c; text-align:center; }
+            .section { margin-bottom: 20px; }
+            .section-title { font-weight: bold; color: #ce362c; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #0B4C69; color: white; }
+          </style>
+        </head>
+        <body>
+          <img src="${enteteBase64}" alt="En-tête" class="header-image">
+          <div class="content">
+            <h1>Ordre de mission </h1>
+            <div class="section">
+              <p class="section-title">Informations commandes</p>
+              <p>Commande: ${formatDate(command.DATE_CDE_C)} ${command.CC_CHAMP_6} - ${command.NUM_CDE_C}</p>
+              <p>Client: ${command.CLIENT_CDE}, ${command.ADR_C_C_1}</p>
+              <p>Total: ${command.CC_TOTAL} TND</p>
+              <p>Matricule: ${command.ADR_C_C_3}</p>
+              <p>Numéro: ${command.TEL_CLIENT_F}</p>
+               <p>Adresse: ${command.ADR_C_C_2}</p>
+                          <p>Chauffeur : ${communications[command.NUM_CDE_C]?.find(communication => communication.CHAUFFEUR?.length)?.CHAUFFEUR || ''}</p>
+
+                          <p>Véhicule: ${communications[command.NUM_CDE_C]?.find(communication => communication.VEHICULE?.length)?.VEHICULE || ''}</p>
+
+              <p>Date livraison prévue: ${communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE || ''}</p>
+              <p>Traité par: ${command.CC_CHAMP_7} le ${formatDateTr(command.DATETRAIT)}</p>
+            </div>
+            <div class="section">
+              <p class="section-title">Articles commandés</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Article</th>
+                    <th>Description</th>
+                    <th>Pu TTC</th>
+                    <th>Quantité</th>
+                    <th>Montant TTC</th>
+                    <th>Emplacement </th>
+                    <th>Rayon</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${articles.map(article => `
+                    <tr>
+                      <td>${article.CCL_ARTICLE}</td>
+                      <td>${article.CCL_DES_ART}</td>
+                      <td>${article.CCL_PXU_TTC}</td>
+                      <td>${article.CCL_QTE_C}</td>
+                      <td>${article.CCL_MONTANT_TTC}</td>
+                      <td>${article.EMPLACEMENT_ART}</td>
+                      <td>${article.RAYON_ARTICLE}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('Cspd Damak', 'Vente en gros');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 1000);
+  };
 
   return (
 
     <Grid container spacing={2} >
-          {commandes
-    .filter((command) => command.CC_CHAMP_3 === "Traité" || command.CC_CHAMP_3 === "Livré" && command.CC_VALIDE === 1) 
-    .map((command) => {
-      
-        const etat = command.NUM_CDE_CL ? 'Livré' : command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
-        const etatColor = etat === "Non encore traité" ? "red" : etat === "En cours de traitement" ? "orange" : etat === "Trait@" ? "green" : etat === "Annul@e" ? "purple" : "blue";
-        const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
-        console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
+      {commandes
+        .filter((command) => command.CC_CHAMP_3 === "Traité" || command.CC_CHAMP_3 === "Livré" && command.CC_VALIDE === 1)
+        .map((command) => {
 
-        return (
-          <Grid
-            item
-            xs={getGridSizes(command).xs}
-            sm={getGridSizes(command).sm}
-            md={getGridSizes(command).md}
-            lg={getGridSizes(command).lg}
-            xl={getGridSizes(command).xl}
-            key={command.NUM_CDE_C}
-          >
-            <Card style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent' }}
-              sx={{
-                height: !isClientDetailsVisible ? '100%' : '650px',
-                transition: 'height 0.3s ease-in-out'
-              }}
+          const etat = command.NUM_CDE_CL ? 'Livré' : command.CC_CHAMP_3 ? command.CC_CHAMP_3 : "Non encore traité"
+          const etatColor = etat === "Non encore traité" ? "red" : etat === "En cours de traitement" ? "orange" : etat === "Trait@" ? "green" : etat === "Annul@e" ? "purple" : "blue";
+          const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
+          console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
+
+          return (
+
+            <Grid
+              item
+              xs={getGridSizes(command).xs}
+              sm={getGridSizes(command).sm}
+              md={getGridSizes(command).md}
+              lg={getGridSizes(command).lg}
+              xl={getGridSizes(command).xl}
+              key={command.NUM_CDE_C}
             >
-              <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? '400px' : '350px', marginBottom: "20px" }}>
-                <GlowingBox style={{ backgroundColor: "#7695FF", borderRadius: '10px' }}>
-                  <Typography
-                    variant="h6"
-                    component="div"
-                    align="center"
-                    style={{
-                      color: "white",
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      fontSize: '1.1rem',
+              <Card style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent' }}
+                sx={{
+                  height: !isClientDetailsVisible ? '100%' : '700px',
+                  transition: 'height 0.3s ease-in-out'
+                }}
+              >
+                <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? 'auto' : 'auto', marginBottom: "20px" }}>
+                  <GlowingBox style={{ backgroundColor: "#7695FF", borderRadius: '10px' }}>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      align="center"
+                      style={{
+                        color: "white",
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        fontSize: '1.1rem',
 
-                    }}
-                  > {etat}</Typography>
-                </GlowingBox>
-              
-           
-                
-                <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                      }}
+                    > {etat}    </Typography>
 
-                <LocalMallIcon style={{marginRight:'0.3em'}}/>  Commande: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6} -  {command.NUM_CDE_C} </Typography>
-                
-              
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "#545454", fontWeight: "bold" }} >
-                <PersonIcon style={{marginRight:'0.3em'}}/>     
-                 <span style={{  color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }}>Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}</span>       
-                </Typography>
-               
-               
-
-                    <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                    <PaidIcon style={{marginRight:'0.3em'}}/>     
+                  </GlowingBox>
+                  <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                    <LocalMallIcon style={{ marginRight: '0.3em' }} />  Commande: {formatDate(command.DATE_CDE_C)} {command.CC_CHAMP_6} -  {command.NUM_CDE_C} </Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "#545454", fontWeight: "bold" }} >
+                    <PersonIcon style={{ marginRight: '0.3em' }} />
+                    <span style={{ color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }}>Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}</span>
+                  </Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                    <PaidIcon style={{ marginRight: '0.3em' }} />
                     Total: {command.CC_TOTAL} TND
-                    </Typography>
-                    <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                    <BrandingWatermarkIcon style={{marginRight:'0.3em'}}/>     
-                        Matricule: {command.ADR_C_C_3}
-                    </Typography>
-               
-            
- 
-                <Typography
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: 10,
-                    marginTop: "10px",
-                    color: '#545454',
-                    fontWeight: 'bold',
-                    fontSize: '16px',
-                    cursor: 'pointer'
-                  }}>
-                                     <CallIcon style={{marginRight:'0.3em'}}/>     
-                                     Numéro: <Button onClick={() => makeCall(command.TEL_CLIENT_F)} >
-                    {command.TEL_CLIENT_F} </Button>
-                </Typography>
-                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                <LocalShippingIcon style={{marginRight:'0.3em'}}/>     
-                Date livraison prévue :  {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
-                  <span style={{ color: 'red' }}>
-                    {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE}
-                  </span>
-                ) : (
-                  ' '
-                )}</Typography>
+                  </Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                    <BrandingWatermarkIcon style={{ marginRight: '0.3em' }} />
+                    Matricule: {command.ADR_C_C_3}
+                  </Typography>
+                  <Typography
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 10,
+                      marginTop: "10px",
+                      color: '#545454',
+                      fontWeight: 'bold',
+                      fontSize: '16px',
+                      cursor: 'pointer'
+                    }}>
+                    <CallIcon style={{ marginRight: '0.3em' }} />
+                    Numéro: <Button onClick={() => makeCall(command.TEL_CLIENT_F)} >
+                      {command.TEL_CLIENT_F} </Button>
+                  </Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                    <LocalShippingIcon style={{ marginRight: '0.3em' }} />
+                    Date livraison prévue :  {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
+                      <span style={{ color: 'red' }}>
+                        {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE}
+                      </span>
+                    ) : (
+                      ' '
+                    )}</Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                    <LocalShippingIcon style={{ marginRight: '0.3em' }} />
+                    Chauffeur :  {communications[command.NUM_CDE_C]?.find(communication => communication.CHAUFFEUR?.length)?.CHAUFFEUR ? (
+                      <span style={{ color: 'red' }}>
+                        {communications[command.NUM_CDE_C]?.find(communication => communication.CHAUFFEUR?.length)?.CHAUFFEUR}
+                      </span>
+                    ) : (
+                      ' '
+                    )}</Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                    <LocalShippingIcon style={{ marginRight: '0.3em' }} />
+                    Véhicule :  {communications[command.NUM_CDE_C]?.find(communication => communication.VEHICULE?.length)?.VEHICULE ? (
+                      <span style={{ color: 'red' }}>
+                        {communications[command.NUM_CDE_C]?.find(communication => communication.VEHICULE?.length)?.VEHICULE}
+                      </span>
+                    ) : (
+                      ' '
+                    )}</Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
+                    Adresses Client: {command.ADR_C_C_2}</Typography>
+                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+                    <SupportAgentIcon style={{ marginRight: '0.3em' }} />
+                    Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
 
-<Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-<SupportAgentIcon style={{marginRight:'0.3em'}}/>     
-Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
-
-                <IconButton
-                  onClick={() => handleCardClick(command)}
-                  aria-expanded={expanded === command.NUM_CDE_C}
-                  sx={{ position: 'absolute', top: 8, right: 8 }}
-                >
-                  <Typography style={{ fontSize: '12px', fontWeight: 'bold', color: 'white' }}> Articles commandés </Typography>
-
-                </IconButton>
-              </CardContent>
-              <Collapse in={expanded === command.NUM_CDE_C} timeout="auto" unmountOnExit>
-                <Box sx={{ p: 2 }}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Article</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Description</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Pu TTC</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Montant TTC</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Mode de paiement</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd clients</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd fournisseurs</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Date réception prv</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise</TableCell>
-                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Disponibilité</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {articles.length > 0 && articles.map((cardItem) => {
-
-                        //const difference = (Number(article.STOCK_PHYSIQUE ) + Number(article.STOCK_AUT_DEPOT)) + Number(article.QTE_CMD_ANNUL) - (Number(article.CDES_CLIENTS));
-                        //console.log("difference",difference)
-                        const difference = (Number(cardItem.STOCK_PHYSIQUE) - Number(cardItem.CDES_CLIENTS));
-
-                        return (
-                          <TableRow key={cardItem.CCL_ARTICLE}>
-                            <TableCell>
-                              <Button onClick={() => openArticleDialog(cardItem?.CCL_ARTICLE)}>{cardItem.CCL_ARTICLE}</Button>
-                            </TableCell>
-
-                            <TableCell>{cardItem.CCL_DES_ART}</TableCell>          
-                            <TableCell>{cardItem.CCL_PXU_TTC}</TableCell>
-                            <TableCell>{cardItem.CCL_QTE_C}</TableCell>
-                            <TableCell>{cardItem.CCL_MONTANT_TTC}</TableCell>
-                            <TableCell>{command.LIBEL_REGL_C}</TableCell>
-                            <TableCell>{cardItem.CDES_CLIENTS}</TableCell>
-                            <TableCell>{cardItem.CDES_FOURNIS}</TableCell>
-                            <TableCell> {formatDate(cardItem.LATEST_DATE_LIV_CF_P)}</TableCell>
-                            <TableCell>
-                              {[
-                                { keyword: "OZKA", amount: 30 },
-                                { keyword: "OTANI", amount: 35 },
-                                { keyword: "STARMAXX", amount: 30 },
-                                { keyword: "STIP", amount: 22.17 },
-                                { keyword: "PETLAS", amount: 30 },
-                                { keyword: "KUMHO", amount: 33 },
-                                { keyword: "SIOC", amount: 20 },
-                                { keyword: "ZEETEX", amount: 28 },
-                              ].some(({ keyword, amount }) =>
-                                ((cardItem.CCL_ARTICLE && cardItem.CCL_ARTICLE.includes(keyword)) ||
-                                  (cardItem.CCL_DES_ART && cardItem.CCL_DES_ART.includes(keyword))) &&
-                                cardItem.CCL_TX_REM === amount
-                              ) ? "Comptant" : "à termes"}
-                            </TableCell>
-                            <TableCell>
-                              {/*difference*/}
-                              <img
-                                src={
-                                  difference <= 0
-                                    ? emptybattery
-                                    : difference <= 8
-                                      ? midbattery
-                                      : fullbattery
-                                }
-                                alt={
-                                  difference <= 0
-                                    ? 'Empty Battery'
-                                    : difference <= 8
-                                      ? 'Mid Battery'
-                                      : 'Full Battery'
-                                }
-                                style={{ width: '24px', height: '24px' }}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </Box>
-              </Collapse>
-              <CustomCardActions>
-                <Button startIcon={<CallIcon />} color="primary" onClick={() => handleOpenDialog(command)} style={{ marginTop: !isClientDetailsVisible ? "4%" : '40%', fontSize: "10px", fontWeight: "bold" }} disabled={command.CC_CHAMP_7 && command.CC_CHAMP_7 !== user.LOGIN}>
-                  Appeler
-                </Button>
-                <Button startIcon={<HistoryIcon />} onClick={() => handleOpenHistoriqueDialog(command)} style={{ marginTop: !isClientDetailsVisible ? "4%" : '40%', fontWeight: "bold", color: "#478CCF", fontSize: "10px", }} >
-                  Historique
-                </Button>
-                <Button startIcon={<LocalAtmIcon />} onClick={() => handleTarifDialogOpen(command)} style={{ marginTop: !isClientDetailsVisible ? "4%" : '40%', fontWeight: "bold", fontSize: "10px", color: "#478CCF" }} >
-                  tarifs
-                </Button>
-                {!command.NUM_CDE_CL && etat !== "Traité" && (
-                  <Button
-                    startIcon={<CancelIcon />}
-                    style={{ marginTop: !isClientDetailsVisible ? "4%" : '60%', fontWeight: "bold", color: "red", fontSize: "10px" }}
-                    onClick={() => handleOpenCancelDialog(command)}
+                  <IconButton
+                    onClick={() => handleCardClick(command)}
+                    aria-expanded={expanded === command.NUM_CDE_C}
+                    sx={{ position: 'absolute', top: 8, right: 8 }}
                   >
-                    Annuler
+                    <Typography style={{ fontSize: '12px', fontWeight: 'bold', color: 'white' }}> Articles commandés </Typography>
+
+                  </IconButton>
+                </CardContent>
+                <Collapse in={expanded === command.NUM_CDE_C} timeout="auto" unmountOnExit>
+                  <Box sx={{ p: 2 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Article</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Description</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Pu TTC</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Montant TTC</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Mode de paiement</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd clients</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd fournisseurs</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Emplacement</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Rayon</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Date réception prv</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise</TableCell>
+                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Disponibilité</TableCell>
+                        </TableRow>
+                      </TableHead>
+                
+                      <TableBody>
+                        {articles.length > 0 && articles.map((cardItem) => {
+
+                          const difference = (Number(cardItem.STOCK_PHYSIQUE) - Number(cardItem.CDES_CLIENTS));
+
+                          return (
+                            <TableRow key={cardItem.CCL_ARTICLE}>
+                              <TableCell>
+                                <Button onClick={() => openArticleDialog(cardItem?.CCL_ARTICLE)}>{cardItem.CCL_ARTICLE}</Button>
+                              </TableCell>
+
+                              <TableCell>{cardItem.CCL_DES_ART}</TableCell>
+                              <TableCell>{cardItem.CCL_PXU_TTC}</TableCell>
+                              <TableCell>{cardItem.CCL_QTE_C}</TableCell>
+                              <TableCell>{cardItem.CCL_MONTANT_TTC}</TableCell>
+                              <TableCell>{command.LIBEL_REGL_C}</TableCell>
+                              <TableCell>{cardItem.CDES_CLIENTS}</TableCell>
+                              <TableCell>{cardItem.CDES_FOURNIS}</TableCell>
+                              <TableCell align="right">{cardItem.EMPLACEMENT_ART}</TableCell>
+                              <TableCell align="right">{cardItem.RAYON_ARTICLE}</TableCell>
+                              <TableCell> {formatDate(cardItem.LATEST_DATE_LIV_CF_P)}</TableCell>
+                              <TableCell>
+                                {[
+                                  { keyword: "OZKA", amount: 30 },
+                                  { keyword: "OTANI", amount: 35 },
+                                  { keyword: "STARMAXX", amount: 30 },
+                                  { keyword: "STIP", amount: 22.17 },
+                                  { keyword: "PETLAS", amount: 30 },
+                                  { keyword: "KUMHO", amount: 33 },
+                                  { keyword: "SIOC", amount: 20 },
+                                  { keyword: "ZEETEX", amount: 28 },
+                                ].some(({ keyword, amount }) =>
+                                  ((cardItem.CCL_ARTICLE && cardItem.CCL_ARTICLE.includes(keyword)) ||
+                                    (cardItem.CCL_DES_ART && cardItem.CCL_DES_ART.includes(keyword))) &&
+                                  cardItem.CCL_TX_REM === amount
+                                ) ? "Comptant" : "à termes"}
+                              </TableCell>
+                              <TableCell>
+                                <img
+                                  src={
+                                    difference <= 0
+                                      ? emptybattery
+                                      : difference <= 8
+                                        ? midbattery
+                                        : fullbattery
+                                  }
+                                  alt={
+                                    difference <= 0
+                                      ? 'Empty Battery'
+                                      : difference <= 8
+                                        ? 'Mid Battery'
+                                        : 'Full Battery'
+                                  }
+                                  style={{ width: '24px', height: '24px' }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                            
+                          );
+                        })}
+                             
+                      </TableBody>
+                    </Table>
+                
+                  </Box>
+                </Collapse>
+                <CustomCardActions>
+                <Button
+                      startIcon={<PrintIcon style={{ color: 'white' }} />}
+                      onClick={() => handlePrint(command)}
+                      style={{
+                        marginTop: !isClientDetailsVisible ? "4%" : '40%',
+                        fontWeight: "bold",
+                        fontSize: "10px",
+                        color: "#478CCF"
+                      }}
+                    >
+                  <Button startIcon={<PrintIcon />} onClick={() => handleCardClick(command)} style={{ marginTop: !isClientDetailsVisible ? "4%" : '40%', fontWeight: "bold", color: "#478CCF", fontSize: "10px", }} >
+                 
+                    <IconButton
+                      onClick={() => handleCardClick(command)}
+                      aria-expanded={expanded === command.NUM_CDE_C}
+                      sx={{ position: 'absolute', top: 8, right: 8 }}
+                    ></IconButton>  Imprimer
+                    </Button>
                   </Button>
-                )}
-                {/* <Button startIcon={<CheckCircleIcon />} color="success">
-                  Validation commercial
-                </Button> */}
-              </CustomCardActions>
-            </Card>
-          </Grid>
-        );
-      })}
+                  <Button startIcon={<HistoryIcon />} onClick={() => handleOpenHistoriqueDialog(command)} style={{ marginTop: !isClientDetailsVisible ? "4%" : '40%', fontWeight: "bold", color: "#478CCF", fontSize: "10px", }} >
+                    Historique
+                  </Button>
+               
+                  {!command.NUM_CDE_CL && etat !== "Traité" && (
+                    <Button
+                      startIcon={<CancelIcon />}
+                      style={{ marginTop: !isClientDetailsVisible ? "4%" : '60%', fontWeight: "bold", color: "red", fontSize: "10px" }}
+                      onClick={() => handleOpenCancelDialog(command)}
+                    >
+                      Annuler
+                    </Button>
+                  )}
+                
+                </CustomCardActions>
+              </Card>
+            </Grid>
+          );
+        })}
       <Box
         sx={{
           position: 'fixed',
@@ -724,9 +824,7 @@ Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typogra
           <Button onClick={handleCloseCancelDialog} color="primary">
             NON
           </Button>
-          <Button onClick={handleConfirmCancel} color="secondary">
-            OUI
-          </Button>
+          
         </DialogActions>
       </Dialog>
 
@@ -1096,56 +1194,56 @@ Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typogra
               <Typography>Chargement des données...</Typography>
             ) : selectedArticle ? (
               <div>
-                       {selectedArticle.CODE_ARTICLE&& (
-                        <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Code Article :</span> {selectedArticle.CODE_ARTICLE}
-</Typography>
-)}
- {selectedArticle.INTIT_ARTICLE&& (
-                          <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Description :</span> {selectedArticle.INTIT_ARTICLE}
-  </Typography>
-)}
-{selectedArticle.ART_GR3_DESC&& (
-                          <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Vitesse:</span>  {selectedArticle.ART_GR3_DESC}
-  </Typography>
-)}
-{selectedArticle.ART_GR2_DESC&& (
-                        <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2',marginBottom:'0.5em'}}>Charge :</span>  {selectedArticle.ART_GR2_DESC}
-  </Typography>
-)}
-{selectedArticle.INTIT_ART_3 && (
-                        <Typography style={{ color: 'black', fontWeight: 'bold' , color:'red',marginBottom:'0.5em'}}>
-    {selectedArticle.INTIT_ART_3}
-  </Typography>
-)}
-{selectedArticle.INTIT_ART_2 && (
-                          <Typography style={{color:'black'}}>
-  <span style={{ color: 'black', fontWeight: 'bold' , color:'#4379F2'}}>NB :</span>  {selectedArticle.INTIT_ART_2}
-  </Typography>
-)}
- <RenderStockGros article={selectedArticle} />  
+                {selectedArticle.CODE_ARTICLE && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Code Article :</span> {selectedArticle.CODE_ARTICLE}
+                  </Typography>
+                )}
+                {selectedArticle.INTIT_ARTICLE && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Description :</span> {selectedArticle.INTIT_ARTICLE}
+                  </Typography>
+                )}
+                {selectedArticle.ART_GR3_DESC && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Vitesse:</span>  {selectedArticle.ART_GR3_DESC}
+                  </Typography>
+                )}
+                {selectedArticle.ART_GR2_DESC && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Charge :</span>  {selectedArticle.ART_GR2_DESC}
+                  </Typography>
+                )}
+                {selectedArticle.INTIT_ART_3 && (
+                  <Typography style={{ color: 'black', fontWeight: 'bold', color: 'red', marginBottom: '0.5em' }}>
+                    {selectedArticle.INTIT_ART_3}
+                  </Typography>
+                )}
+                {selectedArticle.INTIT_ART_2 && (
+                  <Typography style={{ color: 'black' }}>
+                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2' }}>NB :</span>  {selectedArticle.INTIT_ART_2}
+                  </Typography>
+                )}
+                <RenderStockGros article={selectedArticle} />
 
- {selectedArticle.file && (
-            <Box
-              component="img"
-              alt={selectedArticle.INTIT_ARTICLE}
-              src={`https://api.click.com.tn/imgmobile/${selectedArticle.file}`}
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                borderRadius: '8px',
-                marginTop: '16px',
-              }}
-            />
-          )}  </div>
+                {selectedArticle.file && (
+                  <Box
+                    component="img"
+                    alt={selectedArticle.INTIT_ARTICLE}
+                    src={`https://api.click.com.tn/imgmobile/${selectedArticle.file}`}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      marginTop: '16px',
+                    }}
+                  />
+                )}  </div>
             ) : (
               <Typography>Aucune donnée disponible pour cet article.</Typography>
             )}
-                  
+
 
           </DialogContentText>
         </DialogContent>

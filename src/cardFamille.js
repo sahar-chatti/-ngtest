@@ -792,8 +792,8 @@ function CustomCard({ client, setClients, user, fetchPart }) {
                     <Grid item xs={12} md={5}>
                       <Button
                         variant="contained"
-                        color="success" // You can change this to any color you prefer
-                        startIcon={<CheckCircleIcon />} // Adds the icon to the start of the button
+                        color="success"
+                        startIcon={<CheckCircleIcon />}
                         style={{ width: '350px', height: '100%', fontSize: '14px' }}
                         onClick={handleAcceptPart}
                       >

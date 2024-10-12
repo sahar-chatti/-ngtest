@@ -68,7 +68,12 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const user = useSelector((state) => state.user);
   const [detailsCommunication, setDetailsCommunication] = useState('');
   const [transporteurs, setTransporteurs] = useState([])
+  const [transporteursCspd, setTransporteursCspd] = useState([])
+
   const [modeLiv, setModeLiv] = useState([])
+  const [vehiculeCspd, setVehiculeCspd] = useState([])
+  const [chauffeur, setChauffeur] = useState('');
+
   const [modePay, setModepay] = useState([])
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -108,6 +113,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const [idAssigner, setIdAssigner] = useState('');
   const [idCommand, setIdCommand] = useState('');
   const [idCollaborator, setIdCollaborator] = useState('');
+  const [vehicule, setVehicule] = useState([]);
 
   const collabs = [1, 2];
   const handleChangePage = (event, newPage) => setPage(newPage);
@@ -159,6 +165,9 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
     setNumCheque('');
     setModePaiement('');
     setDateLivraisonPrevue('');
+    setVehicule('')
+    setTransporteur('')
+
   }
 
   useEffect(() => {
@@ -337,6 +346,12 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
     axios.get(`${BASE_URL}/api/transporteur`)
       .then(response => setTransporteurs(response.data))
       .catch(error => console.error('Error fetching data:', error));
+      axios.get(`${BASE_URL}/api/Chauffeur`)
+      .then(response => setTransporteursCspd(response.data))
+      .catch(error => console.error('Error fetching data:', error));
+      axios.get(`${BASE_URL}/api/Vehicules`)
+      .then(response => setVehicule(response.data))
+      .catch(error => console.error('Error fetching data:', error));
     fetchCommandes();
     fetchCommunications();
   }, [page, pageSize, searchTerm]);
@@ -345,15 +360,39 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const handleSaveCommunication = async () => {
     setErrorLivraison('');
     resetForm();
-
+  
     if (!dateLivraisonPrevue) {
       console.log("Erreur : dateLivraisonPrevue est vide");
       setErrorLivraison('Veuillez sélectionner une date de livraison.');
       return;
     }
-
+  
     try {
       if (commandTocom && commandTocom.NUM_CDE_C) {
+        // Log the data before sending to API
+        console.log("Sending data:", {
+          ref_commande: commandTocom.NUM_CDE_C,
+          commercial: user.LOGIN,
+          statut: "Validation commerciale",
+          datetime: dateTime,
+          details_communication: detailsCommunication,
+          etatsCommande,
+          mode_livraison: modeLivraison?.ID,
+          adresse_livraison: adresseLivraison,
+          transporteur: transporteur?.ID,
+          chauffeur: chauffeur, // Assurez-vous que c'est le libellé
+          vehicule: vehiculeCspd,
+          beneficiaire,
+          matricule_fiscale: matriculeFiscale,
+          adresse_facturation: adresseFacturation,
+          mode_paiement: modePaiement?.ID,
+          num_cheque: numCheque,
+          banque,
+          date_echeance: dateEcheance,
+          base,
+          dateLivraisonPrevue,
+        });
+  
         const response = await axios.post(`${BASE_URL}/api/UpdateOrCreateComCmd`, {
           ref_commande: commandTocom.NUM_CDE_C,
           commercial: user.LOGIN,
@@ -361,23 +400,26 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           datetime: dateTime,
           details_communication: detailsCommunication,
           etatsCommande,
-          mode_livraison: modeLivraison.ID,
+          mode_livraison: modeLivraison?.ID,
           adresse_livraison: adresseLivraison,
-          transporteur: transporteur.ID,
-          beneficiaire: beneficiaire,
+          transporteur: transporteur?.ID,
+          chauffeur: chauffeur, // Envoi du libellé du chauffeur
+          vehicule: vehiculeCspd,
+          beneficiaire,
           matricule_fiscale: matriculeFiscale,
           adresse_facturation: adresseFacturation,
-          mode_paiement: modePaiement.ID,
+          mode_paiement: modePaiement?.ID,
           num_cheque: numCheque,
-          banque: banque,
+          banque,
           date_echeance: dateEcheance,
-          base: base,
+          base,
           dateLivraisonPrevue,
         });
+  
         if (response.data && response.data.message) {
           console.log('Communication enregistrée avec succès:', response.data.message);
           setOpenCommSuccess(true);
-          await fetchCommandes(); // Await fetchCommandes if it's an async function
+          await fetchCommandes(); // Await if fetchCommandes is async
         } else {
           console.error('Unexpected response format:', response.data);
         }
@@ -387,6 +429,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement de la communication:', error);
     } finally {
+      // Reset the form fields
       setOpenDialog(false);
       setDateTime('');
       setDetailsCommunication('');
@@ -401,6 +444,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
       setModePaiement('');
     }
   };
+  
 
   const submitAssignement = async (e) => {
     e.preventDefault();
@@ -1008,6 +1052,20 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
 
                     }}>Date de livraison prévue </TableCell>
+                      <TableCell sx={{
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.common.white,
+                      fontWeight: 'bold',
+                      borderBottom: '1px solid rgba(224, 224, 224, 1)',
+
+                    }}>Chauffeur </TableCell>
+                      <TableCell sx={{
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.common.white,
+                      fontWeight: 'bold',
+                      borderBottom: '1px solid rgba(224, 224, 224, 1)',
+
+                    }}>Véhicule </TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -1016,7 +1074,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                     <TableRow key={c.ID + i}>
                       <TableCell>{formatDate(c.DATETIME)}</TableCell>
                       <TableCell>{c.DETAILS_COMMUNICATION}</TableCell>
-                      <TableCell>{c.ETAT_COMMANDE}</TableCell>
                       <TableCell>{c?.COMMERCIAL}</TableCell>
                       <TableCell>{c?.MODE_LIV} </TableCell>
                       <TableCell>{c.ADRESSE_LIVRAISON}</TableCell>
@@ -1024,7 +1081,8 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                       <TableCell>{c?.BENEFICIAIRE}</TableCell>
                       <TableCell>{c?.MODE_PAY}</TableCell>
                       <TableCell>{c.DATELIVRAISONPREVUE}</TableCell>
-
+                      <TableCell>{c?.CHAUFFEUR}</TableCell>
+                      <TableCell>{c?.VEHICULE}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1146,8 +1204,45 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
               value={adresseLivraison}
               onChange={(e) => setAdresseLivraison(e.target.value)}
             />
-            <InputLabel id="select-label-1">Transporteur</InputLabel>
-            <Select
+
+{modeLivraison?.LIBELLE === 'Nos moyens' && (
+  <>
+ <InputLabel id="select-label-chauffeur">Chauffeur</InputLabel>
+ <Select
+  labelId="select-label-chauffeur"
+  id="select-chauffeur"
+  value={chauffeur}
+  onChange={(e) => setChauffeur(e.target.value)}
+  fullWidth
+>
+  {transporteursCspd.map((chauffeur) => (
+    <MenuItem key={chauffeur.ID} value={chauffeur.LIBELLE}>
+      {chauffeur.LIBELLE}
+    </MenuItem>
+  ))}
+</Select>
+<InputLabel id="select-label-chauffeur">Véhicule</InputLabel>
+
+<Select
+  labelId="select-label-1"
+  id="select-1"
+  value={vehiculeCspd}
+  onChange={(e) => setVehiculeCspd(e.target.value)}
+  fullWidth
+>
+  {vehicule.map((vehicule) => (
+    <MenuItem key={vehicule.ID} value={vehicule.LIBELLE}>
+      {vehicule.LIBELLE}
+    </MenuItem>
+  ))}
+</Select>
+
+  </>
+)}
+{modeLivraison?.LIBELLE === 'transporteur' && (
+  <>
+
+<Select
               labelId="select-label-1"
               id="select-1"
               value={transporteur}
@@ -1158,6 +1253,9 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                 <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
               ))}
             </Select>
+    
+  </>
+)}
 
           </Box>
           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
@@ -1208,6 +1306,8 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
               <FormControlLabel value="48 H" control={<Radio />} label="48 H" />
               <FormControlLabel value="72 H" control={<Radio />} label="72 H" />
             </RadioGroup>
+           
+            
 
           </Box>
           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
