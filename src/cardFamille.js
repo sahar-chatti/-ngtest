@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import BlockIcon from '@mui/icons-material/Block';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@mui/material/Card';
@@ -31,43 +30,26 @@ import naisIcon from './icons/dateanniv.png'
 import callIcon from './icons/call.png'
 import userIcon from './icons/user.png'
 import dateIcon from './icons/NAISS.png'
-import {
-  Grid
-
-} from '@mui/material';
+import { Grid } from '@mui/material';
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
-import socketIOClient from 'socket.io-client';
-import Paper from '@mui/material';
-import { Password } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { InfoOutlined } from '@mui/icons-material';
 import {
-
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-
-
-  Tooltip,
   useTheme,
-  useMediaQuery,
-
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import SearchIcon from '@mui/icons-material/Search';
 import BASE_URL from './constantes';
-import { Await } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 const GlowingBox = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  // backgroundColor: '#fff', // Default background color
   borderRadius: 20,
   boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)',
   transition: 'box-shadow 0.3s ease-in-out',
@@ -103,7 +85,7 @@ const CustomCardActions = styled(CardActions)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   padding: '8px 16px',
-  height: '50px', // Set a fixed height for the actions section
+  height: '50px', 
 }));
 
 const CustomButton = styled(Button)(({ theme }) => ({
@@ -120,7 +102,6 @@ const GreenButton = styled(CustomButton)(({ theme }) => ({
   },
 }));
 
-
 function CustomCard({ client, setClients, user, fetchPart }) {
   const theme = useTheme();
   const [openDialog, setOpenDialog] = useState(false);
@@ -130,11 +111,9 @@ function CustomCard({ client, setClients, user, fetchPart }) {
   const [selectValue2, setSelectValue2] = useState('');
   const [selectValue3, setSelectValue3] = useState('');
   const [detailsCommunication, setDetailsCommunication] = useState('');
-
   const [raisonList, setRaisonList] = useState([]);
   const [qualificationList, setQualificationList] = useState([]);
   const [selectedPartenaire, setSelectedPartenaire] = useState('');
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [selectedQualification, setSelectedQualification] = useState("")
   const [selectedRaison, setSelectedRaison] = useState("")
   const [statuts, setStatus] = useState([])
@@ -146,68 +125,47 @@ function CustomCard({ client, setClients, user, fetchPart }) {
   const [filteredRaisons, setFilteredRaisons] = useState([])
   const [list, setList] = useState([])
   const [savePart, setSavePart] = useState(false)
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState(null);
+  const [openInfoDialogue, setOpenInfoDialogue] = useState(false)
+  const [openPartSuccess, setOpenPartSuccess] = useState(false);
+  const [openCommSuccess, setOpenCommSuccess] = useState(false);
+  const [messages, setMessages] = useState(false);
+  const [CodeSent, setCodeSent] = useState(false);
+  const [communications, setCommunications] = useState([])
+  const [typeAppel, setTypeAppel] = useState("")
+
+
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      console.log("file", file.name)
       setContrat(file.name);
     }
   };
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [clientToDelete, setClientToDelete] = useState(null);
-
   const handleOpenDeleteDialog = (client) => {
     setClientToDelete(client);
     setOpenDeleteDialog(true);
   };
-
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setClientToDelete(null);
-  };
-
-  const handleConfirmDelete = async () => {
-    try {
-      await axios.post('http://192.168.1.195/api/Requests/jeux.php?action=delete-profil-inv', {
-        id: clientToDelete.ID_INVESTISSEUR
-      });
-
-      await axios.delete(`${BASE_URL}/api/deleteInv/${clientToDelete.ID_INVESTISSEUR}`);
-
-      fetchPart();
-      handleCloseDeleteDialog();
-    } catch (error) {
-      console.error('Failed to delete partner:', error);
-    }
-  };
+ 
 
   const handleSaveContrat = async () => {
     if (selectedFile) {
-
-
       const formData = new FormData();
       formData.append('file', selectedFile);
-
       try {
-        //const response = await axios.post('https://api.click.com.tn/upload_contrat.php', formData);
-
         await axios.put(`${BASE_URL}/api/updateInvContrat`, {
           id: client.ID_INVESTISSEUR,
-          contrat: selectedFile.name, // Update with the new file name
+          contrat: selectedFile.name, 
         });
-        console.log(statuts)
         const id = statuts.filter((s) => s.AVANCEMENT === 'Contrat signé')
-        console.log(id)
         await axios.put(
           `${BASE_URL}/api/updateInvStatus`,
           { id: client.ID_INVESTISSEUR, id_statut: id[0]?.ID_STATUT }
         );
         setSavePart(true)
-
         alert('Contrat enregistré avec succès !');
-        fetchPart(); // Refresh the client data after saving
-
+        fetchPart(); 
       } catch (error) {
         console.error('Erreur lors de l\'envoi du fichier :', error);
         alert('Échec de l\'enregistrement du contrat.');
@@ -215,22 +173,18 @@ function CustomCard({ client, setClients, user, fetchPart }) {
 
     };
     if (client.CONTRAT && client.CONTRAT !== "") {
-
       const id = statuts.filter((s) => s.AVANCEMENT === 'Contrat signé')
-      console.log(id)
       await axios.put(
         `${BASE_URL}/api/updateInvStatus`,
         { id: client.ID_INVESTISSEUR, id_statut: id[0]?.ID_STATUT }
       );
       setSavePart(true)
-
       alert('Contrat signé avec succès !');
       fetchPart();
     }
   }
   const handleAcceptPart = async () => {
     const id = statuts.filter((s) => s.AVANCEMENT === 'En cours de signature')
-    console.log(id)
     await axios.put(
       `${BASE_URL}/api/updateInvStatus`,
       { id: client.ID_INVESTISSEUR, id_statut: id[0]?.ID_STATUT }
@@ -238,12 +192,10 @@ function CustomCard({ client, setClients, user, fetchPart }) {
     await fetchPart()
     setOpenInfoDialogue(false)
   }
-
   useEffect(() => {
     axios.get(`${BASE_URL}/api/RaisonsList`)
       .then(response => setRaisonList(response.data))
       .catch(error => console.error('Error fetching data:', error));
-
     axios.get(`${BASE_URL}/api/QualificationAppels`)
       .then(response => setQualificationList(response.data))
       .catch(error => console.error('Error fetching data:', error));
@@ -256,18 +208,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
     axios.get(`${BASE_URL}/api/StatutPartenaires`)
       .then(response => setStatus(response.data))
       .catch(error => console.error('Error fetching data:', error));
-
-    // axios.get(`${BASE_URL}/api/StatutPartenaires`)
-    // .then(response => {
-    //     console.log('Data from API:', response.data);
-    //     setStatus(response.data); 
-
-    // })
-    // .catch(error => { 
-    //     console.error('Error fetching data:', error);
-    //    //setError('There was an error fetching the statuts!');
-
-    // });
   }, []);
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -276,26 +216,17 @@ function CustomCard({ client, setClients, user, fetchPart }) {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-  const [openPartSuccess, setOpenPartSuccess] = useState(false);
-  const [openCommSuccess, setOpenCommSuccess] = useState(false);
-  const [communications, setCommunications] = useState([])
-  const [typeAppel, setTypeAppel] = useState("")
   const handleOpenDialog = async (client, type) => {
     setTypeAppel(type)
-
     setSelectedPartenaire(client);
     setDateTime(new Date().toISOString().slice(0, 16));
     setOpenDialog(true);
     if (!client.USER_IN_CHARGE) {
       try {
-        console.log("start")
-
         await axios.put(
           `${BASE_URL}/api/updateInvUser`,
           { id: client.ID_INVESTISSEUR, USER_IN_CHARGE: user.LOGIN }
         );
-        console.log("end")
-
       } catch (error) {
         console.error('Error updating partenaire:', error);
       }
@@ -307,18 +238,15 @@ function CustomCard({ client, setClients, user, fetchPart }) {
       }
     }
     );
-    console.log("coms", coms.data)
     setCommunications(coms.data)
   };
   const handleSavePart = async (client) => {
     if (client) {
       try {
-        console.log("start saving");
         await axios.post(
           `${BASE_URL}/api/saveInvestisseur`,
           { id: client.ID_INVESTISSEUR, user: user.LOGIN, name: client.NOM_PRENOM, tel: client.NUMERO_TELEPHONE, adresse: client.ADRESSE, password: client.MOT_DE_PASSE }
         );
-        console.log("end");
         setOpenPartSuccess(true);
         setClients(prevClients => prevClients.filter(c => c.ID_INVESTISSEUR !== client.ID_INVESTISSEUR));
       } catch (error) {
@@ -326,13 +254,10 @@ function CustomCard({ client, setClients, user, fetchPart }) {
       }
     }
   };
-
   const handleCloseDialog = () => setOpenDialog(false);
-
   const handleSaveCommunication = async (client) => {
     if (client && selectedQualification && selectedRaison) {
       try {
-        console.log("start create");
         await axios.post(
           `${BASE_URL}/api/CreateCommunicationInv`,
           {
@@ -346,7 +271,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
             UTILISATEUR: user.LOGIN
           }
         );
-        console.log("end");
         await axios.put(
           `${BASE_URL}/api/updateInvStatus`,
           { id: client.ID_INVESTISSEUR, id_statut: selectedQualification.UPDATE_STATUS }
@@ -371,9 +295,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
     setSelectedRaison("");
   };
 
-
-  const [openInfoDialogue, setOpenInfoDialogue] = useState(false)
-
   useEffect(() => {
     if (selectedRaison) {
       const qualificationIds = params
@@ -386,7 +307,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
     } else {
       setFilteredQualificationList([]);
     }
-
 
   }, [selectedRaison, params, qualificationList]);
   useEffect(() => {
@@ -406,40 +326,10 @@ function CustomCard({ client, setClients, user, fetchPart }) {
   const onClose = () => {
     setOpenInfoDialogue(false)
   }
-  // const matchingStatut = statuts.find(row => row.LIBELLE === client.STATUS);
-  // console.log("matchingStatut",matchingStatut)
-  // const backgroundColor = matchingStatut ? matchingStatut.COULEUR : 'white';
-
-  const cvUrl = client.CV ? `https://api.click.com.tn/Requests/cv_partenaires/${client.CV}` : null;
-  const parseAndJoin = (field) => {
-    try {
-      return JSON.parse(field).join(', ');
-    } catch (e) {
-      return field;
-    }
-  };
-  //mailing
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [loginmail, setLoginmail] = useState('');
-  const [username, setUsername] = useState('');
-
-  const [messages, setMessages] = useState('');
-  const [codeSent, setCodeSent] = useState();
-
   const handleSendCode = async (e) => {
-
     let loginmail = (client.TEL_CLIENT_F)
-
     let code = (client.CHAMP_2_CLIENT)
-
     let username = (client.NOM_PRENOM)
-
-
-
-    // alert(JSON.stringify(client))
-
-
     return await axios.post('http://192.168.1.170:3200/signin', { email: client.EMAIL, loginmail, username, code }, {
       headers: {
         "Content-Type": "application/json",
@@ -458,8 +348,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
 
       });
   }
-
-
   return (
     <CustomCardWrapper style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent' }}>
       <CustomCardContent >
@@ -558,7 +446,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
         maxWidth="md"
         fullWidth
       >
-
         <DialogTitle>
           Communication de {client.NOM_PRENOM}
           <Button onClick={handleCloseDialog} style={{ position: 'absolute', right: '8px', top: '8px' }}>
@@ -672,7 +559,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Qualification d'appel</TableCell>
 
                   </TableRow>
@@ -684,8 +570,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
                       <TableCell>{c.DETAILS_COMMUNICATION}</TableCell>
                       <TableCell>{c?.RAISON}</TableCell>
                       <TableCell>{c?.QUALIFICATION}</TableCell>
-
-
                     </TableRow>
                   ))}
                 </TableBody>
@@ -801,7 +685,6 @@ function CustomCard({ client, setClients, user, fetchPart }) {
                       </Button>
                     </Grid>
                   )}
-
                 </Grid>
               </Box>
             </Grid>
@@ -919,12 +802,10 @@ function CardContainer({ searchTerm, selectedAvancement, setTotalObj }) {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [userAffected, setUserAffected] = useState(false)
   const [total, setTotal] = useState(0);
   const user = useSelector((state) => state.user);
-  // const [searchTerm, setSearchTerm] = useState('');
   const fetchPart = async () => {
-    const URL = user.ROLE === "collaborateur" ? `${BASE_URL}/api/investisseursCollaborateur` : `${BASE_URL}/api/partenaires
+  const URL = user.ROLE === "collaborateur" ? `${BASE_URL}/api/investisseursCollaborateur` : `${BASE_URL}/api/partenaires
   `
     setLoading(true);
     try {
@@ -934,13 +815,11 @@ function CardContainer({ searchTerm, selectedAvancement, setTotalObj }) {
         searchTerm: searchTerm,
         avancement: selectedAvancement
       };
-
       if (user.ROLE === "collaborateur") {
         params.user = user.LOGIN;
       }
 
       const response = await axios.get(URL, { params });
-      console.log(response.data)
       setClients(response.data.clients);
       setTotal(response.data.total);
       setTotalObj("inv", response.data.total);
@@ -969,40 +848,32 @@ function CardContainer({ searchTerm, selectedAvancement, setTotalObj }) {
 
   useEffect(() => {
     const socket = new WebSocket('ws://localhost:8000');
-
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'update_investisseur') {
         updateClient(data.id, data.USER_IN_CHARGE);
       }
     };
-
     return () => {
       socket.close();
     };
   }, []);
   const handleChangePage = (event, newPage) => setPage(newPage);
-
   const handleChangeRowsPerPage = (event) => {
     setPageSize(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-
-  //const clients = clients
 
   if (loading) {
     return <div> <Box sx={{ display: 'flex' }}>
       <CircularProgress />
     </Box></div>;
   }
-
   if (error) {
     return <div>{error}</div>;
   }
   return (
     <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-
       <Box sx={{
         flex: '1 1 auto',
         maxHeight: `100vh`,
@@ -1012,14 +883,11 @@ function CardContainer({ searchTerm, selectedAvancement, setTotalObj }) {
         <Grid container spacing={2}>
           {clients.map(client => (
             <Grid item xs={12} sm={6} md={4} lg={4} xl={4} key={client.ID_PARTENAIRE}>
-
               <CustomCard client={client} setClients={setClients} user={user} fetchPart={fetchPart} />
             </Grid>
           ))}
         </Grid>
       </Box>
-
-      {/* Pagination */}
       <Box
         sx={{
           position: 'fixed',
@@ -1042,7 +910,6 @@ function CardContainer({ searchTerm, selectedAvancement, setTotalObj }) {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
-
     </Box>
   );
 };

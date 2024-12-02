@@ -21,14 +21,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import BASE_URL from './constantes';
 
 const CustomCardWrapper = styled(Card)(({ theme }) => ({
-  width: 'calc(25% - 16px)', // 25% width to fit 4 cards per row
+  width: 'calc(25% - 16px)', 
   margin: theme.spacing(1),
-  border: '1px solid #ccc', // Border style
-  borderRadius: theme.shape.borderRadius, // Optional: Border radius from theme
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Light shadow
+  border: '1px solid #ccc', 
+  borderRadius: theme.shape.borderRadius, 
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
   transition: 'box-shadow 0.3s ease-in-out',
   '&:hover': {
-    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)', // Increased shadow on hover
+    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)', 
   },
 }));
 
@@ -41,15 +41,15 @@ const CustomCardContent = styled(CardContent)({
 const CustomCardActions = styled(CardActions)({
   display: 'flex',
   justifyContent: 'space-between',
-  padding: '8px 16px', 
+  padding: '8px 16px',
 });
 
 const CustomButton = styled(Button)({
   fontSize: '0.6rem',
-  minWidth: 'auto', 
+  minWidth: 'auto',
   display: 'flex',
   alignItems: 'center',
-  padding: '2px', 
+  padding: '2px',
 });
 
 function CustomCard({ client }) {
@@ -66,7 +66,6 @@ function CustomCard({ client }) {
   };
 
   const handleSaveCommunication = () => {
-    console.log('Enregistrer la communication:', { dateTime, details });
     setOpen(false);
   };
 
@@ -97,8 +96,6 @@ function CustomCard({ client }) {
           SMS
         </CustomButton>
       </CustomCardActions>
-
-      {/* Popup Dialog */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>
           Détails de la Communication
@@ -154,7 +151,6 @@ function CardContainer() {
     setLoading(true);
     axios.get(`${BASE_URL}/api/clientsFDM?page=${page + 1}&pageSize=${pageSize}`)
       .then(response => {
-        console.log('Data from API:', response.data);
         setClients(response.data);
         setLoading(false);
       })

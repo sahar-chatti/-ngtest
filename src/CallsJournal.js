@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { 
-   TextField,
-   Button, 
-   Table, 
-   TableBody, 
-   TableCell, 
-   TableContainer, 
-   TableHead, 
-   TableRow, 
-   Paper, 
-   useTheme, 
-   Select, 
-   MenuItem } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  useTheme,
+  Select,
+  MenuItem
+} from '@mui/material';
 import BASE_URL from './constantes';
 import { useSelector } from 'react-redux';
 import PhoneCallbackIcon from '@mui/icons-material/PhoneCallback';
@@ -35,7 +36,6 @@ const CallsJournal = () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/users`);
       setUsers(response.data);
-
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -63,6 +63,46 @@ const CallsJournal = () => {
     }
   };
 
+  const renderTableRow = (comm) => {
+    if (comm.COLLABORATOR) {
+      return (
+        <TableRow key={comm.ID}>
+          <TableCell>{new Date(comm.DATE_COMMUNICATION || comm.CALL_DATE).toLocaleString()}</TableCell>
+          <TableCell style={{ alignItems: "center", display: "flex" }}>
+            <PhoneCallbackIcon sx={{ mr: 1, color: "blue" }} />
+            {comm.TYPE_APPEL || "Appel Sortant"}
+          </TableCell>
+          <TableCell>{comm.COLLABORATOR}</TableCell>
+          <TableCell>{comm.PARTENAIRE || comm.
+            CLIENT_NAME}</TableCell>
+          <TableCell>{comm.RAISON}</TableCell>
+          <TableCell>{comm.QUALIFICATION || "Consultation client"
+          }</TableCell>
+          <TableCell>{comm.DETAILS_COMMUNICATION || comm.DESCRIPTION
+          }</TableCell>
+        </TableRow>
+      );
+    }
+
+    return (
+      <TableRow key={comm.id}>
+        <TableCell>{new Date(comm.DATE_COMMUNICATION).toLocaleString()}</TableCell>
+        <TableCell style={{ alignItems: "center", display: "flex" }}>
+          {comm.TYPE_APPEL === "appel entrant" ? (
+            <PhoneForwardedIcon sx={{ mr: 1, color: "green" }} />
+          ) : (
+            <PhoneCallbackIcon sx={{ mr: 1, color: "blue" }} />
+          )}
+          {comm.TYPE_APPEL}
+        </TableCell>
+        <TableCell>{comm.UTILISATEUR}</TableCell>
+        <TableCell>{comm.PARTENAIRE ? `Par: ${comm.PARTENAIRE}` : `Inv: ${comm.INVESTISSEUR}`}</TableCell>
+        <TableCell>{comm.RAISON}</TableCell>
+        <TableCell>{comm.QUALIFICATION}</TableCell>
+        <TableCell>{comm.DETAILS_COMMUNICATION}</TableCell>
+      </TableRow>
+    );
+  };
 
   return (
     <Paper style={{ padding: 16 }}>
@@ -86,21 +126,20 @@ const CallsJournal = () => {
           variant="outlined"
           style={{ marginRight: 16 }}
         />
-        {((user?.ROLE === "administrateur") || (user?.ROLE === "directeur communication")) && (
-          <>
-            <Select
-              labelId="select-label-1"
-              id="select-1"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: "250px" }}
-            >
-              {users?.map((raison) => (
-                <MenuItem key={raison.ID_UTILISATEUR} value={raison}>{raison.UTILISATEUR}</MenuItem>
-              ))}
-            </Select>
-          </>
-        )}
+        <>
+          <Select
+            labelId="select-label-1"
+            id="select-1"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: "250px" }}
+          >
+            {users?.map((raison) => (
+              <MenuItem key={raison.ID_UTILISATEUR} value={raison}>{raison.UTILISATEUR}</MenuItem>
+            ))}
+          </Select>
+        </>
+
         <Button variant="contained" color="primary" onClick={handleSearch} style={{ marginLeft: 16 }}>
           Résultat
         </Button>
@@ -114,79 +153,47 @@ const CallsJournal = () => {
                 color: theme.palette.common.white,
                 fontWeight: 'bold',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-
               }}>Date</TableCell>
               <TableCell sx={{
                 backgroundColor: theme.palette.primary.main,
                 color: theme.palette.common.white,
                 fontWeight: 'bold',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-
               }}>Type d'appel</TableCell>
               <TableCell sx={{
                 backgroundColor: theme.palette.primary.main,
                 color: theme.palette.common.white,
                 fontWeight: 'bold',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-
               }}>Collaborateur</TableCell>
               <TableCell sx={{
                 backgroundColor: theme.palette.primary.main,
                 color: theme.palette.common.white,
                 fontWeight: 'bold',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-
-              }}>Partenaire/Investisseur</TableCell>
+              }}>Contact</TableCell>
               <TableCell sx={{
                 backgroundColor: theme.palette.primary.main,
                 color: theme.palette.common.white,
                 fontWeight: 'bold',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-
-              }}>Raison d'appel</TableCell>
+              }}>Raison</TableCell>
               <TableCell sx={{
                 backgroundColor: theme.palette.primary.main,
                 color: theme.palette.common.white,
                 fontWeight: 'bold',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-
-              }}>Qualification d'appel</TableCell>
+              }}>Status</TableCell>
               <TableCell sx={{
                 backgroundColor: theme.palette.primary.main,
                 color: theme.palette.common.white,
                 fontWeight: 'bold',
                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-
-              }}>Détails communication</TableCell>
+              }}>Description</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {communications.map((comm) => (
-              <TableRow key={comm.id}>
-                <TableCell>{new Date(comm.DATE_COMMUNICATION).toLocaleString()}</TableCell>
-                <TableCell style={{ alignItems: "center", display: "flex" }}>
-                  {comm.TYPE_APPEL === "appel entrant" ? (
-                    <PhoneForwardedIcon sx={{ mr: 1, color: "green" }} />
-                  ) : (
-                    <PhoneCallbackIcon sx={{ mr: 1, color: "blue" }} />
-                  )}
-                  {comm.TYPE_APPEL}
-
-                </TableCell>
-                <TableCell>{comm.UTILISATEUR}</TableCell>
-                <TableCell>{comm.PARTENAIRE ? `Par: ${comm.PARTENAIRE}` : `Inv :${comm.INVESTISSEUR}`}</TableCell>
-                <TableCell>{comm.RAISON}</TableCell>
-                <TableCell>{comm.QUALIFICATION}</TableCell>
-                <TableCell>{comm.DETAILS_COMMUNICATION}</TableCell>
-              </TableRow>
-            ))}
+            {communications.map((comm) => renderTableRow(comm))}
           </TableBody>
         </Table>
       </TableContainer>

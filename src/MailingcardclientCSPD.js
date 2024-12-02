@@ -173,7 +173,6 @@ const CardContainer = ({ searchTerm, selectedClientType, setBoite, selectedTri, 
         finalList.push({
           ...row,
           selectedCli: false,
-          EMAIL: i === 0 ? 'dev1cspd@gmail.com' : i === 1 ? 'dev1cspd@gmail.com' : 'sahar.chatti@isimg.tn',
         });
       });
 

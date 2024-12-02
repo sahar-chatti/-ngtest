@@ -19,6 +19,8 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import addressIcon from './icons/address.png'
 import Checkbox from '@mui/material/Checkbox';
 import axios from 'axios';
@@ -38,7 +40,6 @@ import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
 import { useSelector } from 'react-redux';
 import BASE_URL from './constantes';
-import dateIcon from './icons/NAISS.png';
 import midbattery from './icons/batterie orangé.png';
 import blockedIcon from './icons/blockedCli.png';
 import cardIcon from './icons/credit-card.png';
@@ -53,9 +54,10 @@ import { getArticleById } from "./Api";
 import { fetchClientsPartenaires } from "./Api";
 import { FormControlLabel, Radio } from '@mui/material';
 import RadioGroup from '@mui/material/RadioGroup';
+import AdsClickIcon from '@mui/icons-material/AdsClick';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-
-const CommandesList = ({ base, type, searchTerm ,}) => {
+const CommandesList = ({ base, type, searchTerm, }) => {
   const theme = useTheme();
   const [openedHistoryCommand, setOpenedHistoryCommand] = useState();
   const [errorLivraison, setErrorLivraison] = useState('');
@@ -69,18 +71,15 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const [detailsCommunication, setDetailsCommunication] = useState('');
   const [transporteurs, setTransporteurs] = useState([])
   const [transporteursCspd, setTransporteursCspd] = useState([])
-
   const [modeLiv, setModeLiv] = useState([])
   const [vehiculeCspd, setVehiculeCspd] = useState([])
   const [chauffeur, setChauffeur] = useState('');
-
   const [modePay, setModepay] = useState([])
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [dateLivraisonPrevue, setDateLivraisonPrevue] = useState('');
   const [etatsCommande, setEtatsCommande] = useState('');
-
   const [communications, setCommunications] = useState({});
   const [tarifs, setTarifs] = useState([])
   const [openTarifDialog, setOpenTarifDialog] = useState(false)
@@ -114,9 +113,32 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const [idCommand, setIdCommand] = useState('');
   const [idCollaborator, setIdCollaborator] = useState('');
   const [vehicule, setVehicule] = useState([]);
+  const [validationStatus, setValidationStatus] = useState({});
 
-  const collabs = [1, 2];
   const handleChangePage = (event, newPage) => setPage(newPage);
+  const handleValidationChange = async (commandId, isChecked) => {
+    console.log(`Validation change triggered for commandId: ${commandId}, isChecked: ${isChecked}`);
+    try {
+      const status = isChecked ? 'Validé' : 'Non validé';
+      console.log(`Setting status to: ${status}`);
+
+      const response = await axios.put(`${BASE_URL}/api/updateValidationStatus/${commandId}`, {
+        status: status
+      });
+      console.log('Response from server:', response.data);
+
+      if (response.data.message) {
+        console.log(`Update successful: ${response.data.message}`);
+        setValidationStatus(prev => ({
+          ...prev,
+          [commandId]: status
+        }));
+        fetchCommandes();
+      }
+    } catch (error) {
+      console.error('Error updating validation status:', error);
+    }
+  };
 
   useEffect(() => {
 
@@ -225,7 +247,13 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
       boxShadow: '0 0 16px rgba(0, 0, 0, 0.5)',
     },
   }));
-
+  useEffect(() => {
+    console.log('Connected User:', {
+      login: user.LOGIN,
+      role: user.ROLE,
+      fullDetails: user
+    });
+  }, [user]);
 
   const CustomCardActions = styled(CardActions)(({ theme }) => ({
     display: 'flex',
@@ -268,7 +296,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
         searchTerm: searchTerm
 
       };
-      //ajouter le checkbox
       const result = await axios.get(url, { params });
       let commandsList = [...result.data.commandes]
       let finalCommandList = []
@@ -327,7 +354,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   }, []);
 
   useEffect(() => {
-
     const fetchCommunications = async () => {
       try {
         const result = await axios.get(`${BASE_URL}/api/communicationsCmd`);
@@ -346,30 +372,28 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
     axios.get(`${BASE_URL}/api/transporteur`)
       .then(response => setTransporteurs(response.data))
       .catch(error => console.error('Error fetching data:', error));
-      axios.get(`${BASE_URL}/api/Chauffeur`)
+    axios.get(`${BASE_URL}/api/Chauffeur`)
       .then(response => setTransporteursCspd(response.data))
       .catch(error => console.error('Error fetching data:', error));
-      axios.get(`${BASE_URL}/api/Vehicules`)
+    axios.get(`${BASE_URL}/api/Vehicules`)
       .then(response => setVehicule(response.data))
       .catch(error => console.error('Error fetching data:', error));
     fetchCommandes();
     fetchCommunications();
   }, [page, pageSize, searchTerm]);
 
-
   const handleSaveCommunication = async () => {
     setErrorLivraison('');
     resetForm();
-  
+
     if (!dateLivraisonPrevue) {
       console.log("Erreur : dateLivraisonPrevue est vide");
       setErrorLivraison('Veuillez sélectionner une date de livraison.');
       return;
     }
-  
+
     try {
       if (commandTocom && commandTocom.NUM_CDE_C) {
-        // Log the data before sending to API
         console.log("Sending data:", {
           ref_commande: commandTocom.NUM_CDE_C,
           commercial: user.LOGIN,
@@ -392,7 +416,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           base,
           dateLivraisonPrevue,
         });
-  
+
         const response = await axios.post(`${BASE_URL}/api/UpdateOrCreateComCmd`, {
           ref_commande: commandTocom.NUM_CDE_C,
           commercial: user.LOGIN,
@@ -403,7 +427,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           mode_livraison: modeLivraison?.ID,
           adresse_livraison: adresseLivraison,
           transporteur: transporteur?.ID,
-          chauffeur: chauffeur, // Envoi du libellé du chauffeur
+          chauffeur: chauffeur,
           vehicule: vehiculeCspd,
           beneficiaire,
           matricule_fiscale: matriculeFiscale,
@@ -415,11 +439,11 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           base,
           dateLivraisonPrevue,
         });
-  
+
         if (response.data && response.data.message) {
           console.log('Communication enregistrée avec succès:', response.data.message);
           setOpenCommSuccess(true);
-          await fetchCommandes(); // Await if fetchCommandes is async
+          await fetchCommandes();
         } else {
           console.error('Unexpected response format:', response.data);
         }
@@ -429,7 +453,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement de la communication:', error);
     } finally {
-      // Reset the form fields
       setOpenDialog(false);
       setDateTime('');
       setDetailsCommunication('');
@@ -444,25 +467,36 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
       setModePaiement('');
     }
   };
-  
-
+  const ExpandingIcon = styled(ExpandMoreIcon)`
+  animation: bounce 1s infinite;
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-8px);
+    }
+    60% {
+      transform: translateY(-4px);
+    }
+  }
+`;
   const submitAssignement = async (e) => {
     e.preventDefault();
     const data = {
-      assigner: idAssigner, 
+      assigner: idAssigner,
       command: idCommand,
       collaborator: idCollaborator,
     };
 
     try {
       const response = await axios.post('/api/AssignCommand', data);
-      console.log(response.data.message); // or update state to show success message
+      console.log(response.data.message); 
 
     } catch (error) {
       console.error('Error:', error);
     }
   };
-
 
   const handleConfirmCancel = async () => {
     if (commandToCancel) {
@@ -471,7 +505,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           `${BASE_URL}/api/updateEtatCmd`,
           { reference: commandToCancel.NUM_CDE_C, etat: "Annulée", base: base }
         );
-
 
       } catch (err) {
         console.error('Erreur lors de l\'annulation de la commande:', err);
@@ -509,10 +542,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
       }
     }
   };
-
-
   const handleTarifDialogOpen = async (command) => {
-
     try {
       console.log("client", command.CODE_CLIENT)
       const result = await axios.get(`${BASE_URL}/api/tarifsClient`, {
@@ -535,13 +565,11 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    
     const [datePart, timePart] = dateString.split('T');
     const [year, month, day] = datePart.split('-');
-    const [hour, minute, second] = timePart.split('.')[0].split(':'); 
-    
+    const [hour, minute, second] = timePart.split('.')[0].split(':');
     const date = new Date(year, month - 1, day, hour, minute, second);
-        const formattedDate = date.toLocaleString('fr-FR', {
+    const formattedDate = date.toLocaleString('fr-FR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -550,11 +578,10 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
       second: '2-digit',
       hour12: false
     });
-  
+
     return formattedDate;
   };
-  
-  
+
   const handleCloseDialog = () => {
     resetForm();
     setOpenDialog(false);
@@ -581,6 +608,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
   const handleOpenHistoriqueDialog = (command) => {
     setOpenedHistoryCommand(command.NUM_CDE_C);
     setHistoryDialog(true)
+    console.log('drt', command)
   };
 
   const handleClientClick = (commandId) => {
@@ -601,38 +629,46 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
     setArticleDialogOpened(false);
   };
 
-  const handleOpenassign = () => {
-    setOpenDialog(true);
-  };
-  const [responseMessage, setResponseMessage] = useState('');
-
+  const BouncingIcon = styled(AdsClickIcon)`
+  animation: bounce 1s infinite;
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-8px);
+    }
+    60% {
+      transform: translateY(-4px);
+    }
+  }
+`;
   return (
     <Grid container spacing={2}>
       {commandes.map((command) => {
         const etat =
-          command.ETAT_CDE_C ==='LT' &&  command.CC_VALIDE !== 0
+          command.ETAT_CDE_C === 'LT' && command.CC_VALIDE !== 0
             ? 'Livré'
             : command.CC_CHAMP_3
-            ? command.CC_CHAMP_3
-            : "Non encore traité";
-  
-        // Update the etatColor logic
+              ? command.CC_CHAMP_3
+              : "Non encore traité";
         const etatColor =
           etat === "Non encore traité"
             ? "red"
-            :etat === "Livré"
-            ? "#7695FF"
-            : etat === "En cours de traitement"
-            ? "orange"
-            : etat === "Traité" && command.CC_VALIDE !== 0 // Check if it's treated and valid
-            ? "green"
-            : etat === "Annulée"
-            ? "purple"
-            : "blue";
-  
+            : etat === "Livré"
+              ? "#7695FF"
+              : etat === "En cours de traitement"
+                ? "orange"
+                : etat === "Traité" && command.CC_VALIDE !== 0 
+                  ? "green"
+                  : etat === "Annulée"
+                    ? "purple"
+                    : "blue";
+
         const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
         console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
-  
+
         return (
           <Grid
             item
@@ -664,60 +700,32 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                 }}
               >
                 <GlowingBox style={{ backgroundColor: etatColor, borderRadius: '10px' }}>
-                 {/*{etat !== 'Traité' && etat !== 'Annulée' && (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          style={{ color: 'white' }}
-                          {...label}
-                          checked={selectedCommands.includes(command.NUM_CDE_C)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedCommands((prev) => [...prev, command.NUM_CDE_C]);
-                            } else {
-                              setSelectedCommands((prev) =>
-                                prev.filter((id) => id !== command.NUM_CDE_C)
-                              );
-                            }
-                          }}
-                        />
+                  <Typography
+                    variant="h6"
+                    component="div"
+                    align="center"
+                    style={{
+                      color: "white",
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      fontSize: '1.1rem',
+                    }}
+                  >
+                    {etat}
+                    <span style={{ marginLeft: '1em', fontSize: '0.8em' }}>
+                      {etat === 'Traité' ?
+                        (command.CC_VALIDE === 0 ? '(non validée) ' : '(validée)')
+                        : ''
                       }
-                    />
-                  )} */} 
-  
-
-<Typography
-  variant="h6"
-  component="div"
-  align="center"
-  style={{
-    color: "white",
-    fontWeight: 'bold',
-    textAlign: 'center',
-    fontSize: '1.1rem',
-  }}
->
-  {etat}  
-  <span style={{marginLeft:'1em', fontSize:'0.8em'}}>
-    {etat === 'Traité' ? 
-      (command.CC_VALIDE === 0 ? '(non validée) ' : '(validée)') 
-      : ''
-    }
-  </span>
-</Typography>
-
+                    </span>
+                  </Typography>
                 </GlowingBox>
-               
-
                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-
                   <img src={cardIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Commande: {formatDate(command.DATE_CDE_C)}  -{command.NUM_CDE_C}</Typography>
-
-                
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
                   <img src={command.BLOQUER_CLIENT === 1 ? blockedIcon : personIcon} alt="status icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                  Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}
+                  Client: {command.CLIENT_CDE}, {command.ADR_C_C_1} <BouncingIcon style={{ marginRight: '0.5em' }} />
                 </Typography>
                 {isClientDetailsVisible && (
                   <Box
@@ -740,7 +748,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                       <strong>Échéance:</strong> {command.ECHEANCE_REG_C}
                     </Typography>
                     <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                      <strong>Encours client:</strong> {/*command.ENCOURSREG*/}{Number(command.ENCOURSREG) + Number(command.SOLDE_CLIENT) + Number(command.BLNONFACT)}
+                      <strong>Encours client:</strong>{Number(command.ENCOURSREG) + Number(command.SOLDE_CLIENT) + Number(command.BLNONFACT)}
                     </Typography>
                     <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                       <strong>Encours autorisé:</strong> {command.ENCOURS_MAX_C}
@@ -748,12 +756,8 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                     <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                       <strong>Encours supp:</strong> {command.ENCOURS_SUPP}
                     </Typography>
-
                   </Box>
                 )}
-
-                {/**/}
-
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                   <img src={priceIcon} alt="price icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Total: {command.CC_TOTAL} TND
@@ -762,11 +766,8 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                   <img src={matricule} alt="matricule icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Matricule: {command.ADR_C_C_3}
                 </Typography>
-
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
-                Adresses Client: {command.ADR_C_C_2}</Typography>
-
-
+                  Adresses Client: {command.ADR_C_C_2}</Typography>
                 <Typography
                   style={{
                     display: "flex",
@@ -794,29 +795,27 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                   ' '
                 )}</Typography>
                 {communications[command.NUM_CDE_C]?.find(communication => communication.ETAT_COMMANDE?.length) && (
-  <Typography 
-   
-      style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}
-   
-  > <ErrorOutlineIcon/>
-    Détails d'état :  
-    {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
-      <span style={{ color: 'red',marginRight:'0.8em' }}>
-        {communications[command.NUM_CDE_C]?.find(communication => communication.ETAT_COMMANDE?.length)?.ETAT_COMMANDE}
-      </span>
-    ) : (
-      ' '
-    )}
-  </Typography>
-)}
+                  <Typography
 
+                    style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}
+                  > <ErrorOutlineIcon />
+                    Détails d'état :
+                    {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
+                      <span style={{ color: 'red', marginRight: '0.8em' }}>
+                        {communications[command.NUM_CDE_C]?.find(communication => communication.ETAT_COMMANDE?.length)?.ETAT_COMMANDE}
+                      </span>
+                    ) : (
+                      ' '
+                    )}
+                  </Typography>
+                )}
                 <IconButton
                   onClick={() => handleCardClick(command)}
                   aria-expanded={expanded === command.NUM_CDE_C}
                   sx={{ position: 'absolute', top: 8, right: 8 }}
                 >
                   <Typography style={{ fontSize: '12px', fontWeight: 'bold', color: 'white' }}> Articles commandés </Typography>
-
+                  <ExpandingIcon style={{ marginRight: '0.1em', color: 'white' }} />
                 </IconButton>
               </CardContent>
               <Collapse in={expanded === command.NUM_CDE_C} timeout="auto" unmountOnExit>
@@ -839,9 +838,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                     </TableHead>
                     <TableBody>
                       {articles.length > 0 && articles.map((cardItem) => {
-
-                        //const difference = (Number(article.STOCK_PHYSIQUE ) + Number(article.STOCK_AUT_DEPOT)) + Number(article.QTE_CMD_ANNUL) - (Number(article.CDES_CLIENTS));
-                        //console.log("difference",difference)
                         const difference = (Number(cardItem.STOCK_PHYSIQUE) - Number(cardItem.CDES_CLIENTS));
 
                         return (
@@ -849,7 +845,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                             <TableCell>
                               <Button onClick={() => openArticleDialog(cardItem?.CCL_ARTICLE)}>{cardItem.CCL_ARTICLE}</Button>
                             </TableCell>
-
                             <TableCell>{cardItem.CCL_DES_ART}</TableCell>
                             <TableCell>{cardItem.CCL_PXU_TTC}</TableCell>
                             <TableCell>{cardItem.CCL_QTE_C}</TableCell>
@@ -875,7 +870,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                               ) ? "Comptant" : "à termes"}
                             </TableCell>
                             <TableCell>
-                              {/*difference*/}
                               <img
                                 src={
                                   difference <= 0
@@ -897,7 +891,20 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                           </TableRow>
                         );
                       })}
-                    </TableBody>
+                    </TableBody> {(user.ROLE === 'administrateur' || user.ROLE === 'directeur commercial ') && 'valider'
+                      && (
+                        <Checkbox
+                          icon={<CheckBoxOutlineBlankIcon />}
+                          checkedIcon={<CheckBoxIcon />}
+                          checked={validationStatus[command.NUM_CDE_C] === 'Validé'}
+                          onChange={(e) => handleValidationChange(command.NUM_CDE_C, e.target.checked)}
+                          style={{
+                            marginTop: !isClientDetailsVisible ? "4%" : '40%',
+                            color: "#478CCF"
+                          }}
+                        />
+                      )}
+                    {(user.ROLE === 'administrateur' || user.ROLE === 'directeur commercial ') && 'valider'}
                   </Table>
                 </Box>
               </Collapse>
@@ -920,9 +927,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                     Annuler
                   </Button>
                 )}
-                {/* <Button startIcon={<CheckCircleIcon />} color="success">
-                  Validation commercial
-                </Button> */}
               </CustomCardActions>
             </Card>
           </Grid>
@@ -966,9 +970,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           </Button>
         </DialogActions>
       </Dialog>
-
-
-
       <Dialog open={historyDialog} onClose={() => setHistoryDialog(false)} maxWidth="lg" fullWidth>
         <DialogTitle>
           Historique de Communication
@@ -990,44 +991,37 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Date communication</TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Détails communication</TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Collaborateur</TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Mode de livraison
-                    
                     </TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Addresse de livraison</TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Transporteur
                     </TableCell>
                     <TableCell sx={{
@@ -1035,40 +1029,33 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Béneficaire</TableCell>
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Mode de paiement</TableCell>
-
                     <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Date de livraison prévue </TableCell>
-                      <TableCell sx={{
+                    <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Chauffeur </TableCell>
-                      <TableCell sx={{
+                    <TableCell sx={{
                       backgroundColor: theme.palette.primary.main,
                       color: theme.palette.common.white,
                       fontWeight: 'bold',
                       borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
                     }}>Véhicule </TableCell>
                   </TableRow>
                 </TableHead>
-
                 <TableBody>
                   {(communications[openedHistoryCommand] ?? []).map((c, i) => (
                     <TableRow key={c.ID + i}>
@@ -1091,15 +1078,13 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           </Box>
         </DialogContent>
       </Dialog>
-
-
-
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="lg" fullWidth>
+      <Dialog open={openDialog} onClose={(event, reason) => {
+        if (reason !== 'backdropClick') {
+          handleCloseDialog();
+        }
+      }} maxWidth="lg" fullWidth>
         <DialogTitle>
           Communication de {commandTocom ? commandTocom.NUM_CDE_C : ''}
-          <Button onClick={handleCloseDialog} style={{ position: 'absolute', right: '8px', top: '8px' }}>
-            <CloseIcon />
-          </Button>
         </DialogTitle>
         <DialogContent>
           <DialogContentText>Saisissez les détails de la communication.</DialogContentText>
@@ -1113,7 +1098,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
             value={dateTime}
             onChange={(e) => setDateTime(e.target.value)}
           />
-
           <TextField
             autoFocus
             margin="dense"
@@ -1125,7 +1109,7 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
             value={detailsCommunication}
             onChange={(e) => setDetailsCommunication(e.target.value)}
           />
-           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
+          <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
             <Typography variant="h6">Détails d'état</Typography>
             <RadioGroup
               aria-labelledby="demo-row-radio-buttons-group-label"
@@ -1134,68 +1118,59 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
               onChange={(e) => {
                 setEtatsCommande(e.target.value);
               }}
-
             >
+              <FormControlLabel value="Confirmée" control={<Radio />} label="Confirmée " />
               <FormControlLabel value="En attente de confirmation" control={<Radio />} label="En attente de confirmation" />
               <FormControlLabel value="Coordination Logistique" control={<Radio />} label="Coordination Logistique" />
               <FormControlLabel value="Problème d'échéance" control={<Radio />} label="Problème d'échéance" />
             </RadioGroup>
           </Box>
           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
-  <Typography variant="h6">Détails de livraison</Typography>
-  <InputLabel id="select-label-1">Mode de livraison</InputLabel>
-  <Select
-    labelId="select-label-1"
-    id="select-1"
-    value={modeLivraison}
-    onChange={(e) => setModeLivraison(e.target.value)}
-    fullWidth
-  >
-    {modeLiv.map((raison) => (
-      <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
-    ))}
-  </Select>
-  {modeLivraison?.LIBELLE === 'Nos Moyens' && (
-    <>
-      <TextField
-        margin="dense"
-        id="num-cheque"
-        label="Num chéque"
-        fullWidth
-        value={numCheque}
-        onChange={(e) => setNumCheque(e.target.value)}
-      />
-      <TextField
-        margin="dense"
-        id="banque"
-        label="Banque"
-        fullWidth
-        value={banque}
-        onChange={(e) => setBanque(e.target.value)}
-      />
-      <TextField
-        margin="dense"
-        id="date-echeance"
-        label="Date échéance"
-        type="date"
-        fullWidth
-        value={dateEcheance}
-        onChange={(e) => setDateEcheance(e.target.value)}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-    </>
-  )}
-
-            {/* <TextField
-            margin="dense"
-            id="mode-livraison"
-            label="Mode de livraison"
-            fullWidth 
-            value={modeLivraison}
-            onChange={(e) => setModeLivraison(e.target.value)}
-          /> */}
+            <Typography variant="h6">Détails de livraison</Typography>
+            <InputLabel id="select-label-1">Mode de livraison</InputLabel>
+            <Select
+              labelId="select-label-1"
+              id="select-1"
+              value={modeLivraison}
+              onChange={(e) => setModeLivraison(e.target.value)}
+              fullWidth
+            >
+              {modeLiv.map((raison) => (
+                <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
+              ))}
+            </Select>
+            {modeLivraison?.LIBELLE === 'Nos Moyens' && (
+              <>
+                <TextField
+                  margin="dense"
+                  id="num-cheque"
+                  label="Num chéque"
+                  fullWidth
+                  value={numCheque}
+                  onChange={(e) => setNumCheque(e.target.value)}
+                />
+                <TextField
+                  margin="dense"
+                  id="banque"
+                  label="Banque"
+                  fullWidth
+                  value={banque}
+                  onChange={(e) => setBanque(e.target.value)}
+                />
+                <TextField
+                  margin="dense"
+                  id="date-echeance"
+                  label="Date échéance"
+                  type="date"
+                  fullWidth
+                  value={dateEcheance}
+                  onChange={(e) => setDateEcheance(e.target.value)}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </>
+            )}
             <TextField
               margin="dense"
               id="adresse-livraison"
@@ -1204,58 +1179,53 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
               value={adresseLivraison}
               onChange={(e) => setAdresseLivraison(e.target.value)}
             />
-
-{modeLivraison?.LIBELLE === 'Nos moyens' && (
-  <>
- <InputLabel id="select-label-chauffeur">Chauffeur</InputLabel>
- <Select
-  labelId="select-label-chauffeur"
-  id="select-chauffeur"
-  value={chauffeur}
-  onChange={(e) => setChauffeur(e.target.value)}
-  fullWidth
->
-  {transporteursCspd.map((chauffeur) => (
-    <MenuItem key={chauffeur.ID} value={chauffeur.LIBELLE}>
-      {chauffeur.LIBELLE}
-    </MenuItem>
-  ))}
-</Select>
-<InputLabel id="select-label-chauffeur">Véhicule</InputLabel>
-
-<Select
-  labelId="select-label-1"
-  id="select-1"
-  value={vehiculeCspd}
-  onChange={(e) => setVehiculeCspd(e.target.value)}
-  fullWidth
->
-  {vehicule.map((vehicule) => (
-    <MenuItem key={vehicule.ID} value={vehicule.LIBELLE}>
-      {vehicule.LIBELLE}
-    </MenuItem>
-  ))}
-</Select>
-
-  </>
-)}
-{modeLivraison?.LIBELLE === 'transporteur' && (
-  <>
-
-<Select
-              labelId="select-label-1"
-              id="select-1"
-              value={transporteur}
-              onChange={(e) => setTransporteur(e.target.value)}
-              fullWidth
-            >
-              {transporteurs.map((raison) => (
-                <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
-              ))}
-            </Select>
-    
-  </>
-)}
+            {modeLivraison?.LIBELLE === 'Nos moyens' && (
+              <>
+                <InputLabel id="select-label-chauffeur">Chauffeur</InputLabel>
+                <Select
+                  labelId="select-label-chauffeur"
+                  id="select-chauffeur"
+                  value={chauffeur}
+                  onChange={(e) => setChauffeur(e.target.value)}
+                  fullWidth
+                >
+                  {transporteursCspd.map((chauffeur) => (
+                    <MenuItem key={chauffeur.ID} value={chauffeur.LIBELLE}>
+                      {chauffeur.LIBELLE}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <InputLabel id="select-label-chauffeur">Véhicule</InputLabel>
+                <Select
+                  labelId="select-label-1"
+                  id="select-1"
+                  value={vehiculeCspd}
+                  onChange={(e) => setVehiculeCspd(e.target.value)}
+                  fullWidth
+                >
+                  {vehicule.map((vehicule) => (
+                    <MenuItem key={vehicule.ID} value={vehicule.LIBELLE}>
+                      {vehicule.LIBELLE}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </>
+            )}
+            {modeLivraison?.LIBELLE === 'transporteur' && (
+              <>
+                <Select
+                  labelId="select-label-1"
+                  id="select-1"
+                  value={transporteur}
+                  onChange={(e) => setTransporteur(e.target.value)}
+                  fullWidth
+                >
+                  {transporteurs.map((raison) => (
+                    <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
+                  ))}
+                </Select>
+              </>
+            )}
 
           </Box>
           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
@@ -1284,7 +1254,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
               onChange={(e) => setAdresseFacturation(e.target.value)}
               fullWidth
             />
-
             <Typography variant="h6" gutterBottom>
               Date de livraison prévue
             </Typography>
@@ -1298,7 +1267,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                 setDateLivraisonPrevue(e.target.value);
                 setErrorLivraison('');
               }}
-
             >
               <FormControlLabel value="Indéterminée" control={<Radio />} label="Indéterminée" />
               <FormControlLabel value="Immediatement" control={<Radio />} label="Immediatement" />
@@ -1306,9 +1274,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
               <FormControlLabel value="48 H" control={<Radio />} label="48 H" />
               <FormControlLabel value="72 H" control={<Radio />} label="72 H" />
             </RadioGroup>
-           
-            
-
           </Box>
           <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
             <Typography variant="h6">Détails de paiement</Typography>
@@ -1384,7 +1349,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
             Enregistrer
           </Button>
         </DialogActions>
-
       </Dialog>
 
       <Dialog open={openTarifDialog} onClose={() => setOpenTarifDialog(false)} maxWidth="md" fullWidth>
@@ -1405,7 +1369,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                   <TableRow >
                     <TableCell>{t.INTITULE_FAM}</TableCell>
                     <TableCell>{t.REMISE_TF}</TableCell>
-
                   </TableRow>
                 ))}
               </TableBody>
@@ -1436,7 +1399,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog open={isArticleDialogOpened} onClose={handleCloseArticleDialog} aria-describedby="alert-dialog-slide-description">
         <DialogContent>
           <DialogContentText>
@@ -1475,7 +1437,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
                   </Typography>
                 )}
                 <RenderStockGros article={selectedArticle} />
-
                 {selectedArticle.file && (
                   <Box
                     component="img"
@@ -1493,8 +1454,6 @@ const CommandesList = ({ base, type, searchTerm ,}) => {
             ) : (
               <Typography>Aucune donnée disponible pour cet article.</Typography>
             )}
-
-
           </DialogContentText>
         </DialogContent>
         <DialogActions>

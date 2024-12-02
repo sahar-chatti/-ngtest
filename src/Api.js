@@ -18,7 +18,7 @@ export const getArticleById = async (articleId, base) => {
     }
 };
 
-export const fetchClientsPartenaires = async (page,clientId, pageSize, searchTerm, baseUrl = BASE_URL) => {
+export const fetchClientsPartenaires = async (page, clientId, pageSize, searchTerm, baseUrl = BASE_URL) => {
     try {
         const params = {
             page: page,

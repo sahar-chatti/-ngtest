@@ -2,25 +2,25 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Table,
-   TableBody, 
-   TableCell, 
-   TableContainer, 
-   TableHead, 
-   TableRow, 
-   Paper,
-  Button, 
-  TextField, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogTitle, 
-  IconButton, 
-  Grid, 
-  useTheme, 
-  useMediaQuery, 
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Grid,
+  useTheme,
+  useMediaQuery,
   InputLabel,
-   MenuItem, 
-   Select
+  MenuItem,
+  Select
 } from '@mui/material';
 import Switch from '@mui/material/Switch';
 import { Autocomplete } from '@mui/material';
@@ -41,7 +41,7 @@ const UserManagement = () => {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down('md'));
   const [openDialog, setOpenDialog] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ ID_UTILISATEUR: '', UTILISATEUR: '', LOGIN: '', MOT_DE_PASSE: '', ROLE: '', EMAIL: '', NUM_POSTE: '', CODE_SOFTWARE: '', COMMERCIAL_OK: '' });;
+  const [currentUser, setCurrentUser] = useState({ ID_UTILISATEUR: '', UTILISATEUR: '', LOGIN: '', MOT_DE_PASSE: '', ROLE: '', EMAIL: '', NUM_POSTE: '', CODE_SOFTWARE: '', COMMERCIAL_OK: '', DEPARTEMENT: '' });;
   const [editing, setEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [repres, setRepres] = useState([])
@@ -49,7 +49,7 @@ const UserManagement = () => {
   const togglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
-  const roleOptions = ["administrateur", "collaborateur", "directeur commercial ", "directeur communication", "magasinier"];
+  const roleOptions = ["administrateur", "collaborateur", "directeur commercial ", "directeur communication", "magasinier", "Import/Export ", "Finance", "Comptabilité", "Marketing"];
 
   useEffect(() => {
     fetchUsers();
@@ -90,26 +90,24 @@ const UserManagement = () => {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setCurrentUser({ ID_UTILISATEUR: '', UTILISATEUR: '', LOGIN: '', MOT_DE_PASSE: '', ROLE: '', EMAIL: '', NUM_POSTE: '', CODE_SOFTWARE: '', COMMERCIAL_OK: '' });
+    setCurrentUser({ ID_UTILISATEUR: '', UTILISATEUR: '', LOGIN: '', MOT_DE_PASSE: '', ROLE: '', EMAIL: '', NUM_POSTE: '', CODE_SOFTWARE: '', COMMERCIAL_OK: '', DEPARTEMENT: '' });
     setEditing(false);
   };
 
   const handleSaveUser = async () => {
     try {
       if (editing) {
-        console.log(selectedRepres)
-        await axios.put(`${BASE_URL}/api/updateUser/${currentUser.ID_UTILISATEUR}`,
-
-          {
-            utilisateur: currentUser.UTILISATEUR,
-            password: currentUser.MOT_DE_PASSE,
-            role: currentUser.ROLE,
-            login: currentUser.LOGIN,
-            EMAIL: currentUser.EMAIL,
-            NUM_POSTE: currentUser.NUM_POSTE,
-            CODE_SOFTWARE: currentUser.CODE_SOFTWARE,
-            COMMERCIAL_OK: selectedRepres?.NUM_REPRES
-          });
+        await axios.put(`${BASE_URL}/api/updateUser/${currentUser.ID_UTILISATEUR}`, {
+          utilisateur: currentUser.UTILISATEUR,
+          password: currentUser.MOT_DE_PASSE,
+          role: currentUser.ROLE,
+          login: currentUser.LOGIN,
+          EMAIL: currentUser.EMAIL,
+          NUM_POSTE: currentUser.NUM_POSTE,
+          CODE_SOFTWARE: currentUser.CODE_SOFTWARE,
+          COMMERCIAL_OK: selectedRepres?.NUM_REPRES,
+          DEPARTEMENT: currentUser.DEPARTEMENT,
+        });
       } else {
         await axios.post(`${BASE_URL}/api/createUser`, {
           utilisateur: currentUser.UTILISATEUR,
@@ -119,15 +117,17 @@ const UserManagement = () => {
           EMAIL: currentUser.EMAIL,
           NUM_POSTE: currentUser.NUM_POSTE,
           CODE_SOFTWARE: currentUser.CODE_SOFTWARE,
-          COMMERCIAL_OK: selectedRepres?.NUM_REPRES
+          COMMERCIAL_OK: selectedRepres?.NUM_REPRES,
+          DEPARTEMENT: currentUser.DEPARTEMENT,
         });
       }
       fetchUsers();
       handleCloseDialog();
     } catch (error) {
-      console.error('Error saving user:', error);
+      console.error('Error saving user:', error.response?.data || error.message);
     }
   };
+
   return (
     <Grid container spacing={2} style={{ justifyContent: "center" }}>
       <Grid item xs={8}>
@@ -198,6 +198,13 @@ const UserManagement = () => {
                   color: theme.palette.common.white,
                   fontWeight: 'bold',
                   borderBottom: '1px solid rgba(224, 224, 224, 1)',
+
+                }}>Département </TableCell>
+                <TableCell sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.common.white,
+                  fontWeight: 'bold',
+                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
                   display: 'flex',
                   alignItems: "center"
                 }}>Actions </TableCell>
@@ -218,6 +225,8 @@ const UserManagement = () => {
                     <TableCell>{user.NUM_POSTE}</TableCell>
                     <TableCell>{user.CODE_SOFTWARE}</TableCell>
                     <TableCell>{representative ? representative.INTITULE_REPRES : 'N/A'}</TableCell>
+                    <TableCell>{user.DEPARTEMENT}</TableCell>
+
                     <TableCell>
                       <IconButton color="primary" onClick={() => handleOpenDialog(user)}>
                         <EditIcon />
@@ -329,17 +338,7 @@ const UserManagement = () => {
                 <MenuItem key={rep.NUM_REPRES} value={rep}>{rep.INTITULE_REPRES}</MenuItem>
               ))}
             </Select>
-            <InputLabel style={{ marginTop: '1em' }} id="select-label-1">Accés utilisateur       <Switch {...label} />
-            </InputLabel>
-            <Select
-              labelId="select-label-1"
-              id="select-1"
-              value={selectedRepres}
-              onChange={(e) => setSelectedRepres(e.target.value)}
-              fullWidth
-            >
 
-            </Select>
             {/*<TextField
               margin="dense"
               label="Partenaires non enregistrés"
@@ -364,6 +363,29 @@ const UserManagement = () => {
               type="text"
               style={{width:'22.9%', margin:'0.5em'}}
             /> */}
+            <InputLabel id="select-label-1">Département</InputLabel>
+            <Select
+              labelId="select-label-1"
+              id="select-1"
+              value={currentUser.DEPARTEMENT || ''}
+              onChange={(e) => setCurrentUser({ ...currentUser, DEPARTEMENT: e.target.value })}
+              fullWidth
+            >
+              <MenuItem value="Direction">Direction</MenuItem>
+
+              <MenuItem value="Commercial">Commercial</MenuItem>
+
+              <MenuItem value="Marketing">Marketing</MenuItem>
+              <MenuItem value="Finance">Finance</MenuItem>
+              <MenuItem value="Comptabilité">Comptabilité</MenuItem>
+
+              <MenuItem value="Import / Export">Import / Export</MenuItem>
+              <MenuItem value="Développement">Développement</MenuItem>
+              <MenuItem value="Magasin">Magasin</MenuItem>
+
+              <MenuItem value="RH">RH</MenuItem>
+            </Select>
+
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog} style={{ color: 'red' }}>Annuler</Button>

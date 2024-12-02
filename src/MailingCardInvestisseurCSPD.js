@@ -169,7 +169,7 @@ const CardContainer = ({ searchTerm, setBoite, selectedAll }) => {
         FinalList.push({
            ...row, 
            selectedCli: false,
-            EMAIL: i == 0 ? 'dev1cspd@gmail.com' : i == 1 ? 'dev1cspd@gmail.com' : 'sahar.chatti@isimg.tn' })
+           })
 
       })
       console.log("listclient", FinalList)

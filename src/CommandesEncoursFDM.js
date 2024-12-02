@@ -18,7 +18,7 @@ import {
     Typography,
     useTheme
 } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
 import CallIcon from '@mui/icons-material/Call';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -52,6 +52,7 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import FmdGoodIcon from '@mui/icons-material/FmdGood';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import AdsClickIcon from '@mui/icons-material/AdsClick';
 
 const CommandesList = ({ base, type, searchTerm, }) => {
     const theme = useTheme();
@@ -100,9 +101,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     const [assignedList, setAssignedList] = useState(""); // To store concatenated command IDs
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
     const [users, setUsers] = useState([]);
-    const [idAssigner, setIdAssigner] = useState('');
-    const [idCommand, setIdCommand] = useState('');
-    const [idCollaborator, setIdCollaborator] = useState('');
+   
 
     const handleChangePage = (event, newPage) => setPage(newPage);
 
@@ -255,7 +254,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                 searchTerm: searchTerm
 
             };
-            //ajouter le checkbox
             const result = await axios.get(url, { params });
             let commandsList = [...result.data.commandes]
             let finalCommandList = []
@@ -372,7 +370,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                 if (response.data && response.data.message) {
                     console.log('Communication enregistrée avec succès:', response.data.message);
                     setOpenCommSuccess(true);
-                    await fetchCommandes(); // Await fetchCommandes if it's an async function
+                    await fetchCommandes();
                 } else {
                     console.error('Unexpected response format:', response.data);
                 }
@@ -396,25 +394,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
             setModePaiement('');
         }
     };
-
-    const submitAssignement = async (e) => {
-        e.preventDefault();
-        const data = {
-            assigner: idAssigner,
-            command: idCommand,
-            collaborator: idCollaborator,
-        };
-
-        try {
-            const response = await axios.post('/api/AssignCommand', data);
-            console.log(response.data.message); // or update state to show success message
-
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-
-
     const handleConfirmCancel = async () => {
         if (commandToCancel) {
             try {
@@ -422,8 +401,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                     `${BASE_URL}/api/updateEtatCmd`,
                     { reference: commandToCancel.NUM_CDE_C, etat: "Annulée", base: base }
                 );
-
-
             } catch (err) {
                 console.error('Erreur lors de l\'annulation de la commande:', err);
 
@@ -460,8 +437,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
             }
         }
     };
-
-
     const handleTarifDialogOpen = async (command) => {
 
         try {
@@ -486,25 +461,23 @@ const CommandesList = ({ base, type, searchTerm, }) => {
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
-        
         const [datePart, timePart] = dateString.split('T');
         const [year, month, day] = datePart.split('-');
-        const [hour, minute, second] = timePart.split('.')[0].split(':'); 
-        
+        const [hour, minute, second] = timePart.split('.')[0].split(':');
         const date = new Date(year, month - 1, day, hour, minute, second);
-            const formattedDate = date.toLocaleString('fr-FR', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false
+        const formattedDate = date.toLocaleString('fr-FR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
         });
-      
+
         return formattedDate;
-      };
-      
+    };
+
 
     const handleCloseDialog = () => {
         resetForm();
@@ -514,11 +487,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     const handleCloseSuccessDialog = () => {
         setOpenCommSuccess(false);
     };
-
-    const makeCall = (tel) => {
-        window.location.href = `sip:${tel.replace(/[^0-9]+/g, '')}`;
-    };
-
     const handleOpenCancelDialog = (command) => {
         setCommandToCancel(command);
         setOpenCancelDialog(true);
@@ -551,39 +519,60 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     const handleCloseArticleDialog = () => {
         setArticleDialogOpened(false);
     };
-
-    const handleOpenassign = () => {
-        setOpenDialog(true);
-    };
-    const [responseMessage, setResponseMessage] = useState('');
-
-   return (
+    const ExpandingIcon = styled(ExpandMoreIcon)`
+    animation: bounce 1s infinite;
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-8px);
+      }
+      60% {
+        transform: translateY(-4px);
+      }
+    }
+  `;
+    const BouncingIcon = styled(AdsClickIcon)`
+  animation: bounce 1s infinite;
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-8px);
+    }
+    60% {
+      transform: translateY(-4px);
+    }
+  }
+`;
+    return (
         <Grid container spacing={2}>
-          {commandes.map((command) => {
-            const etat =
-              command.ETAT_CDE_C ==='LT' &&  command.CC_VALIDE !== 0
-                ? 'Livré'
-                : command.CC_CHAMP_3
-                ? command.CC_CHAMP_3
-                : "Non encore traité";
-      
-            // Update the etatColor logic
-            const etatColor =
-              etat === "Non encore traité"
-                ? "red"
-                :etat === "Livré"
-                ? "#7695FF"
-                : etat === "En cours de traitement"
-                ? "orange"
-                : etat === "Traité" && command.CC_VALIDE !== 0 // Check if it's treated and valid
-                ? "green"
-                : etat === "Annulée"
-                ? "purple"
-                : "blue";
-      
-            const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
-            console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
-      
+            {commandes.map((command) => {
+                const etat =
+                    command.ETAT_CDE_C === 'LT' && command.CC_VALIDE !== 0
+                        ? 'Livré'
+                        : command.CC_CHAMP_3
+                            ? command.CC_CHAMP_3
+                            : "Non encore traité";
+                const etatColor =
+                    etat === "Non encore traité"
+                        ? "red"
+                        : etat === "Livré"
+                            ? "#7695FF"
+                            : etat === "En cours de traitement"
+                                ? "orange"
+                                : etat === "Traité" && command.CC_VALIDE !== 0 
+                                    ? "green"
+                                    : etat === "Annulée"
+                                        ? "purple"
+                                        : "blue";
+
+                const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
+                console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);
 
                 return (
                     <Grid
@@ -603,9 +592,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                         >
                             <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? '400px' : '380px', marginBottom: "20px" }}>
                                 <GlowingBox style={{ backgroundColor: etatColor, borderRadius: '10px' }}>
-
-                                   
-
                                     <Typography
                                         variant="h6"
                                         component="div"
@@ -620,15 +606,12 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                         {etat}
                                     </Typography>
                                 </GlowingBox>
-
-
                                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                                     <ShoppingBagIcon style={{ marginRight: '0.3em' }} />
                                     Commande:   {formatDate(command.DATE_CDE_C)}  -  {command.NUM_CDE_C}  </Typography>
-
                                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
                                     <PermIdentityIcon style={{ marginRight: '0.3em' }} />
-                                    Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}
+                                    Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}<BouncingIcon style={{ marginRight: '0.5em' }} />
                                 </Typography>
                                 {isClientDetailsVisible && (
                                     <Box
@@ -659,16 +642,12 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                         <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                                             <strong>Encours supp:</strong> {command.ENCOURS_SUPP}
                                         </Typography>
-
                                     </Box>
                                 )}
                                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                                     <AttachMoneyIcon style={{ marginRight: '0.3em' }} />
                                     Total: {command.CC_TOTAL} TND
                                 </Typography>
-
-
-
                                 <Typography
                                     style={{
                                         display: "flex",
@@ -682,7 +661,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                     }}
                                 >
                                     <DirectionsCarIcon style={{ marginRight: '0.3em' }} />
-
                                     Matricule:{" "}
                                     {command.CLIENT_CDE === "41100004" ? (
                                         <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>{command.ADR_C_C_3}</Typography>
@@ -690,10 +668,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                         <Typography style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>{command.ADR_C_C_2}</Typography>
                                     )}
                                 </Typography>
-
-
-
-
                                 <Typography
                                     style={{
                                         display: "flex",
@@ -738,6 +712,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                     sx={{ position: 'absolute', top: 8, right: 8 }}
                                 >
                                     <Typography style={{ fontSize: '12px', fontWeight: 'bold', color: 'white' }}> Articles commandés </Typography>
+                                    <ExpandingIcon style={{ marginRight: '0.1em', color: 'white' }} />
                                 </IconButton>
                             </CardContent>
                             <Collapse in={expanded === command.NUM_CDE_C} timeout="auto" unmountOnExit>
@@ -760,9 +735,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                         </TableHead>
                                         <TableBody>
                                             {articles.length > 0 && articles.map((cardItem) => {
-
-                                                //const difference = (Number(article.STOCK_PHYSIQUE ) + Number(article.STOCK_AUT_DEPOT)) + Number(article.QTE_CMD_ANNUL) - (Number(article.CDES_CLIENTS));
-                                                //console.log("difference",difference)
                                                 const difference = (Number(cardItem.STOCK_PHYSIQUE) - Number(cardItem.CDES_CLIENTS));
 
                                                 return (
@@ -770,7 +742,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                                         <TableCell>
                                                             <Button onClick={() => openArticleDialog(cardItem?.CCL_ARTICLE)}>{cardItem.CCL_ARTICLE}</Button>
                                                         </TableCell>
-
                                                         <TableCell>{cardItem.CCL_DES_ART}</TableCell>
                                                         <TableCell>{cardItem.CCL_PXU_TTC}</TableCell>
                                                         <TableCell>{cardItem.CCL_QTE_C}</TableCell>
@@ -783,7 +754,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                                             Comptant
                                                         </TableCell>
                                                         <TableCell>
-                                                            {/*difference*/}
+                                                        
                                                             <img
                                                                 src={
                                                                     difference <= 0
@@ -828,9 +799,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                         Annuler
                                     </Button>
                                 )}
-                                {/* <Button startIcon={<CheckCircleIcon />} color="success">
-                  Validation commercial
-                </Button> */}
                             </CustomCardActions>
                         </Card>
                     </Grid>
@@ -874,9 +842,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-
-
             <Dialog open={historyDialog} onClose={() => setHistoryDialog(false)} maxWidth="lg" fullWidth>
                 <DialogTitle>
                     Historique de Communication
@@ -972,7 +937,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                             <TableCell>{c?.BENEFICIAIRE}</TableCell>
                                             <TableCell>{c?.MODE_PAY}</TableCell>
                                             <TableCell>{c?.DATELIVRAISONPREVUE}</TableCell>
-
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -1000,7 +964,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                         value={dateTime}
                         onChange={(e) => setDateTime(e.target.value)}
                     />
-
                     <TextField
                         autoFocus
                         margin="dense"
@@ -1018,7 +981,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                         <Select
                             labelId="select-label-1"
                             id="select-1"
-                            // value={modeLivraison}
                             value={modeLivraison}
                             onChange={(e) => setModeLivraison(e.target.value)}
                             fullWidth
@@ -1174,7 +1136,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                         Enregistrer
                     </Button>
                 </DialogActions>
-
             </Dialog>
 
             <Dialog open={openTarifDialog} onClose={() => setOpenTarifDialog(false)} maxWidth="md" fullWidth>
@@ -1283,8 +1244,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                         ) : (
                             <Typography>Aucune donnée disponible pour cet article.</Typography>
                         )}
-
-
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

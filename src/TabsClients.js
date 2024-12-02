@@ -17,6 +17,7 @@ import CardFamilleCSPD from './cardFamilledamakCSPD'
 import CommandesList from './CommandesEncours';
 import CommandesListFDM from './CommandesEncoursFDM';
 import CommandesListPart from './CommandesEncoursPart';
+import Savmanagement from './Savmanagement';
 
 import Button from '@mui/material/Button';
 import CardClientsPartenaires from './CardClientsPartenaires'
@@ -41,6 +42,7 @@ import {
   DialogActions, 
   Paper, 
   TableContainer,
+  InputAdornment,
   Typography} from '@mui/material';
 import CardInvestisseur from './CardInvestisseurs'
 import Stock from './Stock'
@@ -49,6 +51,7 @@ import axios from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
 import annulerIcon from './icons/annuler.png'
 import checkIcon from './icons/check.png'
+import ClientsIcon from './icons/addClient.png'
 
 function CustomTabPanel({ 
   value,
@@ -69,7 +72,11 @@ function CustomTabPanel({
   const [selectedTri, setSelectedTri] = React.useState('');
   const [selectedRotation, setSelectedRotation] = React.useState('');
   const [selectedClient, setSelectedClient] = React.useState(null);
+  const [selectedClientFdm, setSelectedClientFdm] = React.useState(null);
+
   const [clients, setClients] = useState([]);
+  const [clientsFdm, setClientsFdm] = useState([]);
+
   const [searchClient, setSearchClient] = useState('')
   const [assignedList, setAssignedList] = useState('')
   const handleClickOpen = () => {
@@ -179,6 +186,22 @@ function CustomTabPanel({
       console.error('Failed to fetch clients:', error);
     }
   };
+  useEffect(() => {
+    fetchClientsFdm();
+  }, [page, pageSize, searchClient]);
+
+
+  const fetchClientsFdm = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/clientsFdmSearch`, {
+        params: { page, pageSize, searchTerm: searchClient },
+      });
+      setClientsFdm(response.data.clients);
+      setTotal(response.data.total);
+    } catch (error) {
+      console.error('Failed to fetch clients:', error);
+    }
+  };
   const handleDialogOpen = () => setDialogOpen(true);
   const handleDialogClose = () => setDialogOpen(false);
   const handleSearchClientChange = (event) => {
@@ -187,6 +210,9 @@ function CustomTabPanel({
   };
   const handleSelectClient = (client) => {
     setSelectedClient(client.CODE_CLIENT);
+  };
+  const handleSelectClientFdm = (client) => {
+    setSelectedClientFdm(client.CODE_CLIENT);
   };
   const [selectedCodeClient, setSelectedCodeClient] = useState(null)
   const handleConfirmSelection = () => {
@@ -202,9 +228,9 @@ function CustomTabPanel({
   };
 
   const renderSearchInput =
-    <TextField
+    <TextField style={{ marginLeft:'20px',marginRight:'20px'}}
       variant="outlined"
-      placeholder="Rechercher "
+      placeholder="Famille  / dimension "
       value={searchTerm}
       onChange={handleSearchChange}
       InputProps={{
@@ -216,6 +242,37 @@ function CustomTabPanel({
       }}
       sx={{ width: "300px" }}/>
 
+      const renderSelectClImage = (index === 1  && selectedOption === '3')|| (index ==2   && selectedOption === '3') ? (
+        <TextField
+        fullWidth
+          value={selectedClient}
+          placeholder="Recherche par client  "
+
+          onChange={(e) => setSelectedClient(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={handleDialogOpen}>
+                  <img src={ClientsIcon} alt="Clients Icon" style={{ height: '35px', width: '35px' }} />
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
+          variant="outlined"
+          style={{marginRight:'20px'}}
+        />
+      ) : null;
+      const renderSelectClImageFdm = (index === 0  && selectedOption === '3')|| (index ==3   && selectedOption === '2') ? (
+        <TextField
+        fullWidth
+          value={selectedClient}
+          onChange={(e) => setSelectedClient(e.target.value)}
+          placeholder="Chercher les remises d'un client  "
+
+          variant="outlined"
+          style={{marginRight:'20px'}}
+        />
+      ) : null;
   const renderIconAndText = () => {
     let label = '';
     if (index === 0) {
@@ -279,8 +336,8 @@ function CustomTabPanel({
               >
                 {(index === 0 || index === 1) && (
                   <>
-                    <FormControlLabel value="0" control={<Radio />} label="Non Enregistrés" />
-                    <FormControlLabel value="1" control={<Radio />} label="Enregistrés" />
+                    <FormControlLabel value="0" control={<Radio />} label="Demandes" />
+                    <FormControlLabel value="1" control={<Radio />} label="Clients" />
                     <FormControlLabel value="2" control={<Radio />} label="Commandes en cours" />
                     <FormControlLabel value="3" control={<Radio />} label="Etat de stock" />
                   </>
@@ -314,6 +371,7 @@ function CustomTabPanel({
                   sx={{ minWidth: '150px', fontSize: '0.875rem', textTransform: 'none' }}
                 >Liste des collaborateurs
                 </Button>
+              
                 <div>
 
                   <Dialog open={open} onClose={handleClose} fullWidth
@@ -404,6 +462,9 @@ function CustomTabPanel({
               {renderFiltredInput}
               {renderFiltredRotInput}
               {renderSearchInput}
+              {renderSelectClImage}
+              {renderSelectClImageFdm}
+
               {/*renderSearchInputs*/}
             </Box>
           </Box>
@@ -487,16 +548,7 @@ function CustomTabPanel({
           {index === 0 && selectedOption === '1' && displayMode === 'card' && (
             <CardClientsPartenaires displayMode={displayMode} searchTerm={searchTerm} />
           )}
-          {/*{index === 0 && selectedOption === '0' && displayMode === 'list' && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 4 }}>
-              <PartenaireList searchTerm={searchTerm} selectedAvancement={selectedAvancement}/>
-            </Box>
-          )}*/}
-          {/*{index === 0 && selectedOption === '1' && displayMode === 'list' && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
-              <ClientPartList />
-            </Box>
-          )}*/}
+         
           {index === 1 && selectedOption === '1' && displayMode === 'card' && (
             <CardInvestisseursCSPD displayMode={displayMode} />
           )}
@@ -519,7 +571,14 @@ function CustomTabPanel({
               setTot(obj)
             }} />
           )}
-
+  {index === 5 && selectedOption === '0' && displayMode === 'card' && (
+            <Savmanagement displayMode={displayMode} searchTerm={searchTerm} selectedAvancement={selectedAvancement} setTotalObj={(tp, nn) => {
+              let obj = { ...tot }
+              obj.typeCli = tp
+              obj.nbr = nn
+              setTot(obj)
+            }} />
+          )}
           {index === 0 && selectedOption === '2' && (
             <CommandesListPart base={"fdm"} type={"partenaire"} searchTerm={searchTerm} setAssigned={ setAssignedList} />
           )}
@@ -534,6 +593,9 @@ function CustomTabPanel({
           )}
            {index === 4 && selectedOption === '2' && (
             <CommandesList base={"fdm"} type={"famille"} searchTerm={searchTerm} setAssigned={(setAssigned) => setAssignedList(setAssigned)} />
+          )}
+              {index === 5 && selectedOption === '2' && (
+            <Savmanagement base={"fdm"} type={"SAV"} searchTerm={searchTerm} setAssigned={(setAssigned) => setAssignedList(setAssigned)} />
           )}
           {index === 2 && selectedOption === '1' && displayMode === 'list' && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
@@ -552,18 +614,45 @@ function CustomTabPanel({
             <CardClientsCSPD selectedClientType={"clientsFdm"} searchTerm={searchTerm} selectedTri={selectedTri} displayMode={displayMode} />
           )}
 
-          {selectedOption === '3' && index === 3 && (
-            <Stock searchTerm={searchTerm} codeCli={selectedClient} base={"fdm"} type={"client"} />
-          )}
-          {selectedOption === '3' && index === 0 && (
-            <Stock searchTerm={searchTerm} codeCli={selectedClient} base={"fdm"} type={"partenaire"} />
-          )}
-          {selectedOption === '3' && index === 2 && (
-            <Stock searchTerm={searchTerm} codeCli={selectedClient} base={"cspd"} type={"client"} />
-          )}
-          {selectedOption === '3' && index === 1 && (
-            <Stock searchTerm={searchTerm} codeCli={selectedClient} base={"cspd"} type={"client"}  />
-          )}
+{selectedOption === '3' && index === 3 && (
+  <Stock 
+    searchTerm={searchTerm} 
+    codeCli={selectedClient} 
+    base={"fdm"} 
+    type={"client"}
+    enableClientSearch={true} 
+  />
+)}
+
+{selectedOption === '3' && index === 0 && (
+  <Stock 
+    searchTerm={searchTerm}
+    codeCli={selectedClient}
+    base={"fdm"}
+    type={"partenaire"}
+    enableClientSearch={true}
+  />
+)}
+
+{selectedOption === '3' && index === 2 && (
+  <Stock 
+    searchTerm={searchTerm}
+    codeCli={selectedClient}
+    base={"cspd"}
+    type={"client"}
+    enableClientSearch={true}
+  />
+)}
+
+{selectedOption === '3' && index === 1 && (
+  <Stock 
+    searchTerm={searchTerm}
+    codeCli={selectedClient}
+    base={"cspd"}
+    type={"client"}
+    enableClientSearch={true}
+  />
+)}
         </Box>
       )}
     </div>
@@ -633,9 +722,18 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
             label="Clients FDM" />
           <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '150px' }}>
-                <FamilyRestroomIcon />
-                <span style={{ marginLeft: '1px', fontWeight: 'bold', textTransform: 'none', fontSize: '16px' }}>Famille </span>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                
+               <FamilyRestroomIcon   /> <span style={{ marginLeft: '10px',fontWeight: 'bold', textTransform: 'none', fontSize: '16px',  }}>Famille </span>
+            
+              </Box>
+            }
+          />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                
+               <FamilyRestroomIcon   /> <span style={{ marginLeft: '10px',fontWeight: 'bold', textTransform: 'none', fontSize: '16px',  }}>SAV</span>
             
               </Box>
             }
@@ -705,6 +803,19 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
         setNumberCli(newArray)
       }} />
       <CustomTabPanel value={value} index={4} setAssigned={ setAssignedList} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} setNumber={(TypeCl, num) => {
+        let newArray = [...numberCli]
+        let editArray = []
+        let obj = newArray.filter((a) => a.typeCli == TypeCl)
+        if (obj.length == 0) {
+          newArray.push({ typeCli: TypeCl, Nbr: num })
+        } else {
+          editArray = [...numberCli.filter((a) => a.typeCli !== TypeCl)]
+          editArray.push({ typeCli: TypeCl, Nbr: num })
+          newArray = [...editArray]
+        }
+        setNumberCli(newArray)
+      }} />
+       <CustomTabPanel value={value} index={5} setAssigned={ setAssignedList} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} setNumber={(TypeCl, num) => {
         let newArray = [...numberCli]
         let editArray = []
         let obj = newArray.filter((a) => a.typeCli == TypeCl)

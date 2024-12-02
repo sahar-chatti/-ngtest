@@ -153,7 +153,6 @@ const ManagementComponent = () => {
       { name: 'Mode de livraison', baseUrl: 'modeLivraison', label: 'Mode de livraison' },
       { name: 'Mode de paiement', baseUrl: 'modePaiement', label: 'Mode de paiement' },
       { name: 'Transporteur', baseUrl: 'transporteur', label: 'Transporteur' },
-      { name: 'Chauffeurs', baseUrl: 'Chauffeurs', label: 'Chauffeurs' },
 
     ];
   

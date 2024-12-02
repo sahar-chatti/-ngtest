@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import BASE_URL from './constantes';
 import axios from 'axios';
 import SupliersCommands  from './SupliersCommands';
+import Savmanagement from './Savmanagement';
+import BonTransfert from './BonTransfertMagasin';
+
 import StorekeeperCommands from './StorekeeperCommands';
 import StoreStock from './StoreStock';
 import PropTypes from 'prop-types';
@@ -16,6 +19,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import ClientsIcon from './icons/addClient.png'
+import ArticleMovementsList from './MouvementsArticles';
 
 function CustomTabPanel({
   value,
@@ -133,6 +137,13 @@ function CustomTabPanel({
             <div></div>
           )}
 
+{index === 3 && selectedOption === '0' && displayMode === 'card' && (
+            <div></div>
+          )}
+          {index === 4 && selectedOption === '0' && displayMode === 'card' && (
+            <div></div>
+          )}
+
           {index === 0 &&  displayMode === 'card' && (
             <StorekeeperCommands  selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode} searchTerm={searchTerm}   />
           )}
@@ -141,6 +152,15 @@ function CustomTabPanel({
           )}
            {index === 2 &&  displayMode === 'card' && (
             <StoreStock selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode}   />
+          )}
+            {index === 3 &&  displayMode === 'card' && (
+            <Savmanagement selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode}   />
+          )}
+            {index === 4 &&  displayMode === 'card' && (
+            <BonTransfert selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode}   />
+          )}
+          {index === 5 &&  displayMode === 'card' && (
+            <ArticleMovementsList selectedClientType={"clientsCspd"}  setOpen={handleClickOpen} displayMode={displayMode}   />
           )}
         </Box>
       )}
@@ -167,12 +187,19 @@ export default function BasicTabs({ searchTerm, setSearchTerm, selectedOption, s
           <Tab label="Clients Cspd" {...a11yProps(0)} />
           <Tab label="Fournisseur" {...a11yProps(0)} />
           <Tab label="Stock magasin" {...a11yProps(0)} />
+          <Tab label="Sav" {...a11yProps(0)} />
+          <Tab label="bon de transfert" {...a11yProps(0)} />
+          <Tab label="Entrés / sorties" {...a11yProps(0)} />
 
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
       <CustomTabPanel value={value} index={1} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
       <CustomTabPanel value={value} index={2} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+      <CustomTabPanel value={value} index={3} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+      <CustomTabPanel value={value} index={4} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+      <CustomTabPanel value={value} index={5} searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+
 
     </Box>
   );

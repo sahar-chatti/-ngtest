@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Container,
-  Typography,
   Paper,
   Table,
   TableBody,
@@ -26,7 +25,6 @@ import {
   Button,
   DialogContentText
 } from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import EventIcon from '@mui/icons-material/Event';
@@ -35,7 +33,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import BASE_URL from './constantes';
 const ClientList = () => {
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.down('md')); // Check for medium screen size
+  const matches = useMediaQuery(theme.breakpoints.down('md'));
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -90,9 +88,6 @@ const ClientList = () => {
   };
 
   const handleSaveCommunication = () => {
-    // Handle saving communication details
-    console.log('Save Communication:', { dateTime, details });
-
     setOpen(false);
     setCurrentClient(null);
   };
@@ -114,7 +109,7 @@ const ClientList = () => {
   }
 
   return (
-    <Container sx={{ py: 4, height: '80vh', width: '200vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',color:'red'}}>
+    <Container sx={{ py: 4, height: '80vh', width: '200vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', color: 'red' }}>
       <Box sx={{ flex: '2', overflow: 'hidden' }}>
         <Paper elevation={3}>
           <TableContainer sx={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
@@ -149,22 +144,22 @@ const ClientList = () => {
                             <Box display="flex" justifyContent="center" alignItems="center">
                               <Tooltip title="Appeler">
                                 <IconButton color="primary" onClick={() => handleOpen(client)}>
-                                <PhoneIcon />
+                                  <PhoneIcon />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Email">
                                 <IconButton color="primary">
-                                <EmailIcon />
+                                  <EmailIcon />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Réunion">
                                 <IconButton color="primary">
-                                <EventIcon />
+                                  <EventIcon />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="SMS">
                                 <IconButton color="primary">
-                                <SmsIcon />
+                                  <SmsIcon />
                                 </IconButton>
                               </Tooltip>
                             </Box>
@@ -195,8 +190,6 @@ const ClientList = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
-
-      {/* Popup Dialog */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>
           Détails de la Communication

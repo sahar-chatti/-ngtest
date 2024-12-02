@@ -61,10 +61,13 @@ import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
 import PaidIcon from '@mui/icons-material/Paid';
 import entete from '../src/images/sahar up.png';
+import footer from '../src/sign1-removebg-preview.png';
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const CommandesList = ({ base, type, searchTerm }) => {
   const theme = useTheme();
+  const [footerBase64, setFooterBase64] = useState(null); 
 
   
   const [openedHistoryCommand, setOpenedHistoryCommand] = useState();
@@ -113,7 +116,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const handleChangePage = (event, newPage) => setPage(newPage);
 
 
-
+ 
 
   useEffect(() => {
     // Fetch clients only if commandes is not empty
@@ -453,6 +456,20 @@ const CommandesList = ({ base, type, searchTerm }) => {
     }
     img.src = entete;
   }, []);
+  useEffect(() => {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = this.width;
+      canvas.height = this.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(this, 0, 0);
+      const dataURL = canvas.toDataURL('image/png');
+      setFooterBase64(dataURL);
+    }
+    img.src =footer;
+  }, []);
+  
 
   const handlePrint = (command) => {
     const printContent = `
@@ -472,6 +489,13 @@ const CommandesList = ({ base, type, searchTerm }) => {
               width: 100%;
               max-height: 100%;
               object-fit: contain;
+            }
+            .footer-image {
+              width: 100%;
+              max-height: 12em;
+              object-fit: contain;
+             margin-top:-500px;
+             text-align:end;
             }
             .content {
                margin-top:-800px;
@@ -534,6 +558,8 @@ const CommandesList = ({ base, type, searchTerm }) => {
               </table>
             </div>
           </div>
+ <img src="${footerBase64}" alt="Pied de page" class="footer-image"> 
+
         </body>
       </html>
     `;

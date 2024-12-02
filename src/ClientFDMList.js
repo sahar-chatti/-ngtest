@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Container,
-  Typography,
   Paper,
   Table,
   TableBody,
@@ -89,9 +88,6 @@ const ClientList = () => {
   };
 
   const handleSaveCommunication = () => {
-    // Handle saving communication details
-    console.log('Save Communication:', { dateTime, details });
-
     setOpen(false);
     setCurrentClient(null);
   };
@@ -113,7 +109,7 @@ const ClientList = () => {
   }
 
   return (
-    <Container sx={{ py: 4, height: '80vh', width: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden'}}>
+    <Container sx={{ py: 4, height: '80vh', width: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <Box sx={{ flex: '2', overflow: 'hidden' }}>
         <Paper elevation={3}>
           <TableContainer sx={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
@@ -195,7 +191,6 @@ const ClientList = () => {
         />
       </Box>
 
-      {/* Popup Dialog */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>
           Détails de la Communication

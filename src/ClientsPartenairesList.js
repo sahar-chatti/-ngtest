@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Container,
-  Typography,
   Paper,
   Table,
   TableBody,
@@ -33,9 +32,8 @@ import SmsIcon from '@mui/icons-material/Sms';
 import CloseIcon from '@mui/icons-material/Close';
 import BASE_URL from './constantes';
 const ClientPartList = () => {
-  const [users, setUsers] = useState([]);
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.down('md')); // Check for medium screen size
+  const matches = useMediaQuery(theme.breakpoints.down('md')); 
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,9 +41,8 @@ const ClientPartList = () => {
   const [pageSize, setPageSize] = useState(50);
   const [open, setOpen] = useState(false);
   const [dateTime, setDateTime] = useState(new Date().toISOString().slice(0, 16));
-  const [details, setDetails] = useState(''); 
+  const [details, setDetails] = useState('');
   const [currentClient, setCurrentClient] = useState(null);
-  const [total, setTotal] = useState(0);
   useEffect(() => {
     setLoading(true);
     axios.get(`${BASE_URL}/api/clientsPartenaires?page=${page + 1}&pageSize=${pageSize}`)
@@ -79,20 +76,12 @@ const ClientPartList = () => {
     setPage(0);
   };
 
-  const handleOpen = (client) => {
-    setCurrentClient(client);
-    setOpen(true);
-  };
-
   const handleClose = () => {
     setOpen(false);
     setCurrentClient(null);
   };
 
   const handleSaveCommunication = () => {
-    // Handle saving communication details
-    console.log('Save Communication:', { dateTime, details });
-
     setOpen(false);
     setCurrentClient(null);
   };
@@ -114,7 +103,7 @@ const ClientPartList = () => {
   }
 
   return (
-    <Container sx={{ py: 4, height: '80vh', width: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden'}}>
+    <Container sx={{ py: 4, height: '80vh', width: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <Box sx={{ flex: '2', overflow: 'hidden' }}>
         <Paper elevation={3}>
           <TableContainer sx={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
@@ -185,27 +174,26 @@ const ClientPartList = () => {
         </Paper>
       </Box>
       <Box sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          backgroundColor: '#fff',
-          boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
-          padding: '8px 16px',
-          zIndex: 1000,
-        }}>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 50, 100, 150, 200]}
-            component="div"
-            count={total}
-            rowsPerPage={pageSize}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Box>
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        backgroundColor: '#fff',
+        boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
+        padding: '8px 16px',
+        zIndex: 1000,
+      }}>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50, 100, 150, 200]}
+          component="div"
+          count={total}
+          rowsPerPage={pageSize}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Box>
 
-      {/* Popup Dialog */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>
           Détails de la Communication

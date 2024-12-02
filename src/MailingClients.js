@@ -30,6 +30,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ClientsIcon from './icons/addClient.png'
 import MailIcon from '@mui/icons-material/Mail';
+import { Person } from '@mui/icons-material';
 
 function CustomTabPanel({
   value,
@@ -59,6 +60,7 @@ function CustomTabPanel({
   const [emailSent, setEmailSent] = useState(false);
   const [subject, setSubject] = useState('');
   const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+  const [fileNames, setFileNames] = useState([]); // To hold the selected file names
 
 
   const handleOptionChange = (event) => {
@@ -163,39 +165,86 @@ function CustomTabPanel({
 
   const handleSendCode = async (e) => {
     e.preventDefault();
-    let code = boiteMail
-    console.log('Sending email with subject:', subject, 'and message:', messages); // Debug log
+
+    if (!subject || !messages || !boiteMail) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('subject', subject);
+    formData.append('message', messages);
+    formData.append('code', boiteMail);
+
+    // Append all selected files to FormData
+    files.forEach((file, index) => {
+        formData.append('files', file);
+    });
 
     try {
-      const res = await axios.post('http://192.168.1.170:3300/mailing', {
-        subject: subject,
-        code,
-        message: messages
-      }, {
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': ''
-        }
-      });
+        const res = await axios.post('http://192.168.1.170:3300/mailing', formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        });
 
-      alert(res.data);
-      setErrorMessage(res.data);
-      setEmailSent(true);
+        alert('Email sent successfully!');
+        setEmailSent(true);
+        
+        // Reset form
+        setMessages("");
+        setSubject("");
+        setBoiteMail("");
+        setFiles([]); // Reset files array
+        setFileNames([]); // Reset file names
+        setOpen(false); // Close dialog
+        
     } catch (error) {
-      alert('Error sending verification code: ' + (error.response ? error.response.data : error.message));
-      setErrorMessage('Error sending verification code' + (error.response ? error.response.data : error.message));
+        console.error('Error details:', error.response ? error.response.data : error.message);
+        alert('Error sending email: ' + (error.response ? error.response.data : error.message));
     }
-    setMessages("")
-    setSubject("")
-    setBoiteMail("")
-
-  };
+};
+const [fileName, setFileName] = useState(''); // To hold the selected file name
 
   useEffect(() => {
     fetchClients();
   }, [page, pageSize, searchClient]);
+  const [files, setFiles] = useState([]); // To hold multiple file objects
+
+  const [file, setFile] = useState(null);
+
+  // Handle file selection
+
+  const handleFileChange = (event) => {
+    const selectedFiles = Array.from(event.target.files); // Convert FileList to an array
+    setFiles(selectedFiles);
+    const names = selectedFiles.map(file => file.name); // Extract file names
+    setFileNames(names); // Update the fileNames state with the selected file names
+};
 
 
+  // Handle file upload
+  const handleFileUpload = async () => {
+      if (!file) {
+          alert('Please select a file first!');
+          return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+          const response = await axios.post('http://192.168.1.170:3300/upload', formData, {
+              headers: {
+                  'Content-Type': 'multipart/form-data',
+              },
+          });
+          alert('File uploaded successfully');
+      } catch (error) {
+          console.error('Error uploading file:', error);
+          alert('Failed to upload file');
+      }
+  };
   return (
     <div
       role="tabpanel"
@@ -246,39 +295,50 @@ function CustomTabPanel({
                 </Box>
                 <div>
                   <Dialog open={open} onClose={handleClose}>
-                    <DialogTitle style={{ backgroundColor: '#EEEDEB', textAlign: 'start', color: 'black', fontSize: '15px', height: 'maxContent' }}>
-                      Nouveau message
-                    </DialogTitle>
-                    <DialogContent style={{ marginTop: '20px' }}>
-                      <TextField
-                        style={{ marginTop: '5px', width: '550px' }}
-                        placeholder="à:"
-                        size="small"
-                        variant="outlined"
-                        value={boiteMail}
-                        onChange={(e) => setBoiteMail(e.target.value)}
-                      />
+                  <DialogTitle>New Message</DialogTitle>
+<DialogContent>
+  <TextField 
+    fullWidth 
+    placeholder="To:" 
+    value={boiteMail} 
+    onChange={(e) => setBoiteMail(e.target.value)} 
+    sx={{ mb: 2 }} 
+  />
+  <TextField 
+    fullWidth 
+    placeholder="Subject:" 
+    value={subject} 
+    onChange={(e) => setSubject(e.target.value)} 
+    sx={{ mb: 2 }} 
+  />
+  <TextField
+    multiline 
+    rows={4} 
+    fullWidth 
+    placeholder="Type your message" 
+    value={messages}
+    onChange={(e) => setMessages(e.target.value)}
+    sx={{ mb: 2 }}
+  />
+  <label 
+    htmlFor="file-upload" 
+    style={{ cursor: 'pointer', color: '#3477d3' }}
+  >
+    Attach a file
+    {fileNames.length > 0 && <p>Selected files: {fileNames.join(', ')}</p>} {/* Display selected file names */}
 
-                      <TextField
-                        style={{ marginTop: '5px', width: '550px' }}
-                        placeholder="Sujet:"
-                        size="small"
-                        variant="outlined"
-                        onChange={handleSubjectChange}
-                        value={subject}
+  </label>
 
-                      />
-                      <TextField
-                        style={{ marginTop: '5px' }}
-                        placeholder="Taper votre message"
-                        multiline
-                        rows={10}
-                        value={messages}
-                        onChange={handleInputChange}
-                        variant="outlined"
-                        fullWidth
-                      />
-                    </DialogContent>
+  <input
+  id="file-upload"
+  type="file"
+  multiple // Add this to enable multiple file selection
+  onChange={handleFileChange}
+  style={{ display: 'none' }}
+/>
+</DialogContent>
+
+
                     <DialogActions >
                     <Button
                         style={{ fontSize: '15px', color: 'white', backgroundColor: '#3477d3', width: '120px', textAlign: 'center', height: '40px' }}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PublicIcon from '@mui/icons-material/Public';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import {
     Box,
     Button,
@@ -44,10 +45,6 @@ const CommandesList = ({ type, searchTerm }) => {
     const [total, setTotal] = useState(0);
     const [articles, setArticles] = useState([]);
     const [text, setText] = useState('');
-
-    const handleChangeText = (event) => {
-        setText(event.target.value);
-    };
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -188,7 +185,9 @@ const CommandesList = ({ type, searchTerm }) => {
             alert('Échec de la mise à jour de l\'article');
         }
     };
-
+    const calculateTotalProducts = (commandArticles) => {
+        return commandArticles.reduce((total, article) => total + (Number(article.CFL_QTE_C) || 0), 0);
+    };
     return (
         <Grid container spacing={2}>
             {commandes
@@ -272,6 +271,21 @@ const CommandesList = ({ type, searchTerm }) => {
                                         <PublicIcon style={{ marginRight: '0.3em' }} />
                                         Adresse commande: {command.ADR_C_F_2}
                                     </Typography>
+
+                                    <Typography
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            marginBottom: 10,
+                                            marginTop: "10px",
+                                            color: '#545454',
+                                            fontWeight: 'bold',
+                                            fontSize: '16px',
+                                        }}
+                                    >
+                                        <InventoryIcon style={{ marginRight: '0.3em' }} />
+                                        Nombre de Contenaires: {command.CF_CHAMP_3}
+                                    </Typography>
                                     <Typography
                                         style={{
                                             display: "flex",
@@ -302,6 +316,12 @@ const CommandesList = ({ type, searchTerm }) => {
                                     <Box sx={{ p: 2 }}>
                                         <Table>
                                             <TableHead>
+                                                <Typography
+
+                                                >
+                                                    <InventoryIcon style={{ marginRight: '0.3em' }} />
+                                                    Total produits: {calculateTotalProducts(articles)}
+                                                </Typography>
                                                 <TableRow>
                                                     <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Article</TableCell>
                                                     <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Description</TableCell>
@@ -373,7 +393,6 @@ const CommandesList = ({ type, searchTerm }) => {
                             {selectedArticle.CODE_ARTICLE} : {selectedArticle.INTIT_ARTICLE}
                         </Typography>
                     </DialogTitle>
-
                     <DialogContent>
                         <DialogContentText>
                             <div>
@@ -386,7 +405,6 @@ const CommandesList = ({ type, searchTerm }) => {
                                     fullWidth
                                 />
                                 <p>Rayon actuel : {selectedArticle.RAYON_ARTICLE || "Pas d'information sur le rayon."}</p>
-
                                 <TextField
                                     style={{ marginTop: 20 }}
                                     label="Emplacement"
@@ -396,7 +414,6 @@ const CommandesList = ({ type, searchTerm }) => {
                                     fullWidth
                                 />
                                 <p>Emplacement actuel : {selectedArticle.EMPLACEMENT_ART || "Pas d'information sur l'emplacement."}</p>
-
                                 <Typography style={{ color: 'black', fontSize: '1.2em', fontWeight: '20px' }}>
                                     <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Stock actuel:</span> {selectedArticle.STOCK_PHYSIQUE}
                                 </Typography>
