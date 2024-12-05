@@ -3,44 +3,44 @@ import axios from 'axios';
 import BASE_URL from './constantes';
 
 export const useAccessRights = (userLogin) => {
-  const [accessRights, setAccessRights] = useState(null);
+  const [accessRights, setAccessRights] = useState({});
+
   useEffect(() => {
     const fetchAccessRights = async () => {
-      if (!userLogin) {
-        return;
-      }
-
       try {
-        const response = await axios.get(`${BASE_URL}/api/getUserAccess`, {
-          params: { userLogin }
-        });
-        setAccessRights(response.data);
+        const response = await axios.get(`${BASE_URL}/api/users`);
+        const userRights = response.data.find(user => user.LOGIN === userLogin);
+        
+        if (userRights) {
+          setAccessRights({
+            ACCESS_RECEPTION: Number(userRights.ACCESS_RECEPTION),
+            ACCESS_CONTACT: Number(userRights.ACCESS_CONTACT),
+            ACCESS_PARTENAIRE: Number(userRights.ACCESS_PARTENAIRE),
+            ACCESS_INVESTISSEUR: Number(userRights.ACCESS_INVESTISSEUR),
+            ACCESS_CLIENT_CSPD: Number(userRights.ACCESS_CLIENT_CSPD),
+            ACCESS_CLIENT_FDM: Number(userRights.ACCESS_CLIENT_FDM),
+            ACCESS_FAMILLE: Number(userRights.ACCESS_FAMILLE),
+            ACCESS_HISTORIQUE_APPEL: Number(userRights.ACCESS_HISTORIQUE_APPEL),
+            ACCESS_ACHATS: Number(userRights.ACCESS_ACHATS),
+            ACCESS_FINANCE: Number(userRights.ACCESS_FINANCE),
+            ACCESS_COMPTABILITE: Number(userRights.ACCESS_COMPTABILITE),
+            ACCESS_IMPORT_EXPORT: Number(userRights.ACCESS_IMPORT_EXPORT),
+            ACCESS_MAILING: Number(userRights.ACCESS_MAILING),
+            ACCESS_ADMINISTRATION: Number(userRights.ACCESS_ADMINISTRATION),
+            ACCESS_PARAMETRAGE: Number(userRights.ACCESS_PARAMETRAGE),
+            ACCESS_MAGASIN: Number(userRights.ACCESS_MAGASIN),
+            ACCESS_RH: Number(userRights.ACCESS_RH)
+          });
+        }
       } catch (error) {
-        console.error('Rights fetch error:', error);
+        console.log('Error fetching access rights:', error);
       }
     };
 
-    fetchAccessRights();
+    if (userLogin) {
+      fetchAccessRights();
+    }
   }, [userLogin]);
 
-  return accessRights || {
-    ACCESS_CONTACT: 0,
-    ACCESS_ADMINISTRATION: 0,
-    ACCESS_PARAMETRAGE: 0,
-    ACCESS_MAGASIN: 0,
-    ACCESS_RH: 0,
-    ACCESS_MAILING: 0,
-    ACCESS_IMPORT_EXPORT: 0,
-    ACCESS_PARTENAIRE: 0,
-    ACCESS_INVESTISSEUR: 0,
-    ACCESS_CLIENT_CSPD: 0,
-    ACCESS_CLIENT_FDM: 0,
-    ACCESS_FAMILLE: 0,
-    ACCESS_FINANCE: 0,
-    ACCESS_HISTORIQUE_APPEL: 0,
-    ACCESS_ACHATS: 0,
-    ACCESS_COMPTABILITE: 0,
-    ACCESS_RECEPTION: 0
-
-  };
+  return accessRights;
 };

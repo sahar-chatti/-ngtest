@@ -457,6 +457,24 @@ Détails de demande  </DialogTitle>
               </TableCell>
             </TableRow>
             <TableRow>
+              <TableCell component="th">Commentaire Commercial</TableCell>
+              <TableCell>
+                 {selectedRequest.BANQUE}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell component="th">Commentaire Commercial</TableCell>
+              <TableCell>
+                 {selectedRequest.RIB}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell component="th">Commentaire Commercial</TableCell>
+              <TableCell>
+                 {selectedRequest.ADRESSE}
+              </TableCell>
+            </TableRow>
+            <TableRow>
   <TableCell component="th">Avis Financier</TableCell>
   <TableCell>
     <Chip

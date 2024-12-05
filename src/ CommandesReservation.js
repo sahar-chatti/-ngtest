@@ -57,7 +57,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import AdsClickIcon from '@mui/icons-material/AdsClick';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const CommandesList = ({ base, type, searchTerm, }) => {
+const CommandesReservation = ({ base, type, searchTerm, }) => {
   const theme = useTheme();
   const [openedHistoryCommand, setOpenedHistoryCommand] = useState();
   const [errorLivraison, setErrorLivraison] = useState('');
@@ -289,7 +289,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
       const url = type === "partenaire" ?
         `${BASE_URL}/api/cmdPartenairesEncours` : type === "investisseur" ?
           `${BASE_URL}/api/cmdInvestisseursEncours` :
-          `${BASE_URL}/api/cmdClientsEncours/${base}`
+          `${BASE_URL}/api/cmdRes/${base}`
       const params = {
         page: page,
         pageSize: pageSize,
@@ -1477,4 +1477,4 @@ const CommandesList = ({ base, type, searchTerm, }) => {
   );
 };
 
-export default CommandesList;
+export default CommandesReservation;

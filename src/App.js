@@ -9,6 +9,7 @@ import BasicTabs from './TabsClients';
 import BASE_URL from './constantes';
 import axios from 'axios';
 import Notification from './components/notification';
+import TicketsComponent from './Tickets';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -68,6 +69,7 @@ function App() {
               currentUser ? <AppBar user={currentUser} onLogout={handleLogout} /> : <Navigate to="/login" />
             }
           />
+           <Route path="/tickets" element={<TicketsComponent />} />
           <Route path="/" element={currentUser ? <Navigate to="/login" /> : <Login onLogin={handleLogin} />} />
           <Route
             path="/appBar"

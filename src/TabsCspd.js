@@ -53,6 +53,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import annulerIcon from './icons/annuler.png'
 import checkIcon from './icons/check.png'
 import ClientsIcon from './icons/addClient.png'
+import Reservation from './ CommandesReservation';
 
 function CustomTabPanel({ 
   value,
@@ -374,14 +375,20 @@ const renderSelectClImage = (index === 0 ) && selectedOption !== '2' && (
                   <>
                     <FormControlLabel value="1" control={<Radio />} label="Clients" />
                     <FormControlLabel value="2" control={<Radio />} label="Commandes en cours" />
-                    <FormControlLabel value="3" control={<Radio />} label="Etat de stock" />
+                    <FormControlLabel value="3" control={<Radio />} label="Reservations" />
+
+                    <FormControlLabel value="4" control={<Radio />} label="Etat de stock" />
+
                   </>
                 )}
                 {(index === 2 || index === 3) && (
                   <>
                     <FormControlLabel value="1" control={<Radio />} label="Clients" />
                     <FormControlLabel value="2" control={<Radio />} label="Commandes en cours" />
-                    <FormControlLabel value="3" control={<Radio />} label="Etat de stock" />
+                    <FormControlLabel value="3" control={<Radio />} label="Reservations" />
+
+                    <FormControlLabel value="4" control={<Radio />} label="Etat de stock" />
+
                   </>
                 )}
               </RadioGroup>
@@ -585,12 +592,12 @@ const renderSelectClImage = (index === 0 ) && selectedOption !== '2' && (
           {index === 0 && selectedOption === '1' && displayMode === 'card' && (
             <CardClientsCSPD selectedClientType={"clientsCspd"} displayMode={displayMode} selectedTri={selectedTri} searchTerm={searchTerm} />
           )}
-        
+       
 
 
 
 
-{selectedOption === '3' && index === 0 && (
+{selectedOption === '4' && index === 0 && (
   <Stock 
     searchTerm={searchTerm}
     codeCli={selectedClient}
@@ -599,7 +606,11 @@ const renderSelectClImage = (index === 0 ) && selectedOption !== '2' && (
     enableClientSearch={true}
   />
 )}
-
+{selectedOption === '3' && index === 0 && (
+  <Reservation
+  base={"cspd"} type={"client"} searchTerm={searchTerm} setAssigned={ setAssignedList}
+  />
+)}
 
 
         </Box>

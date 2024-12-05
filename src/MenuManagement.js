@@ -36,7 +36,17 @@ const UserManagement = () => {
     magasin: false,
     rh: false,
     mailing: false,
-    importExport: false
+    importExport: false,
+    reception: false, // Add this line
+    partenaire: false,
+    investisseur: false,
+    client_cspd: false,
+    client_fdm: false,
+    famille: false,
+    historique_appel: false,
+    achats: false,
+    comptabilite: false,
+    finance: false
   });
 
   const roles = [
@@ -95,39 +105,39 @@ const UserManagement = () => {
   const handleSaveAccess = async () => {
     if (!selectedUser) return;
   
-    try {
-      // Use the userId for the API request
-      await axios.put(`http://192.168.1.170:3300/api/users/${selectedUser.ID_UTILISATEUR}/access`, {
-        contact: accessRights.contact,
-        administration: accessRights.administration,
-        parametrage: accessRights.parametrage,
-        magasin: accessRights.magasin,
-        rh: accessRights.rh,
-        mailing: accessRights.mailing,
-        importExport: accessRights.importExport,
-        partenaire: accessRights.partenaire,
-        investisseur: accessRights.investisseur,
-        client_cspd: accessRights.client_cspd,
-        client_fdm: accessRights.client_fdm,
-        famille: accessRights.famille,
-        historique_appel: accessRights.historique_appel,
-        achats: accessRights.achats,
-        comptabilite: accessRights.comptabilite,
-        reception: accessRights.reception ? 1 : 0,  // Ensure 'reception' is converted to 1 or 0
-
-        finance: accessRights.finance,
-
-      });
+    const requestData = {
+      contact: accessRights.contact ? 1 : 0,
+      administration: accessRights.administration ? 1 : 0,
+      parametrage: accessRights.parametrage ? 1 : 0,
+      magasin: accessRights.magasin ? 1 : 0,
+      rh: accessRights.rh ? 1 : 0,
+      mailing: accessRights.mailing ? 1 : 0,
+      importExport: accessRights.importExport ? 1 : 0,
+      reception: accessRights.reception ? 1 : 0,  // Convert boolean to 1/0
+      partenaire: accessRights.partenaire ? 1 : 0,
+      investisseur: accessRights.investisseur ? 1 : 0,
+      client_cspd: accessRights.client_cspd ? 1 : 0,
+      client_fdm: accessRights.client_fdm ? 1 : 0,
+      famille: accessRights.famille ? 1 : 0,
+      historique_appel: accessRights.historique_appel ? 1 : 0,
+      achats: accessRights.achats ? 1 : 0,
+      comptabilite: accessRights.comptabilite ? 1 : 0,
+      finance: accessRights.finance ? 1 : 0
+    };
   
+    try {
+      await axios.put(`${BASE_URL}/api/users/${selectedUser.ID_UTILISATEUR}/access`, requestData);
       setOpenDialog(false);
-      fetchUsers();  // Re-fetch users to reflect changes
+      fetchUsers();
     } catch (error) {
       console.error('Error updating access rights:', error);
     }
   };
+  
 
   const handleAccessChange = (event) => {
     const { name, checked } = event.target;
+    console.log(`Setting ${name} to ${checked}`); // Add this log
     setAccessRights((prevRights) => ({
       ...prevRights,
       [name]: checked
