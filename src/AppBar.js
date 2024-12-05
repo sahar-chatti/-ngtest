@@ -230,7 +230,7 @@ export default function MiniDrawer() {
   };
   const handleDrawerClose = () => {
     setOpen(false);
-  };
+  }; 
   const handleTabClick = (index) => {
     setSelectedTab(index);
   };
@@ -357,8 +357,8 @@ export default function MiniDrawer() {
             ...(isHovered && clearButtonHoverStyle),
           }}
           onClick={handleClearAllNotifications}
-          onMouseEnter={handleMouseEnter} // Déclenché lors du survol
-          onMouseLeave={handleMouseLeave} // Déclenché lorsque le curseur quitte le bouton
+          onMouseEnter={handleMouseEnter} 
+          onMouseLeave={handleMouseLeave} 
         >
           Marquer tous les notificaions comme lus
         </Button>
