@@ -33,6 +33,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import PrintIcon from '@mui/icons-material/Print';
 import entete from '../images/sahar up.png';
 import Checkbox from '@mui/material/Checkbox';
+import { Button } from '@mui/material';
+import cachet from '../images/cachetcspd.png';
 
 const StyledCard = styled(Card)(({ theme }) => ({
     transition: 'transform 0.3s, box-shadow 0.3s',
@@ -77,6 +79,8 @@ const ArticleMovementsList = ({ }) => {
     const [initialStocks, setInitialStocks] = useState({});
     const [checkedMovements, setCheckedMovements] = useState({});
     const [searchDate, setSearchDate] = useState('');
+    const [cachetBase64, setCachetBase64] = useState('');
+
 
     const fetchArticleMovements = async () => {
         try {
@@ -86,7 +90,7 @@ const ArticleMovementsList = ({ }) => {
                     searchTerm,
                     page,
                     pageSize: rowsPerPage,
-                    includeInitialStock: true 
+                    includeInitialStock: true
                 },
             });
             const stockMapping = {};
@@ -122,10 +126,10 @@ const ArticleMovementsList = ({ }) => {
         const sortedMovements = [...movements].sort(
             (a, b) => new Date(b.MVT_DATE) - new Date(a.MVT_DATE)
         );
-        let runningStock = physicalStock; 
+        let runningStock = physicalStock;
         const stockByDay = {};
         sortedMovements.forEach((movement) => {
-            const date = format(new Date(movement.MVT_DATE), 'yyyy-MM-dd'); 
+            const date = format(new Date(movement.MVT_DATE), 'yyyy-MM-dd');
             const qty = movement.MVT_QTE || 0;
             if (!stockByDay[date]) {
                 stockByDay[date] = runningStock;
@@ -140,6 +144,20 @@ const ArticleMovementsList = ({ }) => {
 
         return stockByDay;
     };
+    const fetchCachetBase64 = () => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function () {
+            const canvas = document.createElement('canvas');
+            canvas.width = this.width;
+            canvas.height = this.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(this, 0, 0);
+            setCachetBase64(canvas.toDataURL('image/png'));
+        };
+        img.src = cachet;
+    };
+
     const groupedArticles = articles.reduce((acc, item) => {
         if (!acc[item.CODE_ARTICLE]) {
             acc[item.CODE_ARTICLE] = {
@@ -177,25 +195,27 @@ const ArticleMovementsList = ({ }) => {
 
     useEffect(() => {
         fetchEnteteBase64();
+        fetchCachetBase64();
+
     }, []);
-   
+
     const handlePrint = () => {
         if (!enteteBase64) {
             toast.warning("L'image d'en-tête n'est pas encore chargée.");
             return;
         }
-    
+
         const allMovements = Object.values(groupedArticles).flatMap(article => article.movements);
         const movementDates = allMovements.map(mvt => new Date(mvt.MVT_DATE));
         const latestDate = new Date(Math.max(...movementDates));
         const formattedLatestDate = latestDate.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    
+
         const printWindow = window.open('', '_blank');
-    
+
         const articlesHtml = Object.entries(groupedArticles).map(([articleCode, data]) => {
             const totalMovements = data.movements.reduce((sum, mvt) => sum + (mvt.MVT_QTE || 0), 0);
             const initialStock = data.details.STOCK_PHYSIQUE - totalMovements;
-    
+
             return `
                 <div class="article-section">
                     <div class="article-info">
@@ -233,12 +253,25 @@ const ArticleMovementsList = ({ }) => {
                 <hr class="separator">
             `;
         }).join('');
-    
+
         printWindow.document.write(`
             <html>
                 <head>
                     <title>Fiche de Mouvements - Tous les Articles</title>
                     <style>
+                  .cachet-container {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    width: 350px;
+    height: auto;
+    margin-left:-350px;
+    margin-top: -300px;
+}
+.cachet-image {
+    width: 100%;
+    height: auto;
+}
                         img { 
                             width: 100%; 
                             max-height: 100%; 
@@ -300,6 +333,7 @@ const ArticleMovementsList = ({ }) => {
                         }
                     </style>
                 </head>
+                
                 <body>
                     <div class="header">
                         <img src="${enteteBase64}" alt="En-tête" />
@@ -307,8 +341,158 @@ const ArticleMovementsList = ({ }) => {
                     <div class="content">
                         <div class="title">
                             Fiche de Mouvements - ${formattedLatestDate}
+                           
                         </div>
                         ${articlesHtml}
+                          <div class="cachet-container">
+    <img src="${cachetBase64}" alt="Cachet" class="cachet-image"/>
+</div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    </script>
+                </body>
+               
+            </html>
+        `);
+
+        printWindow.document.close();
+    };
+
+    const handlePrintSingleArticle = (articleData) => {
+        if (!enteteBase64) {
+            toast.warning("L'image d'en-tête n'est pas encore chargée.");
+            return;
+        }
+
+        const printWindow = window.open('', '_blank');
+        const totalMovements = articleData.movements.reduce((sum, mvt) => sum + (mvt.MVT_QTE || 0), 0);
+        const initialStock = articleData.details.STOCK_PHYSIQUE - totalMovements;
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Fiche de Mouvements - ${articleData.details.INTIT_ARTICLE}</title>
+                    <style>
+                        img { 
+                            width: 100%; 
+                            max-height: 100%; 
+                            object-fit: contain; 
+                        }
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            padding: 20px; 
+                        }
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 20px; 
+                        }
+                        .content { 
+                            margin-top: -800px; 
+                        }
+                        .title { 
+                            margin-top: 90px;
+                            text-align: center; 
+                            font-size: 1.5em; 
+                            margin: 20px ; 
+                        }
+                              .cachet-container {
+    position: fixed;
+    width: 250px;
+    height: auto;
+  
+}
+.cachet-image {
+    width: 100%;
+    height: auto;
+}
+                        .article-info { 
+                            margin: 20px 0;
+                            padding: 10px;
+                            background-color: #f5f5f5;
+                            border-radius: 5px;
+                        }
+                        .movements-table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            margin: 20px 0;
+                        }
+                        th, td { 
+                            border: 1px solid #ddd; 
+                            padding: 8px; 
+                            text-align: left; 
+                        }
+                        th { 
+                            background-color: #f5f5f5; 
+                        }
+                        .positive { 
+                            color: green; 
+                        }
+                        .negative { 
+                            color: red; 
+                        }
+                        .summary {
+                            margin-top: 20px;
+                            padding: 10px;
+                            background-color: #f9f9f9;
+                            border-radius: 5px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <img src="${enteteBase64}" alt="En-tête" />
+                    </div>
+                    <div class="content">
+                        <div class="title">
+                            Fiche de Mouvements - ${articleData.details.INTIT_ARTICLE}
+                        </div>
+                        
+                        <div class="article-info">
+                            <h3>Informations Article</h3>
+                            <p><strong>Code Article:</strong> ${articleData.details.CODE_ARTICLE}</p>
+                            <p><strong>Rayon:</strong> ${articleData.details.RAYON_ARTICLE || 'N/A'}</p>
+                            <p><strong>Emplacement:</strong> ${articleData.details.EMPLACEMENT_ART || 'N/A'}</p>
+                            <p><strong>Stock Initial:</strong> ${initialStock}</p>
+                            <p><strong>Stock Actuel:</strong> ${articleData.details.STOCK_PHYSIQUE}</p>
+                        </div>
+    
+                        <table class="movements-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type Doc</th>
+                                    <th>N° Doc</th>
+                                    <th>Entrées</th>
+                                    <th>Sorties</th>
+                                    <th>Solde</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${articleData.movements.map(movement => `
+                                    <tr>
+                                        <td>${getFormattedDate(movement.MVT_DATE)}</td>
+                                        <td>${movement.MVT_TYPE_DOC}</td>
+                                        <td>${movement.MVT_NUM_DOC}</td>
+                                        <td class="positive">${movement.MVT_QTE > 0 ? Math.abs(movement.MVT_QTE) : ''}</td>
+                                        <td class="negative">${movement.MVT_QTE < 0 ? Math.abs(movement.MVT_QTE) : ''}</td>
+                                        <td>${movement.RUNNING_BALANCE}</td>
+                                        <td>${movement.MVT_CHAMP_1 === '1' ? 'Validé' : 'Non validé'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+    
+                        <div class="summary">
+                            <h3>Résumé des Mouvements</h3>
+                            <p><strong>Total des Mouvements:</strong> ${articleData.movements.length}</p>
+                            <p><strong>Variation Totale:</strong> ${totalMovements}</p>
+
+                        </div>
+                         <div class="cachet-container">
+    <img src="${cachetBase64}" alt="Cachet" class="cachet-image"/>
+</div>
                     </div>
                     <script>
                         window.onload = function() { window.print(); }
@@ -316,12 +500,10 @@ const ArticleMovementsList = ({ }) => {
                 </body>
             </html>
         `);
-    
+
         printWindow.document.close();
     };
-    
-    
-    
+
     const handleCheckMovement = (mvtNumero) => {
         setCheckedMovements((prev) => ({
             ...prev,
@@ -398,7 +580,9 @@ const ArticleMovementsList = ({ }) => {
         setPage(0); // Reset to first page when searching
     };
     return (
+
         <Box sx={{ p: 3 }}>
+
             <TextField
                 fullWidth
                 variant="outlined"
@@ -422,7 +606,24 @@ const ArticleMovementsList = ({ }) => {
                     },
                 }}
             />
-
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, marginTop: 2 }}>
+                <Button
+                    variant="contained"
+                    startIcon={<PrintIcon />}
+                    onClick={handlePrint}
+                    sx={{
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        '&:hover': {
+                            backgroundColor: 'primary.dark',
+                        },
+                        borderRadius: '8px',
+                        padding: '8px 16px',
+                    }}
+                >
+                    Imprimer l'état des mouvements
+                </Button>
+            </Box>
             {loading ? (
                 <LinearProgress />
             ) : (
@@ -438,7 +639,7 @@ const ArticleMovementsList = ({ }) => {
                                             </Typography>
                                             <Box sx={{ display: 'flex', gap: 1 }}>
                                                 <IconButton
-                                                    onClick={() => handlePrint(data)}
+                                                    onClick={() => handlePrintSingleArticle(data)}
                                                     size="small"
                                                     sx={{ color: 'white' }}
                                                 >
@@ -505,9 +706,9 @@ const ArticleMovementsList = ({ }) => {
                                                                 </TableCell>
                                                                 <TableCell>
                                                                     <Checkbox
-                                                                     checked={movement.MVT_CHAMP_1 === '1' || checkedMovements[movement.MVT_NUMERO] || false}
-                                                                     onChange={() => handleCheckMovement(movement.MVT_NUMERO)}
-                                                                     color="primary"
+                                                                        checked={movement.MVT_CHAMP_1 === '1' || checkedMovements[movement.MVT_NUMERO] || false}
+                                                                        onChange={() => handleCheckMovement(movement.MVT_NUMERO)}
+                                                                        color="primary"
                                                                     />
                                                                 </TableCell>
                                                             </TableRow>

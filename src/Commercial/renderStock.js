@@ -34,7 +34,7 @@ export default function RenderStockGros({ article }) {
     setCheckedDepot(depot);
   };
 
-  const [buttonStatus, setButtonStatus] = useState({ text: 'Vérifier disponibilité', color: 'primary' });
+  const [buttonStatus, setButtonStatus] = useState({ text: 'Vérifier disponibilité', color: 'primary' , fontWeight:'bold' });
 
   const handleQteBesoinChange = (event) => {
     const newValue = event.target.value;
@@ -138,12 +138,14 @@ export default function RenderStockGros({ article }) {
               onChange={handleQteBesoinChange}
               onKeyDown={handleKeyDown}
               type="number"
-              style={{ marginRight: 10, width: "100px" }}
+              style={{ marginRight: 25, width: "150px" }}
             />
             <Button
               variant="contained"
               color={buttonStatus.color}
-              style={{ backgroundColor: buttonStatus.color === 'success' ? 'green' : buttonStatus.color === 'error' ? 'red' : 'orange' }}
+              style={{ backgroundColor: buttonStatus.color === 'success' ? 'green' : buttonStatus.color === 'error' ? 'red' : 'orange' ,
+                  height: '55px'
+              }}
             >
               {buttonStatus.text}
             </Button>
