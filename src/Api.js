@@ -1,5 +1,5 @@
 import axios from 'axios';
-import BASE_URL from './constantes';
+import BASE_URL from './Utilis/constantes';
 
 const API_URL = 'http://192.168.1.170:3300/api';
 

@@ -3,7 +3,7 @@ import { Box, TextField, IconButton, Table, TableBody, TableCell, TableContainer
 import SearchIcon from '@mui/icons-material/Search';
 import ClientsIcon from '../icons/addClient.png'
 import axios from 'axios';
-import BASE_URL from '../constantes';
+import BASE_URL from '../Utilis/constantes';
 const ClientsSearch = ({  onSelectClient }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [clients, setClients] = useState([]);

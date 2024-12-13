@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import store from './store';
-import ClientList from './ClientList';
-import Login from './Login';
-import AppBar from './AppBar';
-import BasicTabs from './TabsClients';
-import BASE_URL from './constantes';
-import axios from 'axios';
-import Notification from './components/notification';
-import TicketsComponent from './Tickets';
+import store from '../src/Magasin/store';
+import Login from '../src/components/Login';
+import AppBar from '../src/components/AppBar';
+import BasicTabs from '../src/OldComponents/TabsClients';
+import TicketsComponent from '../src/Adminstration/Tickets';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -57,12 +53,6 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          <Route
-            path="/clients"
-            element={
-              currentUser ? <ClientList user={currentUser} /> : <Navigate to="/login" />
-            }
-          />
           <Route
             path="/appBar"
             element={
