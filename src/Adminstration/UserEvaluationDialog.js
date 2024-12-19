@@ -8,63 +8,92 @@ import {
     Grid,
     Paper,
     Box,
-    CircularProgress
+    CircularProgress,
+    Fade,
+    styled,
+    useTheme
 } from '@mui/material';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import StarIcon from '@mui/icons-material/Star';
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+    padding: theme.spacing(3),
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    borderRadius: 12,
+    transition: 'transform 0.2s ease-in-out',
+    '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: theme.shadows[4]
+    }
+}));
+
+const StyledRating = styled(Rating)(({ theme }) => ({
+    '& .MuiRating-iconFilled': {
+        color: theme.palette.primary.main
+    }
+}));
 
 const evaluationCriteria = [
     {
         id: 'punctuality',
         label: 'Ponctualité',
-        description: 'Évaluation de la ponctualité au travail'
+        description: 'Évaluation de la ponctualité au travail',
+        icon: '⏰'
     },
     {
         id: 'creativity',
         label: 'Créativité',
-        description: 'Capacité à proposer des solutions innovantes'
+        description: 'Capacité à proposer des solutions innovantes',
+        icon: '💡'
     },
     {
         id: 'behavior',
         label: 'Comportement',
-        description: 'Attitude générale et relations professionnelles'
+        description: 'Attitude générale et relations professionnelles',
+        icon: '🤝'
     },
     {
         id: 'elegance',
         label: 'Élégance',
-        description: 'Présentation et professionnalisme'
+        description: 'Présentation et professionnalisme',
+        icon: '✨'
     },
     {
         id: 'discipline',
         label: 'Discipline',
-        description: 'Respect des règles et procédures'
+        description: 'Respect des règles et procédures',
+        icon: '📋'
     },
     {
         id: 'productivity',
         label: 'Productivité',
-        description: 'Efficacité et qualité du travail'
+        description: 'Efficacité et qualité du travail',
+        icon: '📈'
+    },
+    {
+        id: 'objectif',
+        label: 'Objectif',
+        description: 'Objectifs et réalisation',
+        icon: '🎯'
     }
 ];
 
 const EmployeeEvaluationDialog = ({ open, onClose }) => {
+    const theme = useTheme();
     const user = useSelector((state) => state.user);
-    console.log('Redux User State:', user);
     const [evaluation, setEvaluation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-
     useEffect(() => {
         const fetchEvaluation = async () => {
-            if (!user?.LOGIN) {
-                console.log('No user login found');
-                return;
-            }
+            if (!user?.LOGIN) return;
 
             try {
                 setLoading(true);
-                console.log('Fetching evaluations for user:', user.LOGIN);
-
                 const response = await axios.get(`http://192.168.1.170:3300/api/evaluations`, {
                     params: {
                         userLogin: user.LOGIN,
@@ -72,24 +101,13 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
                     }
                 });
 
-                console.log('All evaluations for user:', response.data);
                 const userEvaluations = response.data
                     .filter(evaluation => evaluation.USER_ID === user.ID_UTILISATEUR)
+                    .sort((a, b) => new Date(b.EVALUATION_DATE) - new Date(a.EVALUATION_DATE));
 
-                    .sort((a, b) => {
-                        const dateA = new Date(a.EVALUATION_DATE);
-                        const dateB = new Date(b.EVALUATION_DATE);
-                        return dateB - dateA;
-                    });
-
-                console.log('Filtered user evaluations:', userEvaluations);
-                const latestEvaluation = userEvaluations[0];
-                console.log('Latest user evaluation:', latestEvaluation);
-                setEvaluation(latestEvaluation);
-
+                setEvaluation(userEvaluations[0]);
             } catch (err) {
-                console.error('Fetch error:', err);
-                setError('Failed to fetch evaluation data');
+                setError('Impossible de récupérer les données d\'évaluation');
             } finally {
                 setLoading(false);
             }
@@ -99,15 +117,33 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
             fetchEvaluation();
         }
     }, [open, user]);
+
     if (!open) return null;
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>
-                Évaluation de {user?.UTILISATEUR}
+        <Dialog 
+            open={open} 
+            onClose={onClose} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+                sx: {
+                    borderRadius: 3,
+                    overflow: 'hidden'
+                }
+            }}
+        >
+            <DialogTitle sx={{ 
+                background: theme.palette.primary.main,
+                color: 'white',
+                pb: 1
+            }}>
+                <Typography variant="h5" fontWeight="bold">
+                    Évaluation de {user?.UTILISATEUR}
+                </Typography>
                 {evaluation?.EVALUATION_DATE && (
-                    <Typography variant="caption" display="block" color="textSecondary">
-                        Date: {new Date(evaluation.EVALUATION_DATE).toLocaleString('fr-FR', {
+                    <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
+                        {new Date(evaluation.EVALUATION_DATE).toLocaleString('fr-FR', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
@@ -117,46 +153,59 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
                     </Typography>
                 )}
             </DialogTitle>
-            <DialogContent>
+            <DialogContent sx={{ p: 3 }}>
                 {loading ? (
-                    <Box display="flex" justifyContent="center" p={3}>
+                    <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
                         <CircularProgress />
                     </Box>
                 ) : error ? (
-                    <Typography color="error" align="center">
-                        {error}
-                    </Typography>
+                    <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+                        <Typography color="error" variant="h6">
+                            {error}
+                        </Typography>
+                    </Box>
                 ) : (
-                    <Grid container spacing={2}>
-                        {evaluationCriteria.map(({ id, label, description }) => (
-                            <Grid item xs={12} sm={6} key={id}>
-                                <Paper elevation={2} sx={{ p: 2 }}>
-                                    <Typography variant="subtitle1" gutterBottom>
-                                        {label}
-                                    </Typography>
-                                    <Rating
-                                        value={id === 'punctuality' ? 5 : Number(evaluation?.[id.toUpperCase()]) || 0}
-                                        readOnly
-                                        precision={0.5}
-                                        max={5}
-                                    />
-                                    <Typography variant="body2" color="textSecondary">
-                                        {description}
-                                    </Typography>
-
-                                </Paper>
-                            </Grid>
-                        ))}
-                        <Grid item xs={12}>
+                    <Fade in={!loading}>
+                        <Grid container spacing={3}>
+                            {evaluationCriteria.map(({ id, label, description, icon }) => (
+                                <Grid item xs={12} sm={6} key={id}>
+                                    <StyledPaper>
+                                        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Typography variant="h6" component="span">
+                                                {icon}
+                                            </Typography>
+                                            <Typography variant="h6">
+                                                {label}
+                                            </Typography>
+                                        </Box>
+                                        <StyledRating
+                                            value={id === 'punctuality' ? 5 : Number(evaluation?.[id.toUpperCase()]) || 0}
+                                            readOnly
+                                            precision={0.5}
+                                            icon={<StarIcon fontSize="inherit" />}
+                                        />
+                                        <Typography 
+                                            variant="body2" 
+                                            color="text.secondary"
+                                            sx={{ mt: 1 }}
+                                        >
+                                            {description}
+                                        </Typography>
+                                    </StyledPaper>
+                                </Grid>
+                            ))}
                             <Grid item xs={12}>
-                                <Paper elevation={2} sx={{ p: 2 }}>
-                                    <Typography variant="h6" gutterBottom>
+                                <StyledPaper sx={{ 
+                                    background: theme.palette.primary.light,
+                                    color: theme.palette.primary.contrastText
+                                }}>
+                                    <Typography variant="h5" align="center">
                                         Récompense Totale: {evaluation.TOTAL_SAVINGS} DT
                                     </Typography>
-                                </Paper>
+                                </StyledPaper>
                             </Grid>
                         </Grid>
-                    </Grid>
+                    </Fade>
                 )}
             </DialogContent>
         </Dialog>

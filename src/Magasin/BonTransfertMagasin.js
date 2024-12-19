@@ -229,7 +229,7 @@ const CommandesList = ({ type, searchTerm }) => {
         } else if (deliveryDate < today) {
             return { status: 'Reçue', color: 'green' };
         }
-        return { status: 'En cours', color: '#7695FF' };
+        return { status: 'En cours', color: '#3572EF' };
     };
 
     const groupedCommandes = commandes.reduce((acc, command) => {

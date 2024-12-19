@@ -3,13 +3,13 @@ import axios from 'axios';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Button, TextField, Dialog, DialogActions, DialogContent,
-  DialogTitle, IconButton, Grid, Select, MenuItem, InputLabel,
+  DialogTitle, IconButton, Grid, Select, MenuItem, InputLabel,Box
 
 } from '@mui/material';
 import {
   Avatar,
   FormControl,
- 
+
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
@@ -74,8 +74,8 @@ const Statements = () => {
         // Regular users see only statements where they are the sender (USER_NAME) 
         // or receiver (DEMAND_TYPE)
         const filteredStatements = response.data.filter(statement =>
-          statement.USER_NAME === user?.LOGIN ||
-          statement.DEMAND_TYPE === user?.UTILISATEUR
+          statement.USER_NAME === user?.LOGIN || // Si l'utilisateur est le réclamant
+          statement.DEMAND_TYPE === user?.LOGIN // Si l'utilisateur est la personne à notifier
         );
         setUsers(filteredStatements);
       }
@@ -176,6 +176,179 @@ const Statements = () => {
       console.error('Error loading image for Base64 conversion:', err);
     };
     img.src = entete;
+  };
+  const handlePrintClaim = (claim) => {
+    if (!enteteBase64) {
+      alert('L\'image d\'en-tête n\'est pas encore chargée.');
+      return;
+    }
+
+    const printContent = `
+    <html>
+    <head>
+      <title>Détails de la Réclamation</title>
+      <style>
+        @media print {
+          body { -webkit-print-color-adjust: exact; }
+        }
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+        }
+        .header-image {
+          width: 100%;
+          height: auto;
+          object-fit: contain;
+        }
+        .content {
+          padding: 20px;
+                    margin-top: -800px;
+
+        }
+        .claim-header {
+          text-align: center;
+          color: #ce362c;
+          margin-bottom: 30px;
+        }
+        .claim-section {
+          margin-bottom: 20px;
+        }
+        .claim-title {
+          color: #0B4C69;
+          font-weight: bold;
+          margin-bottom: 10px;
+          border-bottom: 2px solid #0B4C69;
+          padding-bottom: 5px;
+        }
+        .claim-info {
+          display: grid;
+          grid-template-columns: 200px auto;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .label {
+          font-weight: bold;
+          color: #666;
+        }
+        .value {
+          color: #333;
+        }
+        .status-chip {
+          display: inline-block;
+          padding: 5px 15px;
+          border-radius: 15px;
+          color: white;
+          font-weight: bold;
+        }
+        .signatures {
+          margin-top: 50px;
+          display: flex;
+          justify-content: space-between;
+        }
+        .signature-box {
+          border-top: 1px solid #000;
+          width: 200px;
+          padding-top: 10px;
+          text-align: center;
+        }
+      </style>
+    </head>
+    <body>
+      <img src="${enteteBase64}" alt="En-tête" class="header-image">
+      <div class="content">
+        <div class="claim-header">
+          <h1>Détails de la Réclamation / Demande  </h1>
+        </div>
+
+        <div class="claim-section">
+          <div class="claim-title">Informations Générales</div>
+          <div class="claim-info">
+            <span class="label">Date de la demande:</span>
+            <span class="value">${new Date(claim.DEMAND_DATE).toLocaleString()}</span>
+            
+            <span class="label">Réclamant:</span>
+            <span class="value">${claim.USER_NAME}</span>
+            
+            <span class="label">Personne à notifier:</span>
+            <span class="value">${claim.DEMAND_TYPE}</span>
+          </div>
+        </div>
+
+        <div class="claim-section">
+          <div class="claim-title">Description de la Réclamation</div>
+          <div class="claim-info">
+            <span class="label">Motif:</span>
+            <span class="value">${claim.DESCRIPTION}</span>
+          </div>
+        </div>
+
+        <div class="claim-section">
+          <div class="claim-title">État et Suivi</div>
+          <div class="claim-info">
+            <span class="label">État de la réclamation:</span>
+            <span class="value">
+              <span class="status-chip" style="background-color: ${claim.ETAT === 'En cours' ? '#ff9800' :
+        claim.ETAT === 'Récue' ? '#FFEB3B' :
+          claim.ETAT === 'Terminée' ? '#4caf50' :
+            claim.ETAT === 'Annulée' ? '#f44336' : '#grey'
+      }">
+                ${claim.ETAT}
+              </span>
+            </span>
+            
+            <span class="label">Commentaire:</span>
+            <span class="value">${claim.COMMENTAIRE || 'Aucun commentaire'}</span>
+            
+            <span class="label">Traité par:</span>
+            <span class="value">${claim.PAR}</span>
+          </div>
+        </div>
+
+        <div class="claim-section">
+          <div class="claim-title">Décision Administrative</div>
+          <div class="claim-info">
+            <span class="label">État:</span>
+            <span class="value">
+              <span class="status-chip" style="background-color: ${claim.STATE === 'En cours' ? '#ff9800' :
+        claim.STATE === 'Accepté' ? '#4caf50' :
+          claim.STATE === 'Réfusé' ? '#f44336' : '#grey'
+      }">
+                ${claim.STATE}
+              </span>
+            </span>
+            
+            <span class="label">Avis administratif:</span>
+            <span class="value">${claim.DECISION || 'Aucun avis'}</span>
+          </div>
+        </div>
+
+        <div class="signatures">
+          <div class="signature-box">
+            <div>Signature du Réclamant</div>
+          </div>
+           <div class="signature-box">
+            <div>Signature Personne concerné</div>
+          </div>
+          <div class="signature-box">
+            <div>Signature Administrative</div>
+          </div>
+           
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+    const printWindow = window.open('', 'Détails de la Réclamation');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+        printWindow.onafterprint = () => printWindow.close();
+      };
+    }
   };
 
   const handlePrint = () => {
@@ -366,7 +539,7 @@ const Statements = () => {
                       <EditIcon />
                     </IconButton>
                     
-                    <IconButton onClick={handlePrint}>
+                    <IconButton onClick={() => handlePrintClaim(user)}>
                       <PrintIcon />
                     </IconButton>
                   </TableCell>
@@ -427,7 +600,6 @@ const Statements = () => {
             value={currentUser.DEMAND_TYPE || ''}
             onChange={(e) => setCurrentUser({ ...currentUser, DEMAND_TYPE: e.target.value })}
             label="Utilisateur à Notifier"
-            disabled={editing}
 
           >
             {allUsers.map((user) => (
@@ -557,5 +729,4 @@ const Statements = () => {
     </>
   );
 };
-
 export default Statements;

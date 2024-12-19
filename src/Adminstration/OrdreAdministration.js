@@ -7,12 +7,12 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Select, MenuItem, Grid, FormControl, InputLabel,
-  Card,  Typography, Box, IconButton, Chip
+  Card, Typography, Box, IconButton, Chip
 } from '@mui/material';
-import { 
+import {
   Add as AddIcon,
- 
-  Refresh as RefreshIcon ,
+
+  Refresh as RefreshIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   MoreVert as MoreVertIcon
@@ -35,7 +35,7 @@ const OrdresAdministration = () => {
     setAnchorEl(event.currentTarget);
     setSelectedOrder(order);
   };
-  
+
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedOrder(null);
@@ -69,14 +69,14 @@ const OrdresAdministration = () => {
     printWindow.document.write(printContent);
     printWindow.document.close();
     printWindow.print();
-};
+  };
   const handleEdit = () => {
     setCurrentOrder(selectedOrder);
     setIsEditMode(true);
     setOpenDialog(true);
     handleMenuClose();
   };
-  
+
   const handleDelete = async () => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet ordre ?')) {
       try {
@@ -90,7 +90,7 @@ const OrdresAdministration = () => {
     }
     handleMenuClose();
   };
-  
+
   const orderTypes = [
     "Suspicion",
     "Ordre de démission",
@@ -110,7 +110,8 @@ const OrdresAdministration = () => {
       case 'Terminé': return '#4CAF50';
       case 'Annulé': return '#F44336';
       default: return '#757575';
-    }}
+    }
+  }
   const [currentOrder, setCurrentOrder] = useState({
     TYPE_DEMANDE: '',
     DEMANDEUR: connectedUser?.LOGIN || '',
@@ -135,18 +136,18 @@ const OrdresAdministration = () => {
   };
 
   const fetchOrders = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/api/ordresAdmin`);
-    const filteredOrders = connectedUser?.ROLE === 'administrateur' 
-      ? response.data 
-      : response.data.filter(order => order.RECEVEUR === connectedUser?.LOGIN);
-    
-    setOrders(filteredOrders);
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    alert('Erreur lors du chargement des ordres');
-  }
-};
+    try {
+      const response = await axios.get(`${BASE_URL}/api/ordresAdmin`);
+      const filteredOrders = connectedUser?.ROLE === 'administrateur'
+        ? response.data
+        : response.data.filter(order => order.RECEVEUR === connectedUser?.LOGIN);
+
+      setOrders(filteredOrders);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      alert('Erreur lors du chargement des ordres');
+    }
+  };
 
 
   const handleSubmit = async () => {
@@ -191,58 +192,56 @@ const OrdresAdministration = () => {
           </Typography>
           <Box>
             <IconButton sx={{ mr: 1 }} onClick={fetchOrders}>
-          
+
               <RefreshIcon />
             </IconButton>
             {isAdmin && (
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
-          sx={{
-            backgroundColor: '#1976d2',
-            '&:hover': { backgroundColor: '#115293' },
-            borderRadius: '8px',
-            textTransform: 'none',
-            boxShadow: '0 3px 5px 2px rgba(25, 118, 210, .3)',
-            
-          }}
-        >
-          Nouvel ordre
-        </Button>
-      )}
-    </Box>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setOpenDialog(true)}
+                sx={{
+                  backgroundColor: '#1976d2',
+                  '&:hover': { backgroundColor: '#115293' },
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  boxShadow: '0 3px 5px 2px rgba(25, 118, 210, .3)',
+
+                }}
+              >
+                Nouvel ordre
+              </Button>
+            )}
+          </Box>
         </Box>
 
         <TableContainer component={Paper} sx={{ boxShadow: '0 0 10px rgba(0,0,0,0.1)', borderRadius: '10px' }}>
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Demandeur</TableCell>
-
+                <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Demandeur</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Type</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Destinataire</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>État</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Imprimer</TableCell>
-
               </TableRow>
             </TableHead>
             <TableBody>
               {orders.map((order) => (
-                <TableRow 
+                <TableRow
                   key={order.ID}
                   sx={{ '&:hover': { backgroundColor: '#f8f8f8' } }}
                 >
-                    <TableCell>
+                  <TableCell>
                     {new Date(order.DATE_DEMANDE).toLocaleString()}
                   </TableCell>
                   <TableCell>{order.DEMANDEUR}</TableCell>
 
                   <TableCell>
-                    <Chip 
+                    <Chip
                       label={order.TYPE_DEMANDE}
                       sx={{ backgroundColor: '#e3f2fd' }}
                     />
@@ -250,92 +249,92 @@ const OrdresAdministration = () => {
                   <TableCell>{order.RECEVEUR}</TableCell>
                   <TableCell>{order.DESCRIPTION}</TableCell>
                   <TableCell>
-                  {isAdmin ? (
-    <Select
-      value={order.ETAT}
-      onChange={(e) => handleStateChange(order.ID, e.target.value)}
-      sx={{
-        '& .MuiSelect-select': {
-          color: getStatusColor(order.ETAT),
-          fontWeight: 'bold',
-          padding: '5px 15px',
-          borderRadius: '15px'
-        }
-      }}
-    >
-      <MenuItem value="En cours">En cours</MenuItem>
-      <MenuItem value="Terminé">Terminé</MenuItem>
-      <MenuItem value="Annulé">Annulé</MenuItem>
-    </Select>
-  ) : (
-    <Chip
-      label={order.ETAT}
-      sx={{
-        color: getStatusColor(order.ETAT),
-        fontWeight: 'bold',
-        backgroundColor: `${getStatusColor(order.ETAT)}20`
-      }}
-    />
-  )}
-</TableCell>
-<TableCell>
-  {isAdmin ? (
-    <>
-      <IconButton onClick={(e) => handleMenuOpen(e, order)}>
-        <MoreVertIcon />
-      </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          sx: {
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-            borderRadius: '8px',
-          }
-        }}
-      >
-        <MenuItem 
-          onClick={handleEdit}
-          sx={{ 
-            color: '#1976d2',
-            '&:hover': { backgroundColor: '#f5f5f5' }
-          }}
-        >
-          <EditIcon sx={{ mr: 1, fontSize: 20 }} />
-          Modifier
-        </MenuItem>
-        <MenuItem 
-          onClick={handleDelete}
-          sx={{ 
-            color: '#d32f2f',
-            '&:hover': { backgroundColor: '#fee' }
-          }}
-        >
-          <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
-          Supprimer
-        </MenuItem>
-      </Menu>
-    </>
-  ) : (
-   ""
-  )}
-</TableCell>
-<TableCell>
-  <Tooltip title="Imprimer la demande">
-    <IconButton 
-      onClick={() => handlePrint(order)}
-      sx={{ 
-        color: '#1976d2',
-        '&:hover': { 
-          backgroundColor: 'rgba(25, 118, 210, 0.04)' 
-        }
-      }}
-    >
-      <PrintIcon />
-    </IconButton>
-  </Tooltip>
-</TableCell>
+                    {isAdmin ? (
+                      <Select
+                        value={order.ETAT}
+                        onChange={(e) => handleStateChange(order.ID, e.target.value)}
+                        sx={{
+                          '& .MuiSelect-select': {
+                            color: getStatusColor(order.ETAT),
+                            fontWeight: 'bold',
+                            padding: '5px 15px',
+                            borderRadius: '15px'
+                          }
+                        }}
+                      >
+                        <MenuItem value="En cours">En cours</MenuItem>
+                        <MenuItem value="Terminé">Terminé</MenuItem>
+                        <MenuItem value="Annulé">Annulé</MenuItem>
+                      </Select>
+                    ) : (
+                      <Chip
+                        label={order.ETAT}
+                        sx={{
+                          color: getStatusColor(order.ETAT),
+                          fontWeight: 'bold',
+                          backgroundColor: `${getStatusColor(order.ETAT)}20`
+                        }}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {isAdmin ? (
+                      <>
+                        <IconButton onClick={(e) => handleMenuOpen(e, order)}>
+                          <MoreVertIcon />
+                        </IconButton>
+                        <Menu
+                          anchorEl={anchorEl}
+                          open={Boolean(anchorEl)}
+                          onClose={handleMenuClose}
+                          PaperProps={{
+                            sx: {
+                              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                              borderRadius: '8px',
+                            }
+                          }}
+                        >
+                          <MenuItem
+                            onClick={handleEdit}
+                            sx={{
+                              color: '#1976d2',
+                              '&:hover': { backgroundColor: '#f5f5f5' }
+                            }}
+                          >
+                            <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+                            Modifier
+                          </MenuItem>
+                          <MenuItem
+                            onClick={handleDelete}
+                            sx={{
+                              color: '#d32f2f',
+                              '&:hover': { backgroundColor: '#fee' }
+                            }}
+                          >
+                            <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+                            Supprimer
+                          </MenuItem>
+                        </Menu>
+                      </>
+                    ) : (
+                      ""
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title="Imprimer la demande">
+                      <IconButton
+                        onClick={() => handlePrint(order)}
+                        sx={{
+                          color: '#1976d2',
+                          '&:hover': {
+                            backgroundColor: 'rgba(25, 118, 210, 0.04)'
+                          }
+                        }}
+                      >
+                        <PrintIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
 
                 </TableRow>
               ))}
@@ -344,10 +343,10 @@ const OrdresAdministration = () => {
         </TableContainer>
       </Card>
 
-      <Dialog 
-        open={openDialog} 
-        onClose={() => setOpenDialog(false)} 
-        maxWidth="md" 
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
         fullWidth
         PaperProps={{
           sx: {
@@ -356,8 +355,8 @@ const OrdresAdministration = () => {
           }
         }}
       >
-        <DialogTitle sx={{ 
-          backgroundColor: '#1976d2', 
+        <DialogTitle sx={{
+          backgroundColor: '#1976d2',
           color: 'white',
           borderRadius: '12px 12px 0 0'
         }}>
@@ -367,12 +366,12 @@ const OrdresAdministration = () => {
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel                   sx={{ borderRadius: '8px' ,marginTop:'20px'}}
+                <InputLabel sx={{ borderRadius: '8px', marginTop: '20px' }}
                 >Type d'ordre</InputLabel>
                 <Select
                   value={currentOrder.TYPE_DEMANDE}
-                  onChange={(e) => setCurrentOrder({...currentOrder, TYPE_DEMANDE: e.target.value})}
-                  sx={{ borderRadius: '8px' ,marginTop:'20px'}}
+                  onChange={(e) => setCurrentOrder({ ...currentOrder, TYPE_DEMANDE: e.target.value })}
+                  sx={{ borderRadius: '8px', marginTop: '20px' }}
                 >
                   {orderTypes.map((type) => (
                     <MenuItem key={type} value={type}>{type}</MenuItem>
@@ -387,7 +386,7 @@ const OrdresAdministration = () => {
                 label="Demandeur"
                 value={connectedUser?.LOGIN || ''}
                 disabled
-                sx={{ 
+                sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '8px'
                   }
@@ -400,7 +399,7 @@ const OrdresAdministration = () => {
                 <InputLabel>Destinataire</InputLabel>
                 <Select
                   value={currentOrder.RECEVEUR}
-                  onChange={(e) => setCurrentOrder({...currentOrder, RECEVEUR: e.target.value})}
+                  onChange={(e) => setCurrentOrder({ ...currentOrder, RECEVEUR: e.target.value })}
                   sx={{ borderRadius: '8px' }}
                 >
                   {users.map((user) => (
@@ -419,8 +418,8 @@ const OrdresAdministration = () => {
                 multiline
                 rows={4}
                 value={currentOrder.DESCRIPTION}
-                onChange={(e) => setCurrentOrder({...currentOrder, DESCRIPTION: e.target.value})}
-                sx={{ 
+                onChange={(e) => setCurrentOrder({ ...currentOrder, DESCRIPTION: e.target.value })}
+                sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '8px'
                   }
@@ -430,18 +429,18 @@ const OrdresAdministration = () => {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button 
+          <Button
             onClick={() => setOpenDialog(false)}
-            sx={{ 
+            sx={{
               borderRadius: '8px',
               textTransform: 'none'
             }}
           >
             Annuler
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            variant="contained" 
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
             sx={{
               borderRadius: '8px',
               textTransform: 'none',

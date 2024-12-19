@@ -118,7 +118,7 @@ function CustomCard({ client, setClients, user, fetchPart }) {
   const [filteredQualificationList, setFilteredQualificationList] = useState([]);
   const [contrat, setContrat] = useState(client.CONTRAT);
   const [selectedFile, setSelectedFile] = useState(null)
-  const contratUrl = client.CONTRAT ? `https://api.click.com.tn/Requests/contrat_partenaires/${client.CONTRAT}` : null;
+  const contratUrl = client.CONTRAT ? `https://api.pneu-mafamech.cspddammak.com/Requests/contrat_partenaires/${client.CONTRAT}` : null;
   const [filteredRaisons, setFilteredRaisons] = useState([])
   const [list, setList] = useState([])
   const [savePart, setSavePart] = useState(false)

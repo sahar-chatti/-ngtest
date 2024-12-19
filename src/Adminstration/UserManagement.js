@@ -17,34 +17,114 @@ import {
   IconButton,
   Grid,
   useTheme,
-
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  Box,
+  Typography,
+  Card,
+  Fade,
+  Chip,
+  Avatar,
+  Autocomplete,
 } from '@mui/material';
-import { Autocomplete } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InputAdornment from '@mui/material/InputAdornment';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import PersonIcon from '@mui/icons-material/Person';
 import BASE_URL from '../Utilis/constantes';
 
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: 12,
+  boxShadow: '0 4px 20px 0 rgba(0,0,0,0.12)',
+  '& .MuiTable-root': {
+    borderCollapse: 'separate',
+    borderSpacing: '0 8px'
+  }
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+    transition: 'background-color 0.2s ease'
+  },
+  '& td': {
+    borderBottom: 'none',
+    padding: '16px'
+  }
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  fontWeight: 500,
+  borderBottom: 'none',
+  '&.header': {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    fontWeight: 600,
+    fontSize: '0.95rem'
+  }
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 8,
+  }
+}));
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const theme = useTheme();
   const [openDialog, setOpenDialog] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ ID_UTILISATEUR: '', UTILISATEUR: '', LOGIN: '', MOT_DE_PASSE: '', ROLE: '', EMAIL: '', NUM_POSTE: '', CODE_SOFTWARE: '', COMMERCIAL_OK: '', DEPARTEMENT: '' });;
+  const [currentUser, setCurrentUser] = useState({
+    ID_UTILISATEUR: '',
+    UTILISATEUR: '',
+    LOGIN: '',
+    MOT_DE_PASSE: '',
+    ROLE: '',
+    EMAIL: '',
+    NUM_POSTE: '',
+    CODE_SOFTWARE: '',
+    COMMERCIAL_OK: '',
+    DEPARTEMENT: ''
+  });
   const [editing, setEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [repres, setRepres] = useState([])
-  const [selectedRepres, setSelectedRepres] = useState(null)
-  const togglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
-  const roleOptions = ["administrateur", "collaborateur", "directeur commercial ", "directeur communication", "magasinier", "Import/Export ", "Finance", "Comptabilité", "Marketing"];
+  const [repres, setRepres] = useState([]);
+  const [selectedRepres, setSelectedRepres] = useState(null);
+
+  const roleOptions = [
+    "administrateur",
+    "collaborateur",
+    "directeur commercial",
+    "directeur communication",
+    "magasinier",
+    "Import/Export",
+    "Finance",
+    "Comptabilité",
+    "Marketing",
+    "Chauffeur",
+    "Réception",
+    "Autre"
+  ];
+
+  const departementOptions = [
+    "Direction",
+    "Commercial",
+    "Marketing",
+    "Finance",
+    "Comptabilité",
+    "Import / Export",
+    "Développement",
+    "Magasin",
+    "RH",
+    "Réception",
+    "Chauffeur",
+    "Autre"
+  ];
 
   useEffect(() => {
     fetchUsers();
@@ -74,18 +154,26 @@ const UserManagement = () => {
     if (user) {
       setEditing(true);
       setCurrentUser(user);
-      if (repres.length > 0) {
-        const representant = repres?.find((rep) => rep.NUM_REPRES === user.COMMERCIAL_OK);
-        setSelectedRepres(representant);
-      }
+      const representant = repres?.find((rep) => rep.NUM_REPRES === user.COMMERCIAL_OK);
+      setSelectedRepres(representant);
     }
     setOpenDialog(true);
   };
 
-
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setCurrentUser({ ID_UTILISATEUR: '', UTILISATEUR: '', LOGIN: '', MOT_DE_PASSE: '', ROLE: '', EMAIL: '', NUM_POSTE: '', CODE_SOFTWARE: '', COMMERCIAL_OK: '', DEPARTEMENT: '' });
+    setCurrentUser({
+      ID_UTILISATEUR: '',
+      UTILISATEUR: '',
+      LOGIN: '',
+      MOT_DE_PASSE: '',
+      ROLE: '',
+      EMAIL: '',
+      NUM_POSTE: '',
+      CODE_SOFTWARE: '',
+      COMMERCIAL_OK: '',
+      DEPARTEMENT: ''
+    });
     setEditing(false);
   };
 
@@ -119,272 +207,233 @@ const UserManagement = () => {
       fetchUsers();
       handleCloseDialog();
     } catch (error) {
-      console.error('Error saving user:', error.response?.data || error.message);
+      console.error('Error saving user:', error);
     }
   };
 
   return (
-    <Grid container spacing={2} style={{ justifyContent: "center" }}>
-      <Grid item xs={8}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
+    <Box sx={{ p: 2, width: '100%', margin: '0 auto' }}>
+      <Card sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" fontWeight="600">
+            Gestion des Utilisateurs
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            sx={{ borderRadius: 2, textTransform: 'none' }}
+          >
             Ajouter un utilisateur
           </Button>
-        </div>
-      </Grid>
-      <Grid item xs={8} >
-        <TableContainer component={Paper} style={{ maxHeight: "70vh", overflowY: 'auto' }}>
+        </Box>
+
+        <StyledTableContainer>
           <Table>
             <TableHead>
               <TableRow>
-
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Utilisateur</TableCell>
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Login</TableCell>
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Role</TableCell>
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Email</TableCell>
-
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Numéro de poste</TableCell>
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Code software</TableCell>
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Representant commercial </TableCell>
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-
-                }}>Département </TableCell>
-                <TableCell sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.common.white,
-                  fontWeight: 'bold',
-                  borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                  display: 'flex',
-                  alignItems: "center"
-                }}>Actions </TableCell>
-
-
+                <StyledTableCell className="header">Utilisateur</StyledTableCell>
+                <StyledTableCell className="header">Login</StyledTableCell>
+                <StyledTableCell className="header">Role</StyledTableCell>
+                <StyledTableCell className="header">Email</StyledTableCell>
+                <StyledTableCell className="header">Numéro de poste</StyledTableCell>
+                <StyledTableCell className="header">Code software</StyledTableCell>
+                <StyledTableCell className="header">Représentant commercial</StyledTableCell>
+                <StyledTableCell className="header">Département</StyledTableCell>
+                <StyledTableCell className="header">Actions</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {users.map((user) => {
                 const representative = repres.find((rep) => rep.NUM_REPRES === user.COMMERCIAL_OK);
                 return (
-                  <TableRow key={user.ID_UTILISATEUR}>
-
-                    <TableCell>{user.UTILISATEUR}</TableCell>
-                    <TableCell>{user.LOGIN}</TableCell>
-                    <TableCell>{user.ROLE}</TableCell>
-                    <TableCell>{user.EMAIL}</TableCell>
-                    <TableCell>{user.NUM_POSTE}</TableCell>
-                    <TableCell>{user.CODE_SOFTWARE}</TableCell>
-                    <TableCell>{representative ? representative.INTITULE_REPRES : 'N/A'}</TableCell>
-                    <TableCell>{user.DEPARTEMENT}</TableCell>
-
-                    <TableCell>
-                      <IconButton color="primary" onClick={() => handleOpenDialog(user)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDeleteUser(user.ID_UTILISATEUR)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
+                  <Fade in={true} key={user.ID_UTILISATEUR}>
+                    <StyledTableRow>
+                      <StyledTableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Avatar sx={{ bgcolor: theme.palette.primary.light }}>
+                            <PersonIcon />
+                          </Avatar>
+                          <Typography variant="subtitle2">{user.UTILISATEUR}</Typography>
+                        </Box>
+                      </StyledTableCell>
+                      <StyledTableCell>{user.LOGIN}</StyledTableCell>
+                      <StyledTableCell>
+                        <Chip label={user.ROLE} size="small" color="primary" variant="outlined" />
+                      </StyledTableCell>
+                      <StyledTableCell>{user.EMAIL}</StyledTableCell>
+                      <StyledTableCell>{user.NUM_POSTE}</StyledTableCell>
+                      <StyledTableCell>{user.CODE_SOFTWARE}</StyledTableCell>
+                      <StyledTableCell>{representative ? representative.INTITULE_REPRES : 'N/A'}</StyledTableCell>
+                      <StyledTableCell>{user.DEPARTEMENT}</StyledTableCell>
+                      <StyledTableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleOpenDialog(user)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleDeleteUser(user.ID_UTILISATEUR)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  </Fade>
                 );
               })}
             </TableBody>
-
           </Table>
-        </TableContainer>
-      </Grid>
-      <Grid item xs={12}>
+        </StyledTableContainer>
+      </Card>
 
-
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
-          <DialogTitle>{editing ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Utilisateur"
-              type="text"
-              style={{ width: '49%', }}
-              value={currentUser?.UTILISATEUR}
-              onChange={(e) => setCurrentUser({ ...currentUser, UTILISATEUR: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Login"
-              type="text"
-              style={{ width: '49%', marginLeft: '0.5em' }}
-              value={currentUser?.LOGIN}
-              onChange={(e) => setCurrentUser({ ...currentUser, LOGIN: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Mot de passe"
-              type={showPassword ? 'text' : 'password'}
-              style={{ width: '49%', }}
-              value={currentUser?.MOT_DE_PASSE}
-              onChange={(e) => setCurrentUser({ ...currentUser, MOT_DE_PASSE: e.target.value })}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={togglePasswordVisibility} edge="end">
-                      {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              margin="dense"
-              label="Email"
-              type="text"
-              style={{ width: '49%', marginLeft: '0.5em' }}
-              value={currentUser?.EMAIL}
-              onChange={(e) => setCurrentUser({ ...currentUser, EMAIL: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Numéro de poste"
-              type="number"
-              style={{ width: '49%', }}
-              value={currentUser?.NUM_POSTE || ''}
-              onChange={(e) => setCurrentUser({ ...currentUser, NUM_POSTE: e.target.value })}
-            />
-
-            <TextField
-              margin="dense"
-              label="Code software"
-              type="number" // Correction de l'attribut `type` incorrectement fermé
-              style={{ width: '49%', marginLeft: '0.5em' }}
-              value={currentUser?.CODE_SOFTWARE || ''} // Ajout d'une valeur par défaut pour éviter les erreurs "uncontrolled to controlled"
-              onChange={(e) => setCurrentUser({ ...currentUser, CODE_SOFTWARE: e.target.value })}
-            />
-
-            <Autocomplete
-              options={roleOptions}
-              getOptionLabel={(option) => option}
-              value={currentUser?.ROLE || null} // Ajout d'une valeur par défaut
-              onChange={(event, newValue) => setCurrentUser({ ...currentUser, ROLE: newValue })}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  margin="dense"
-                  label="Role"
-                  type="text"
-                  fullWidtstyle={{ width: '70%', margin: '0.5em' }} h
-                />
-              )}
-            />
-
-            <InputLabel id="select-label-1">Représentant commercial</InputLabel>
-            <Select
-              labelId="select-label-1"
-              id="select-1"
-              value={selectedRepres}
-              onChange={(e) => setSelectedRepres(e.target.value)}
-              fullWidth
-            >
-              {repres?.map((rep) => (
-                <MenuItem key={rep.NUM_REPRES} value={rep}>{rep.INTITULE_REPRES}</MenuItem>
-              ))}
-            </Select>
-
-            {/*<TextField
-              margin="dense"
-              label="Partenaires non enregistrés"
-              type="text"
-              style={{width:'22.8%', }}
-            />
-             <TextField
-              margin="dense"
-              label="Investisseurs"
-              type="text"
-              style={{width:'22.8%', margin:'0.5em'}}
-            />
-            <TextField
-              margin="dense"
-              label="Client CSPD"
-              type="text"
-              style={{width:'22.8%', margin:'0.5em'}}
-            />
-            <TextField
-              margin="dense"
-              label="Client Fdm"
-              type="text"
-              style={{width:'22.9%', margin:'0.5em'}}
-            /> */}
-            <InputLabel id="select-label-1">Département</InputLabel>
-            <Select
-              labelId="select-label-1"
-              id="select-1"
-              value={currentUser.DEPARTEMENT || ''}
-              onChange={(e) => setCurrentUser({ ...currentUser, DEPARTEMENT: e.target.value })}
-              fullWidth
-            >
-              <MenuItem value="Direction">Direction</MenuItem>
-              <MenuItem value="Commercial">Commercial</MenuItem>
-              <MenuItem value="Marketing">Marketing</MenuItem>
-              <MenuItem value="Finance">Finance</MenuItem>
-              <MenuItem value="Comptabilité">Comptabilité</MenuItem>
-              <MenuItem value="Import / Export">Import / Export</MenuItem>
-              <MenuItem value="Développement">Développement</MenuItem>
-              <MenuItem value="Magasin">Magasin</MenuItem>
-              <MenuItem value="RH">RH</MenuItem>
-            </Select>
-
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} style={{ color: 'red' }}>Annuler</Button>
-            <Button onClick={handleSaveUser} color="primary">{editing ? 'Modifier' : 'Ajouter'}</Button>
-          </DialogActions>
-        </Dialog>
-      </Grid>
-    </Grid>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2, p: 2 }
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight="600">
+            {editing ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur'}
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={6}>
+              <StyledTextField
+                fullWidth
+                label="Utilisateur"
+                value={currentUser?.UTILISATEUR}
+                onChange={(e) => setCurrentUser({ ...currentUser, UTILISATEUR: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StyledTextField
+                fullWidth
+                label="Login"
+                value={currentUser?.LOGIN}
+                onChange={(e) => setCurrentUser({ ...currentUser, LOGIN: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StyledTextField
+                fullWidth
+                label="Mot de passe"
+                type={showPassword ? 'text' : 'password'}
+                value={currentUser?.MOT_DE_PASSE}
+                onChange={(e) => setCurrentUser({ ...currentUser, MOT_DE_PASSE: e.target.value })}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StyledTextField
+                fullWidth
+                label="Email"
+                value={currentUser?.EMAIL}
+                onChange={(e) => setCurrentUser({ ...currentUser, EMAIL: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StyledTextField
+                fullWidth
+                label="Numéro de poste"
+                type="number"
+                value={currentUser?.NUM_POSTE || ''}
+                onChange={(e) => setCurrentUser({ ...currentUser, NUM_POSTE: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StyledTextField
+                fullWidth
+                label="Code software"
+                type="number"
+                value={currentUser?.CODE_SOFTWARE || ''}
+                onChange={(e) => setCurrentUser({ ...currentUser, CODE_SOFTWARE: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Autocomplete
+                options={roleOptions}
+                value={currentUser?.ROLE || null}
+                onChange={(event, newValue) => setCurrentUser({ ...currentUser, ROLE: newValue })}
+                renderInput={(params) => (
+                  <StyledTextField
+                    {...params}
+                    fullWidth
+                    label="Role"
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <InputLabel>Représentant commercial</InputLabel>
+              <Select
+                fullWidth
+                value={selectedRepres || ''}
+                onChange={(e) => setSelectedRepres(e.target.value)}
+              >
+                {repres?.map((rep) => (
+                  <MenuItem key={rep.NUM_REPRES} value={rep}>
+                    {rep.INTITULE_REPRES}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+            <Grid item xs={12}>
+              <InputLabel>Département</InputLabel>
+              <Select
+                fullWidth
+                value={currentUser.DEPARTEMENT || ''}
+                onChange={(e) => setCurrentUser({ ...currentUser, DEPARTEMENT: e.target.value })}
+              >
+                {departementOptions.map((dept) => (
+                  <MenuItem key={dept} value={dept}>
+                    {dept}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleCloseDialog}
+            sx={{ borderRadius: 2 }}
+          >
+            Annuler
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSaveUser}
+            sx={{ borderRadius: 2 }}
+          >
+            {editing ? 'Modifier' : 'Ajouter'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

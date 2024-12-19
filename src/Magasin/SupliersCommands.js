@@ -123,7 +123,7 @@ const CommandesList = ({ type, searchTerm }) => {
     };
 
     const getDeliveryStatus = (dateString) => {
-        if (!dateString) return { status: "En cours", color: "#7695FF" };
+        if (!dateString) return { status: "En cours", color: "#3572EF" };
         const deliveryDate = new Date(dateString);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -132,7 +132,7 @@ const CommandesList = ({ type, searchTerm }) => {
         } else if (deliveryDate < today) {
             return { status: "Reçue", color: "green" };
         } else {
-            return { status: "En cours", color: "#7695FF" };
+            return { status: "En cours", color: "#3572EF" };
         }
     };
 
@@ -388,7 +388,7 @@ const CommandesList = ({ type, searchTerm }) => {
                         },
                     }}
                 >
-                    <DialogTitle style={{ backgroundColor: '#7695FF' }} id="alert-dialog-title">
+                    <DialogTitle style={{ backgroundColor: '#3572EF' }} id="alert-dialog-title">
                         <Typography style={{ color: 'white', fontWeight: 'bold' }}>
                             {selectedArticle.CODE_ARTICLE} : {selectedArticle.INTIT_ARTICLE}
                         </Typography>

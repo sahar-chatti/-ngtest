@@ -18,17 +18,55 @@ import {
   MenuItem,
   Checkbox,
   FormGroup,
-  FormControlLabel
+  FormControlLabel,
+  Box,
+  Typography,
+  Grid,
+  Divider,
+  Chip,
+  styled,
+  useTheme
 } from '@mui/material';
+import PersonIcon from '@mui/icons-material/Person';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import SecurityIcon from '@mui/icons-material/Security';
+import SortIcon from '@mui/icons-material/Sort';
+import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import BASE_URL from '../Utilis/constantes';
 
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: 12,
+  boxShadow: '0 4px 20px 0 rgba(0,0,0,0.1)',
+  margin: theme.spacing(3),
+  '& .MuiTableCell-head': {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    fontWeight: 600
+  }
+}));
+
+const AccessCheckbox = styled(FormControlLabel)(({ theme }) => ({
+  margin: theme.spacing(1),
+  '& .MuiCheckbox-root': {
+    color: theme.palette.primary.main
+  }
+}));
+
+const ModuleSection = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: 8,
+  backgroundColor: theme.palette.background.paper,
+  marginBottom: theme.spacing(2)
+}));
+
 const UserManagement = () => {
+  const theme = useTheme();
   const [users, setUsers] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
-  // Individual access rights as separate state fields
   const [accessRights, setAccessRights] = useState({
     contact: false,
     administration: false,
@@ -37,7 +75,7 @@ const UserManagement = () => {
     rh: false,
     mailing: false,
     importExport: false,
-    reception: false, // Add this line
+    reception: false,
     partenaire: false,
     investisseur: false,
     client_cspd: false,
@@ -48,18 +86,6 @@ const UserManagement = () => {
     comptabilite: false,
     finance: false
   });
-
-  const roles = [
-    "administrateur",
-    "directeur commercial",
-    "directeur communication",
-    "collaborateur",
-    "Import/Export",
-    "Finance",
-    "Comptabilité",
-    "Marketing",
-    "magasinier"
-  ];
 
   useEffect(() => {
     fetchUsers();
@@ -76,8 +102,6 @@ const UserManagement = () => {
 
   const handleEditAccess = (user) => {
     setSelectedUser(user);
-
-    // Set individual access rights based on user's current rights
     setAccessRights({
       contact: user.ACCESS_CONTACT === 1,
       administration: user.ACCESS_ADMINISTRATION === 1,
@@ -87,44 +111,40 @@ const UserManagement = () => {
       mailing: user.ACCESS_MAILING === 1,
       importExport: user.ACCESS_IMPORT_EXPORT === 1,
       reception: user.ACCESS_RECEPTION === 1,
-     partenaire: user.ACCESS_PARTENAIRE === 1,
-     investisseur: user.ACCESS_INVESTISSEUR === 1,
+      partenaire: user.ACCESS_PARTENAIRE === 1,
+      investisseur: user.ACCESS_INVESTISSEUR === 1,
       client_cspd: user.ACCESS_CLIENT_CSPD === 1,
       client_fdm: user.ACCESS_CLIENT_FDM === 1,
-      famille: user.ACCESS_FAMILLE=== 1,
+      famille: user.ACCESS_FAMILLE === 1,
       historique_appel: user.ACCESS_HISTORIQUE_APPEL === 1,
       achats: user.ACCESS_ACHATS === 1,
       comptabilite: user.ACCESS_COMPTABILITE === 1,
-
       finance: user.ACCESS_FINANCE === 1
     });
-    
     setOpenDialog(true);
+  };
+  const sortedUsers = users.sort((a, b) => a.LOGIN.localeCompare(b.LOGIN));
+  const getRoleIcon = (role) => {
+    switch(role.toLowerCase()) {
+      case 'administrateur':
+        return <AdminPanelSettingsIcon color="primary" />;
+      case 'directeur':
+        return <SupervisorAccountIcon color="secondary" />;
+      case 'commercial':
+        return <BusinessCenterIcon color="success" />;
+      default:
+        return <PersonIcon color="action" />;
+    }
   };
 
   const handleSaveAccess = async () => {
     if (!selectedUser) return;
-  
-    const requestData = {
-      contact: accessRights.contact ? 1 : 0,
-      administration: accessRights.administration ? 1 : 0,
-      parametrage: accessRights.parametrage ? 1 : 0,
-      magasin: accessRights.magasin ? 1 : 0,
-      rh: accessRights.rh ? 1 : 0,
-      mailing: accessRights.mailing ? 1 : 0,
-      importExport: accessRights.importExport ? 1 : 0,
-      reception: accessRights.reception ? 1 : 0,  // Convert boolean to 1/0
-      partenaire: accessRights.partenaire ? 1 : 0,
-      investisseur: accessRights.investisseur ? 1 : 0,
-      client_cspd: accessRights.client_cspd ? 1 : 0,
-      client_fdm: accessRights.client_fdm ? 1 : 0,
-      famille: accessRights.famille ? 1 : 0,
-      historique_appel: accessRights.historique_appel ? 1 : 0,
-      achats: accessRights.achats ? 1 : 0,
-      comptabilite: accessRights.comptabilite ? 1 : 0,
-      finance: accessRights.finance ? 1 : 0
-    };
-  
+    
+    const requestData = Object.keys(accessRights).reduce((acc, key) => ({
+      ...acc,
+      [key]: accessRights[key] ? 1 : 0
+    }), {});
+
     try {
       await axios.put(`${BASE_URL}/api/users/${selectedUser.ID_UTILISATEUR}/access`, requestData);
       setOpenDialog(false);
@@ -133,245 +153,139 @@ const UserManagement = () => {
       console.error('Error updating access rights:', error);
     }
   };
-  
 
   const handleAccessChange = (event) => {
     const { name, checked } = event.target;
-    console.log(`Setting ${name} to ${checked}`); // Add this log
-    setAccessRights((prevRights) => ({
-      ...prevRights,
-      [name]: checked
-    }));
+    setAccessRights(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const moduleGroups = {
+    core: ['reception', 'contact', 'administration'],
+    clients: ['partenaire', 'investisseur', 'client_cspd', 'client_fdm', 'famille'],
+    operations: ['magasin', 'importExport', 'achats'],
+    finance: ['comptabilite', 'finance'],
+    other: ['parametrage', 'rh', 'mailing', 'historique_appel']
   };
 
   return (
-    <div>
-      <TableContainer component={Paper}>
-        <Table>
+    <Box sx={{ p: 3 }}>
+      <StyledTableContainer component={Paper}>
+      <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Login</TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SortIcon />
+                  Login
+                </Box>
+              </TableCell>
               <TableCell>Role</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-  {users.map((user) => (
-    <TableRow key={user.ID_UTILISATEUR}>
-      <TableCell>{user.LOGIN}</TableCell>
-      <TableCell>{user.ROLE}</TableCell>
-      <TableCell>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={() => handleEditAccess(user)}
-        >
-          Edit Access
-        </Button>
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
-
+            {sortedUsers.map((user) => (
+              <TableRow key={user.ID_UTILISATEUR} hover>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {getRoleIcon(user.ROLE)}
+                    <Typography>{user.LOGIN}</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Chip 
+                    icon={<SecurityIcon />}
+                    label={user.ROLE}
+                    variant="outlined"
+                    color="primary"
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <Button
+                    variant="contained"
+                    startIcon={<EditIcon />}
+                    onClick={() => handleEditAccess(user)}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Modifier les accès
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
         </Table>
-      </TableContainer>
+      </StyledTableContainer>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Edit User Access Rights</DialogTitle>
-        <DialogContent>
-        
-
-          <FormGroup>
-          <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.reception}
-                  onChange={handleAccessChange}
-                  name="reception"
-                />
-              }
-              label="Reception role"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.contact}
-                  onChange={handleAccessChange}
-                  name="contact"
-                />
-              }
-              label="Commercial role"
-            />
-
-
-               <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.partenaire}
-                  onChange={handleAccessChange}
-                  name="partenaire"
-                />
-              }
-              label="Partenaire Module"
-            />
-
-
-               <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.investisseur}
-                  onChange={handleAccessChange}
-                  name="investisseur"
-                />
-              }
-              label="Investisseur Module"
-            />
-
-
-               <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.client_cspd}
-                  onChange={handleAccessChange}
-                  name="client_cspd"
-                />
-              }
-              label="Client Cspd Module"
-            />
-
-
-               <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.client_fdm}
-                  onChange={handleAccessChange}
-                  name="client_fdm"
-                />
-              }
-              label="Client Fdm Module"
-            />
-
-
-               <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.famille}
-                  onChange={handleAccessChange}
-                  name="famille"
-                />
-              }
-              label="Famille"
-            />
-
-               <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.historique_appel}
-                  onChange={handleAccessChange}
-                  name="historique_appel"
-                />
-              }
-              label="Historique d'appel"
-            />
-
-               <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.achats}
-                  onChange={handleAccessChange}
-                  name="achats"
-                />
-              }
-              label="Achats Module"
-            />
-              <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.comptabilite}
-                  onChange={handleAccessChange}
-                  name="comptabilite"
-                />
-              }
-              label="Comptabilité Module"
-            />
-              <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.finance}
-                  onChange={handleAccessChange}
-                  name="finance"
-                />
-              }
-              label="Finance Module"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.administration}
-                  onChange={handleAccessChange}
-                  name="administration"
-                />
-              }
-              label="Administration Module"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.parametrage}
-                  onChange={handleAccessChange}
-                  name="parametrage"
-                />
-              }
-              label="Parametrage Module"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.magasin}
-                  onChange={handleAccessChange}
-                  name="magasin"
-                />
-              }
-              label="Magasin Module"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.rh}
-                  onChange={handleAccessChange}
-                  name="rh"
-                />
-              }
-              label="RH Module"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.mailing}
-                  onChange={handleAccessChange}
-                  name="mailing"
-                />
-              }
-              label="Marketing Module"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={accessRights.importExport}
-                  onChange={handleAccessChange}
-                  name="importExport"
-                />
-              }
-              label="Import/Export Module"
-            />
-          </FormGroup>
+      <Dialog 
+        open={openDialog} 
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          bgcolor: 'primary.main',
+          color: 'white'
+        }}>
+          <SecurityIcon />
+          <Typography variant="h6">
+            Droits d'accès - {selectedUser?.LOGIN}
+          </Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={3}>
+            {Object.entries(moduleGroups).map(([groupName, modules]) => (
+              <Grid item xs={12} key={groupName}>
+                <ModuleSection>
+                  <Typography variant="subtitle1" fontWeight="600" gutterBottom>
+                    {groupName.toUpperCase()}
+                  </Typography>
+                  <FormGroup>
+                    <Grid container>
+                      {modules.map((moduleName) => (
+                        <Grid item xs={12} sm={6} md={4} key={moduleName}>
+                          <AccessCheckbox
+                            control={
+                              <Checkbox
+                                checked={accessRights[moduleName]}
+                                onChange={handleAccessChange}
+                                name={moduleName}
+                              />
+                            }
+                            label={moduleName.replace('_', ' ').toUpperCase()}
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </FormGroup>
+                </ModuleSection>
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleSaveAccess} color="primary">Save</Button>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            variant="outlined" 
+            onClick={() => setOpenDialog(false)}
+            color="error"
+          >
+            Annuler
+          </Button>
+          <Button 
+            variant="contained"
+            onClick={handleSaveAccess}
+            color="primary"
+          >
+            Enregistrer
+          </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 };
 

@@ -180,7 +180,7 @@ const DemAchat = () => {
           <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
             Ajouter une demande d'achat article
           </Button>
-          <Button style={{ marginRight: 20, backgroundColor: '#7695FF', marginLeft: 10 }} variant="contained" color="primary" startIcon={<PrintIcon />} onClick={handlePrint}>
+          <Button style={{ marginRight: 20, backgroundColor: '#3572EF', marginLeft: 10 }} variant="contained" color="primary" startIcon={<PrintIcon />} onClick={handlePrint}>
             Imprimer la liste des demandes d'achat
           </Button>
         </div>

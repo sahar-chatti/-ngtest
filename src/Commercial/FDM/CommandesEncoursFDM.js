@@ -562,7 +562,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                     etat === "Non encore traité"
                         ? "red"
                         : etat === "Livré"
-                            ? "#7695FF"
+                            ? "#3572EF"
                             : etat === "En cours de traitement"
                                 ? "orange"
                                 : etat === "Traité" && command.CC_VALIDE !== 0 

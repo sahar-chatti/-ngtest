@@ -101,22 +101,6 @@ function CustomTabPanel({
 
   };
 
-
-
-  {/*const renderSearchInputs = (
-    <div style={{marginLeft:'20px', marginTop:'-5PX'}}> 
-       <LocalizationProvider dateAdapter={AdapterDayjs} >
-      <DemoContainer components={['DatePicker']}>
-      <DatePicker 
-        label="Sélectionner une date"
-        value={selectedDate}
-        onChange={handleDateChange}
-        renderInput={(params) => <TextField {...params} sx={{ width: '300px' }} />}
-      /> 
-      </DemoContainer>
-    </LocalizationProvider>
-    </div>
-  );*/}
   const avancementOptions = [
     'En cours',
     'Accepter par collaborateur',
@@ -186,7 +170,6 @@ function CustomTabPanel({
       console.error('Failed to fetch clients:', error);
     }
   };
-  const handleDialogOpen = () => setDialogOpen(true);
   const handleDialogClose = () => setDialogOpen(false);
 
   const handleSelectClient = (client) => {
@@ -195,10 +178,6 @@ function CustomTabPanel({
     setSearchClient(`${client.CODE_CLIENT} - ${client.INTITULE_CLIENT}`); // Set searchClient to selected client's info
 
   };
-  const handleSelectClientFdm = (client) => {
-    setSelectedClientFdm(client.CODE_CLIENT);
-  };
-  const [selectedCodeClient, setSelectedCodeClient] = useState(null)
   const handleConfirmSelection = () => {
     if (selectedClient) {
 
@@ -307,7 +286,7 @@ function CustomTabPanel({
     )
   };
 
-  const renderFiltredInput = ((index === 0 || index === 1) && selectedOption !== '3') ? (
+ {/*const renderFiltredInput = ((index === 0 || index === 1) && selectedOption !== '2') ? (
     <Autocomplete
       options={avancementOptions}
       value={selectedAvancement}
@@ -315,8 +294,8 @@ function CustomTabPanel({
       renderInput={(params) => <TextField {...params} label="Filtrer par statut" variant="outlined" />}
       sx={{ width: "250px", marginRight: "20px" }}
     />
-  ) : null;
-  const renderFiltredRotInput = selectedOption === '4' ? (
+  ) : null; 
+     const renderFiltredRotInput = selectedOption === '4' ? (
     <Autocomplete
       options={rotationOptions}
       value={selectedRotation}
@@ -324,7 +303,8 @@ function CustomTabPanel({
       renderInput={(params) => <TextField {...params} label="Filtrer par taux de rotation" variant="outlined" />}
       sx={{ width: "350px", marginRight: "20px" }}
     />
-  ) : null;
+  ) : null;*/} 
+
   const renderTriInput = ((index === 2 || index === 3) && selectedOption !== '3') ? (
     <Autocomplete
       options={triOptions}
@@ -427,10 +407,7 @@ function CustomTabPanel({
                                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
                               }}>Role</TableCell>
 
-                              <TableCell sx={{
-                                fontWeight: 'bold',
-                                borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                              }}>Email</TableCell>
+                          
 
                               <TableCell sx={{
                                 fontWeight: 'bold',
@@ -442,10 +419,7 @@ function CustomTabPanel({
                                 borderBottom: '1px solid rgba(224, 224, 224, 1)',
                               }}>Code software</TableCell>
 
-                              <TableCell sx={{
-                                fontWeight: 'bold',
-                                borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                              }}>Actions</TableCell>
+                            
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -460,11 +434,7 @@ function CustomTabPanel({
                                     <TableCell>{user.ROLE}</TableCell>
                                     <TableCell>{user.NUM_POSTE}</TableCell>
                                     <TableCell>{user.CODE_SOFTWARE}</TableCell>
-                                    <TableCell>
-                                      <IconButton color="primary" onClick={() => handleAffectCollab(user)}>
-                                        <img src={checkIcon} alt="check Icon" style={{ height: '24px', width: '24px', marginRight: '8px' }} />
-                                      </IconButton>
-                                    </TableCell>
+                                   
                                   </TableRow>
                                 );
                               })}
@@ -483,8 +453,8 @@ function CustomTabPanel({
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: "flex-end" }}>
               {renderIconAndText()}
-              {renderFiltredInput}
-              {renderFiltredRotInput}
+              {/*renderFiltredInput*/}
+              {/*renderFiltredRotInput*/}
               {renderSearchInput}
               {renderSelectClImage}
 

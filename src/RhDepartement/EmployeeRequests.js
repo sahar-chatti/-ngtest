@@ -412,7 +412,7 @@ const RHdemands = () => {
             Ajouter une demande RH
           </Button>
           <Button
-            style={{ backgroundColor: '#7695FF', color: '#fff' }}
+            style={{ backgroundColor: '#3572EF', color: '#fff' }}
             variant="contained"
             startIcon={<PrintIcon />}
             onClick={handlePrint}

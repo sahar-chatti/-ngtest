@@ -236,7 +236,7 @@ function CustomCard({ client, user }) {
   return (
     <CustomCardWrapper style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent' }}>
       <CustomCardContent>
-        <GlowingBox style={{ backgroundColor: client.CC_BLOQUER ? "red" : "#7695FF", borderRadius: '11px' }}>
+        <GlowingBox style={{ backgroundColor: client.CC_BLOQUER ? "red" : "#3572EF", borderRadius: '11px' }}>
           <Typography
             variant="h6"
             component="div"
@@ -308,7 +308,7 @@ function CustomCard({ client, user }) {
                     <TableHead style={{ fontSize: '10px' }}>
                       <TableRow>
                         <TableCell style={{ width: '600px ', fontSize: '12px', textAlign: 'center', color: '#545454', fontWeight: 'bold', }}>
-                          <TipsAndUpdatesIcon style={{ fontSize: '25px', textAlign: 'center', color: '#7695FF' }} />
+                          <TipsAndUpdatesIcon style={{ fontSize: '25px', textAlign: 'center', color: '#3572EF' }} />
                           Info commande
                         </TableCell>
                       </TableRow>

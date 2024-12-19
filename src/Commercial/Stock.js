@@ -20,7 +20,6 @@ import {
   Paper,
 } from '@mui/material';
 import {
-  MonetizationOn,
   LocalOffer,
   Inventory,
   Speed,
@@ -40,6 +39,7 @@ import SalesHistogram from '../components/salesHistogram';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   width: '100%',
+  height: '1350px',
   maxHeight: '1350px',
 
   borderRadius: '16px',
@@ -90,7 +90,7 @@ const StyledTable = styled(TableContainer)(({ theme }) => ({
   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
   marginTop: theme.spacing(2),
   '& .MuiTableHead-root': {
-    backgroundColor: '#7695FF',
+    backgroundColor: '#3572EF',
     '& .MuiTableCell-head': {
       color: 'white',
       fontWeight: 'bold',
@@ -100,7 +100,15 @@ const StyledTable = styled(TableContainer)(({ theme }) => ({
     backgroundColor: 'rgba(118, 149, 255, 0.05)',
   },
 }));
-
+const renderBatteryIcon = (quantity) => {
+  if (quantity <= 5) {
+    return <BatteryAlert sx={{ color: '#ff0000' }} />;
+  } else if (quantity <= 8) {
+    return <Battery60 sx={{ color: '#ffa500' }} />;
+  } else {
+    return <BatteryFull sx={{ color: '#4caf50' }} />;
+  }
+};
 const PromoTag = styled(Typography)(({ theme }) => ({
   color: '#ff4081',
   fontWeight: 'bold',
@@ -150,7 +158,10 @@ function CustomCard({ article, tarifs, type, base }) {
     LATEST_DATE_LIV_CF_P,
     CDES_FOURNIS,
     MAX_DATE_LIV_CF_P,
-    REMISE_FAM
+    REMISE_FAM,
+    minDateLivraison,
+    maxDateLivraison,
+    qteCommande
   } = article;
 
   const prix = Number(TARIF_1 * (1 + TX_TVA_ART / 100)).toFixed(3);
@@ -193,7 +204,7 @@ function CustomCard({ article, tarifs, type, base }) {
         remise: Number(REMISE_FAM || 0),
         prixFinal: prixPropose.toFixed(3)
       });
-  
+
       if (tarifs.length > 0) {
         tarifs.forEach(tarif => {
           if (tarif.INTITULE_FAM.startsWith(FAMILLE)) {
@@ -271,16 +282,16 @@ function CustomCard({ article, tarifs, type, base }) {
     <StyledCard>
       <StyledCardContent>
         {onPromo === 1 && <PromoTag>{promo}</PromoTag>}
-        
+
         <InfoItem>
-          <LocalOffer sx={{ color: '#7695FF', mr: 2 }} />
-          <Typography variant="h6" sx={{ color: '#7695FF', fontWeight: 'bold' }}>
+          <LocalOffer sx={{ color: '#3572EF', mr: 2 }} />
+          <Typography variant="h6" sx={{ color: '#3572EF', fontWeight: 'bold' }}>
             {CODE_ARTICLE}
           </Typography>
         </InfoItem>
 
         <InfoItem>
-          <Inventory sx={{ color: '#7695FF', mr: 2 }} />
+          <Inventory sx={{ color: '#3572EF', mr: 2 }} />
           <Typography variant="subtitle1">
             {INTIT_ARTICLE}
           </Typography>
@@ -330,53 +341,61 @@ function CustomCard({ article, tarifs, type, base }) {
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <InfoItem>
-              <Speed sx={{ color: '#7695FF', mr: 2 }} />
+              <Speed sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>Vitesse: {vitesse}</Typography>
             </InfoItem>
           </Grid>
           <Grid item xs={12} md={6}>
             <InfoItem>
-              <BatteryChargingFull sx={{ color: '#7695FF', mr: 2 }} />
+              <BatteryChargingFull sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>Charge: {charge}</Typography>
             </InfoItem>
           </Grid>
           <Grid item xs={12} md={6}>
             <InfoItem>
-              <LocalShipping sx={{ color: '#7695FF', mr: 2 }} />
+              <LocalShipping sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>Quantité commandée: {QTE_CMD > 0 ? QTE_CMD : 0}</Typography>
             </InfoItem>
           </Grid>
           <Grid item xs={12} md={6}>
             <InfoItem>
-              <BookmarkAdded sx={{ color: '#7695FF', mr: 2 }} />
+              <BookmarkAdded sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>Quantité réservée: {QTE_RSV > 0 ? QTE_RSV : 0}</Typography>
             </InfoItem>
           </Grid>
           <Grid item xs={12}>
             <InfoItem>
-              <EditNote sx={{ color: '#7695FF', mr: 2 }} />
+              <EditNote sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>Remarque: {INTIT_ART_1}</Typography>
             </InfoItem>
           </Grid>
           <Grid item xs={12}>
             <InfoItem>
-              <DirectionsBoat sx={{ color: '#7695FF', mr: 2 }} />
+              <DirectionsBoat sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>
-                Quantité Prochainement Disponible: Pas d'information
+                Quantité Prochainement Disponible:
+                {renderBatteryIcon(qteCommande)}
+
+
               </Typography>
             </InfoItem>
           </Grid>
           <Grid item xs={12}>
             <InfoItem>
-              <CalendarMonth sx={{ color: '#7695FF', mr: 2 }} />
+              <CalendarMonth sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>
-                Date de réception prévue: {formatDate(LATEST_DATE_LIV_CF_P)} - {formatDate(MAX_DATE_LIV_CF_P)}
+                {maxDateLivraison ? (
+                  `Date de réception prévue: ${formatDate(maxDateLivraison)} - ${formatDate(maxDateLivraison)}`
+                ) : (
+                  'Pas de commandes en cours'
+                )}
               </Typography>
+
             </InfoItem>
           </Grid>
         </Grid>
 
-        
+
         <RenderStockGros article={article} />
         <ProductImage src={imageURL} alt={INTIT_ARTICLE} />
 
@@ -454,7 +473,7 @@ function CardContainer({ searchTerm, codeCli, base, type }) {
       </Grid>
     );
   }
-  
+
   // Update the error state UI
   if (error) {
     return (

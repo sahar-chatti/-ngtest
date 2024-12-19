@@ -208,7 +208,7 @@ const BasicTable = () => {
           },
         }}
       >
-        <DialogTitle style={{ backgroundColor: '#7695FF' }}>
+        <DialogTitle style={{ backgroundColor: '#3572EF' }}>
           <Typography style={{ color: 'white', fontWeight: 'bold' }}>
             {selectedArticle?.CODE_ARTICLE} : {selectedArticle?.INTIT_ARTICLE}
           </Typography>

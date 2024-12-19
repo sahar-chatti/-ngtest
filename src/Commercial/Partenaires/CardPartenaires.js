@@ -1,8 +1,17 @@
-import * as React from 'react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import EmailIcon from '@mui/icons-material/Email';
-import PersonIcon from '@mui/icons-material/Person';
+import { CheckCircleOutline } from '@mui/icons-material';
+import SendIcon from '@mui/icons-material/Send';
+import theme from '../../Theme';
+import {
+  FormControl,
+  Chip,
+  CircularProgress,
+  Alert,
+  Fade,
+  Container,
+  Paper,
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -19,16 +28,12 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
-import CloseIcon from '@mui/icons-material/Close';
 import TablePagination from '@mui/material/TablePagination';
 import { Select, MenuItem, InputLabel } from '@mui/material';
 import { useSelector } from 'react-redux';
-import CallIcon from '@mui/icons-material/Call';
-import DescriptionIcon from '@mui/icons-material/Description';
 import { Grid } from '@mui/material';
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import { IconButton } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import {
   Table,
@@ -40,69 +45,158 @@ import {
   useTheme,
   FormHelperText
 } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BASE_URL from '../../Utilis/constantes';
 import entete from '../../images/sahar up.png';
-import HistoryIcon from '@mui/icons-material/History';
 import { CalendarIcon } from '@mui/x-date-pickers';
+import {
+  Person as PersonIcon,
+  Call as CallIcon,
+  Email as EmailIcon,
+  LocationOn as LocationIcon,
+  History as HistoryIcon,
+  Phone as PhoneIcon,
+  Description as DescriptionIcon,
+  Print as PrintIcon,
+  Save as SaveIcon,
+  Close as CloseIcon,
+  CloudUpload as CloudUploadIcon,
+  GetApp as GetAppIcon,
+  CheckCircle as CheckCircleIcon
+} from '@mui/icons-material';
+const StyledDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialog-paper': {
+    borderRadius: '16px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+    padding: theme.spacing(2)
+  }
+}));
 
+const DialogHeader = styled(DialogTitle)(({ theme }) => ({
+  padding: theme.spacing(2),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  '& .MuiTypography-root': {
+    fontWeight: 600
+  }
+}));
 
-const GlowingBox = styled('div')(({ theme }) => ({
+const FormSection = styled(Box)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  '& .MuiTextField-root': {
+    marginBottom: theme.spacing(2)
+  },
+  '& .MuiInputLabel-root': {
+    marginBottom: theme.spacing(1)
+  }
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.common.white,
+  fontWeight: 600,
+  padding: theme.spacing(2),
+  borderBottom: `1px solid ${theme.palette.divider}`
+}));
+
+const ActionButton = styled(Button)(({ theme }) => ({
+  borderRadius: '8px',
+  padding: '8px 24px',
+  fontWeight: 600,
+  textTransform: 'none',
+  boxShadow: 'none',
+  '&:hover': {
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+  }
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  borderRadius: '16px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+  }
+}));
+
+const StatusBadge = styled(Box)(({ theme, color }) => ({
+  padding: '8px 16px',
+  borderRadius: '20px',
+  backgroundColor: color || theme.palette.primary.main,
+  color: '#fff',
+  fontWeight: 600,
+  fontSize: '0.875rem',
+  marginBottom: theme.spacing(2),
+  textAlign: 'center',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+}));
+
+const InfoRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1.5),
+  '& .MuiSvgIcon-root': {
+    color: theme.palette.primary.main,
+  }
+}));
+
+const StyledContainer = styled(Container)(({ theme }) => ({
+  flexGrow: 1,
+  padding: theme.spacing(3),
+  minHeight: '100vh',
+  background: 'linear-gradient(145deg, #f6f8fc 0%, #f0f4f8 100%)',
+}));
+
+const ContentWrapper = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  minHeight: `calc(100vh - 100px)`,
+  paddingBottom: '70px',
+}));
+
+const GridContainer = styled(Grid)(({ theme }) => ({
+  '& .MuiGrid-item': {
+    display: 'flex',
+    width: '33.333%',
+  },
+}));
+
+const LoadingOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 20,
-  boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)',
-  transition: 'box-shadow 0.3s ease-in-out',
-  padding: '10px',
-  '&:hover': {
-    boxShadow: '0 0 16px rgba(0, 0, 0, 0.5)',
-  },
+  background: 'rgba(255, 255, 255, 0.8)',
+  zIndex: 1000,
+  backdropFilter: 'blur(4px)',
 }));
 
-const CustomCardWrapper = styled(Card)(({ theme }) => ({
-  width: '100%',
-  margin: theme.spacing(1),
-  border: '1px solid #ccc',
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  transition: 'box-shadow 0.3s ease-in-out',
-  height: '380px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  '&:hover': {
-    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
-  },
+const StyledPagination = styled(Paper)(({ theme }) => ({
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  padding: theme.spacing(1),
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
+  zIndex: 1000,
+  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)',
 }));
 
-const CustomCardContent = styled(CardContent)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  flexGrow: 1,
-  overflowY: 'auto',
+const NoResultsMessage = styled(Box)(({ theme }) => ({
+  textAlign: 'center',
+  padding: theme.spacing(4),
+  color: theme.palette.text.secondary,
 }));
-const CustomCardActions = styled(CardActions)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  padding: '8px 16px',
-  height: '50px',
-}));
-
-const CustomButton = styled(Button)(({ theme }) => ({
-  fontSize: '0.75rem',
-  minWidth: 'auto',
-  display: 'flex',
-  alignItems: 'center',
-}));
-
-const GreenButton = styled(CustomButton)(({ theme }) => ({
-  color: theme.palette.success.main,
-  '& .MuiButton-startIcon': {
-    color: theme.palette.success.main,
-  },
-}));
-
 function CustomCard({ client, user, fetchPart }) {
   const theme = useTheme();
   const [openDialog, setOpenDialog] = useState(false);
@@ -119,7 +213,6 @@ function CustomCard({ client, user, fetchPart }) {
   const [selectedRaison, setSelectedRaison] = useState("")
   const [statuts, setStatus] = useState([])
   const [params, setParams] = useState([])
-  const [filteredQualificationList, setFilteredQualificationList] = useState([]);
   const [contrat, setContrat] = useState(client.CONTRAT);
   const [selectedFile, setSelectedFile] = useState(null)
   const contratUrl = client.CONTRAT ? `http://192.168.1.195/api/Requests/contrat_partenaires/${client.CONTRAT}` : null;
@@ -294,47 +387,50 @@ function CustomCard({ client, user, fetchPart }) {
       alert('Veuillez télécharger un contrat ou bien cv');
       return;
     }
+
+    const uploadFile = async (url, formData) => {
+      const response = await axios.post(url, formData);
+      return response.status === 200;
+    };
+
     try {
-      const uploadFile = async (url, formData) => {
-        const response = await axios.post(url, formData);
-        console.log("response", response)
-        if (response.status === 200) {
-          return true;
-        } else {
-          console.error('Erreur lors de l\'envoi du fichier :', response.data.message);
-          alert(`Échec de l'enregistrement : ${response.data.message}`);
-          return false;
-        }
-      };
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        await axios.put(`${BASE_URL}/api/updatePartContrat`, {
-          id: client.ID_PARTENAIRE,
-          contrat: selectedFile.name,
-        });
-        const id = statuts.find((s) => s.AVANCEMENT === 'Contrat signé');
-        await axios.put(
-          `${BASE_URL}/api/updatePartStatus`,
-          { id: client.ID_PARTENAIRE, id_statut: id?.ID_STATUT }
-        );
+
+        const [updateContrat, updateStatus] = await Promise.all([
+          axios.put(`${BASE_URL}/api/updatePartContrat`, {
+            id: client.ID_PARTENAIRE,
+            contrat: selectedFile.name,
+          }),
+          axios.put(`${BASE_URL}/api/updatePartStatus`, {
+            id: client.ID_PARTENAIRE,
+            id_statut: statuts.find(s => s.AVANCEMENT === 'Contrat signé')?.ID_STATUT
+          })
+        ]);
+
         const contractUploadSuccess = await uploadFile('http://192.168.1.195/api/Requests/upload_contrat.php', formData);
+
         if (contractUploadSuccess) {
           alert('Contrat enregistré avec succès !');
-          fetchPart();
+          await fetchPart();
         }
       }
+
       if (selectedCv) {
         const formDataCv = new FormData();
         formDataCv.append('file', selectedCv);
+
         await axios.put(`${BASE_URL}/api/updatePartCv`, {
           id: client.ID_PARTENAIRE,
           cv: selectedCv.name
         });
+
         const cvUploadSuccess = await uploadFile('http://192.168.1.195/api/Requests/upload_cv.php', formDataCv);
+
         if (cvUploadSuccess) {
           alert('Cv enregistré avec succès !');
-          fetchPart();
+          await fetchPart();
         }
       }
     } catch (error) {
@@ -461,7 +557,7 @@ function CustomCard({ client, user, fetchPart }) {
     let loginmail = (client.NUMERO_TELEPHONE)
     let code = (client.MOT_DE_PASSE)
     let username = (client.NOM_PRENOM)
-    return await axios.post('http://192.168.1.170:3200/signin', { email: client.EMAIL, loginmail, username, code }, {
+    return await axios.post('http://192.168.1.170:3300/signin', { email: client.EMAIL, loginmail, username, code }, {
       headers: {
         "Content-Type": "application/json",
         'Authorization': ''
@@ -494,142 +590,184 @@ function CustomCard({ client, user, fetchPart }) {
     }
   };
   return (
-    <CustomCardWrapper style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent', height: '100%', width: '100%' }}>
-      <CustomCardContent >
-        <GlowingBox style={{ backgroundColor: client.COULEUR ? client.COULEUR : "white", borderRadius: '11px' }}>
-          <Typography
-            variant="h6"
-            component="div"
-            align="center"
-            style={{
-              color: "white",
-              fontWeight: 'bold',
-              fontSize: '1rem',
-            }}
-          >
-            {client.AVANCEMENT ? client.LIBELLE : client.STATUS ? client.STATUS : "Non encore traité"}
-          </Typography>
-          {/* Example icon */}
-        </GlowingBox>
-        <Grid container style={{ display: 'flex', alignItems: 'center' }} >
+    <StyledCard>
+      <CardContent>
+        <StatusBadge color={client.COULEUR}>
+          {client.AVANCEMENT || client.STATUS || "Non encore traité"}
+        </StatusBadge>
+
+        <InfoRow>
           <PersonIcon />
-          <Typography variant="h6" component="div" gutterBottom style={{ display: "flex", alignItems: "center", marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+          <Typography variant="h6">
             {client.NOM_PRENOM}
           </Typography>
-        </Grid>
-        <Typography color="text.secondary" gutterBottom style={{ display: "flex", alignItems: "center", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+        </InfoRow>
+
+        <InfoRow>
           <CallIcon />
-          <Button onClick={makeCall} variant="text" color="primary" style={{ display: "flex", alignItems: "center", fontWeight: 'bold', fontSize: '16px' }}>
-            {client.NUMERO_TELEPHONE} </Button>
-        </Typography>
-        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-          <CalendarIcon />
-          {formatDate(client.DATE_NAISSANCE)}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-          <FmdGoodIcon />
-          {client.ADRESSE}
-        </Typography>
-        <Typography id="x" variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-          <EmailIcon />
-          {client.EMAIL}
-          <Button onClick={handleSendCode} size="small" style={{ color: '#FF8C00', fontWeight: 'bold', fontSize: '12px', textTransform: 'none' }}>
-            Mot de passe oublié
+          <Button
+            onClick={makeCall}
+
+            color="primary"
+          >
+            {client.NUMERO_TELEPHONE}
           </Button>
-        </Typography>
-        <Typography variant="body2" color="text.secondary" style={{ display: "flex", alignItems: "center", marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
+        </InfoRow>
+        <InfoRow sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <EmailIcon color="primary" />
+          <Typography>{client.EMAIL}</Typography>
+
+          {codeSent ? (
+            <Chip
+              icon={<CheckCircleIcon />}
+              label="Code envoyé"
+              color="success"
+              size="small"
+              sx={{
+                animation: 'fadeIn 0.5s ease-in',
+                '@keyframes fadeIn': {
+                  '0%': { opacity: 0 },
+                  '100%': { opacity: 1 }
+                }
+              }}
+            />
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<SendIcon />}
+              onClick={handleSendCode}
+              sx={{
+                borderRadius: '20px',
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  color: 'white'
+                }
+              }}
+            >
+              Envoyer code
+            </Button>
+          )}
+        </InfoRow>
+
+
+        <InfoRow>
+          <LocationIcon />
+          <Typography>
+            {client.ADRESSE}
+          </Typography>
+        </InfoRow>
+
+        <InfoRow>
           <HistoryIcon />
-          {formatDate(client.DATE_COMMUNICATION)}
-        </Typography>
-      </CustomCardContent>
-      <CustomCardActions>
-        <GreenButton
-          startIcon={<PhoneForwardedIcon />}
-          size="small"
-          style={{
-            textTransform: 'none',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
+          <Typography>
+            {formatDate(client.DATE_COMMUNICATION)}
+          </Typography>
+        </InfoRow>
+      </CardContent>
+
+      <CardActions sx={{ padding: 2, justifyContent: 'space-between' }}>
+        <ActionButton
+          startIcon={<PhoneIcon />}
           onClick={() => handleOpenDialog(client, 'appel sortant')}
           disabled={client.AVANCEMENT === "Enregistre"}
         >
           Sortant
-        </GreenButton>
-        <GreenButton
-          startIcon={<PhoneCallbackIcon />}
-          size="small"
-          style={{
-            textTransform: 'none',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
+        </ActionButton>
+
+        <ActionButton
+          startIcon={<PhoneIcon />}
           onClick={() => handleOpenDialog(client, 'appel entrant')}
           disabled={client.AVANCEMENT === "Enregistre"}
         >
           Entrant
-        </GreenButton>
-        <Button
+        </ActionButton>
+
+        <ActionButton
           startIcon={<DescriptionIcon />}
-          size="small"
-          style={{
-            color: '#FF8C00',
-            textTransform: 'none',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
           onClick={() => setOpenInfoDialogue(true)}
           disabled={client.AVANCEMENT === "Enregistre"}
         >
           Document
-        </Button>
-        <Button
+        </ActionButton>
+
+        <ActionButton
           startIcon={<HistoryIcon />}
-          size="small"
-          style={{
-            color: 'red',
-            textTransform: 'none',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
           onClick={() => handleOpenHistorique(client)}
           disabled={client.AVANCEMENT === "Enregistre"}
         >
           Historique
-        </Button>
-        <Button
-          startIcon={<LocalPrintshopIcon />}
-          size="small"
-          style={{
-            color: '#7695FF',
-            textTransform: 'none',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            marginLeft: 14
-          }}
+        </ActionButton>
+
+        <ActionButton
+          startIcon={<PrintIcon />}
           onClick={() => handlePrint(client)}
           disabled={client.AVANCEMENT === "Enregistre"}
         >
           Imprimer
-        </Button>
-      </CustomCardActions>
+        </ActionButton>
+      </CardActions>
+
       <Dialog
         open={openDeleteDialog}
         onClose={handleCloseDeleteDialog}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            padding: '16px',
+            maxWidth: '400px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+          }
+        }}
       >
-        <DialogTitle>Confirmation</DialogTitle>
-        <DialogContent>
-          <Typography>Êtes-vous sûr de vouloir supprimer ce partenaire?</Typography>
+        <DialogTitle sx={{
+          fontSize: '1.5rem',
+          fontWeight: 600,
+          color: 'error.main',
+          pb: 1
+        }}>
+          Confirmation de suppression
+        </DialogTitle>
+
+        <DialogContent sx={{ py: 2 }}>
+          <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+            Êtes-vous sûr de vouloir supprimer ce partenaire?
+          </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
+
+        <DialogActions sx={{ gap: 2, px: 2, pb: 2 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            variant="outlined"
+            sx={{
+              borderRadius: '8px',
+              px: 3,
+              textTransform: 'none',
+              fontSize: '1rem'
+            }}
+          >
             Non
           </Button>
-          <Button onClick={handleConfirmDelete} color="error">
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+            sx={{
+              borderRadius: '8px',
+              px: 3,
+              textTransform: 'none',
+              fontSize: '1rem',
+              '&:hover': {
+                backgroundColor: 'error.dark'
+              }
+            }}
+          >
             Oui
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
         open={openDialog}
         onClose={(event, reason) => {
@@ -643,110 +781,122 @@ function CustomCard({ client, user, fetchPart }) {
         maxWidth="md"
         fullWidth
         disableEscapeKeyDown
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            padding: '24px',
+            backgroundColor: '#ffffff'
+          }
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{
+          fontSize: '1.75rem',
+          fontWeight: 600,
+          color: 'primary.main',
+          pb: 1
+        }}>
           Communication de {client.NOM_PRENOM}
         </DialogTitle>
-        <DialogContent>
-          <DialogContentText>Saisissez les détails de la communication.</DialogContentText>
-          <TextField
-            required
-            error={!dateTime}
-            helperText={!dateTime ? "Ce champ est obligatoire" : ""}
-            autoFocus
-            margin="dense"
-            id="datetime"
-            label="Date/Heure"
-            type="datetime-local"
-            fullWidth
-            value={dateTime}
-            onChange={(e) => setDateTime(e.target.value)}
-          />
-          <InputLabel id="select-label-1" required>Raison d'appel</InputLabel>
-          <Select
-            required
-            error={!selectedRaison}
-            labelId="select-label-1"
-            id="select-1"
-            value={selectedRaison}
-            onChange={(e) => setSelectedRaison(e.target.value)}
-            fullWidth
-          >
-            {raisonList.map((raison) => (
-              <MenuItem key={raison.ID_RAISON} value={raison}>{raison.LIBELLE}</MenuItem>
-            ))}
-          </Select>
-          {!selectedRaison && <FormHelperText error>Ce champ est obligatoire</FormHelperText>}
 
-          <TextField
-            required
-            error={!detailsCommunication}
-            helperText={!detailsCommunication ? "Ce champ est obligatoire" : ""}
-            margin="dense"
-            id="details-communication"
-            label="Détails Communication"
-            multiline
-            rows={2}
-            fullWidth
-            value={detailsCommunication}
-            onChange={(e) => setDetailsCommunication(e.target.value)}
-          />
+        <DialogContent sx={{ py: 3 }}>
+          <DialogContentText sx={{ mb: 3, fontSize: '1.1rem' }}>
+            Saisissez les détails de la communication.
+          </DialogContentText>
 
-          <InputLabel id="select-label-2" required>Qualification d'appel</InputLabel>
-          <Select
-            required
-            error={!selectedQualification}
-            labelId="select-label-2"
-            id="select-2"
-            value={selectedQualification}
-            onChange={(e) => setSelectedQualification(e.target.value)}
-            fullWidth
-          >
-            {qualificationList
-              .filter((qualification) => {
-                const libelleNormalized = qualification.LIBELLE.trim().toLowerCase();
-                if (libelleNormalized.includes('accepter par admin')) {
-                  return true;
-                }
-                if (user.ROLE !== 'administrateur' && libelleNormalized.includes('enregistre')) {
-                  return false;
-                }
-                return true;
-              })
-              .map((qualification) => (
-                <MenuItem
-                  key={qualification.ID_QUALIFICATION}
-                  value={qualification}
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                required
+                error={!dateTime}
+                helperText={!dateTime ? "Ce champ est obligatoire" : ""}
+                autoFocus
+                label="Date/Heure"
+                type="datetime-local"
+                fullWidth
+                value={dateTime}
+                onChange={(e) => setDateTime(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px'
+                  }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth error={!selectedRaison}>
+                <InputLabel required>Raison d'appel</InputLabel>
+                <Select
+                  value={selectedRaison}
+                  onChange={(e) => setSelectedRaison(e.target.value)}
+                  sx={{ borderRadius: '8px' }}
                 >
-                  {qualification.LIBELLE}
-                </MenuItem>
-              ))
-            }
-          </Select>
-          {!selectedQualification &&
-            <FormHelperText error>Ce champ est obligatoire</FormHelperText>
-          }
+                  {raisonList.map((raison) => (
+                    <MenuItem key={raison.ID_RAISON} value={raison}>
+                      {raison.LIBELLE}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {!selectedRaison &&
+                  <FormHelperText error>Ce champ est obligatoire</FormHelperText>
+                }
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                required
+                error={!detailsCommunication}
+                helperText={!detailsCommunication ? "Ce champ est obligatoire" : ""}
+                label="Détails Communication"
+                multiline
+                rows={3}
+                fullWidth
+                value={detailsCommunication}
+                onChange={(e) => setDetailsCommunication(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px'
+                  }
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth error={!selectedQualification}>
+                <InputLabel required>Qualification d'appel</InputLabel>
+                <Select
+                  value={selectedQualification}
+                  onChange={(e) => setSelectedQualification(e.target.value)}
+                  sx={{ borderRadius: '8px' }}
+                >
+                  {qualificationList
+                    .filter((qualification) => {
+                      const libelleNormalized = qualification.LIBELLE.trim().toLowerCase();
+                      if (user.ROLE !== 'administrateur') {
+                        return !libelleNormalized.includes('accepter par admin') &&
+                          !libelleNormalized.includes('enregistre');
+                      }
+                      return true;
+                    })
+                    .map((qualification) => (
+                      <MenuItem key={qualification.ID_QUALIFICATION} value={qualification}>
+                        {qualification.LIBELLE}
+                      </MenuItem>
+                    ))
+                  }
+                </Select>
+                {!selectedQualification &&
+                  <FormHelperText error>Ce champ est obligatoire</FormHelperText>
+                }
+              </FormControl>
+            </Grid>
+          </Grid>
         </DialogContent>
-        <DialogActions>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
             variant="contained"
-            size="small"
-            style={{
-              color: "black",
-              backgroundColor: "white",
-              transition: "background-color 0.3s",
-              width: "150px",
-              height: "40px",
-              marginTop: "10px",
-              marginLeft: "650px",
-            }}
-            startIcon={<SaveOutlinedIcon />}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#C4D6E8";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "white";
-            }}
             onClick={() => {
               if (dateTime && selectedRaison && detailsCommunication && selectedQualification) {
                 handleSaveCommunication(client);
@@ -754,25 +904,84 @@ function CustomCard({ client, user, fetchPart }) {
                 alert("Veuillez remplir tous les champs obligatoires");
               }
             }}
+            sx={{
+              borderRadius: '8px',
+              px: 4,
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 600,
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s'
+              }
+            }}
+            startIcon={<SaveOutlinedIcon />}
           >
             Enregistrer
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openInfoDialogue} onClose={onClose} maxWidth="md"
-        fullWidth >
-        <DialogTitle>
-          Plus d'informations
-          <Button onClick={onClose} style={{ position: 'absolute', right: '8px', top: '8px' }}>
+
+      <Dialog
+        open={openInfoDialogue}
+        onClose={onClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            padding: '16px',
+            backgroundColor: '#FFFFFF',
+            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)'
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px'
+        }}>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            Plus d'informations
+          </Typography>
+          <IconButton
+            onClick={onClose}
+            sx={{
+              color: 'grey.500',
+              '&:hover': {
+                color: 'grey.700',
+                backgroundColor: 'grey.100'
+              }
+            }}
+          >
             <CloseIcon />
-          </Button>
+          </IconButton>
         </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} style={{ display: "flex", flexDirection: "column" }}>
-            <Grid item xs={12} md={12}>
-              <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
-                <Typography variant="h6">CV</Typography>
+
+        <DialogContent sx={{ padding: '24px' }}>
+          <Grid container spacing={3}>
+            {/* CV Section */}
+            <Grid item xs={12}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  border: '1px solid',
+                  borderColor: 'grey.200',
+                  borderRadius: '12px',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    transition: 'all 0.3s ease'
+                  }
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>CV</Typography>
+
                 <TextField
                   margin="dense"
                   id="niveau-scolaire"
@@ -780,7 +989,13 @@ function CustomCard({ client, user, fetchPart }) {
                   type="text"
                   fullWidth
                   value={client.NIVEAU_SCOLAIRE}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '8px'
+                    }
+                  }}
                 />
+
                 <TextField
                   margin="dense"
                   id="formations"
@@ -790,70 +1005,84 @@ function CustomCard({ client, user, fetchPart }) {
                   multiline
                   rows={4}
                   value={client.FORMATION}
+                  sx={{
+                    mt: 2,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '8px'
+                    }
+                  }}
                 />
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} md={6}>
-                    {contratUrl ? (
-                      <a href={contratUrl} target="_blank" rel="noopener noreferrer">
-                        <TextField
-                          margin="dense"
-                          id="cv"
-                          label="CV"
-                          type="text"
-                          fullWidth
-                          value={cv || "cv non disponible"}
-                          style={{ cursor: 'pointer', color: 'blue' }}
-                          disabled={!client.CV}
-                        />
-                      </a>
-                    ) : (
+
+                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  {cvUrl ? (
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      flex: 1,
+                      backgroundColor: 'grey.50',
+                      borderRadius: '8px',
+                      padding: '8px'
+                    }}>
                       <TextField
                         margin="dense"
                         id="cv"
                         label="CV"
                         type="text"
                         fullWidth
-                        value={cv || "cv non disponible"}
-                        disabled
+                        value={cv || "CV non disponible"}
+                        disabled={!client.CV}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            backgroundColor: 'transparent'
+                          }
+                        }}
                       />
-                    )}
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <IconButton
-                      style={{ color: 'blue', width: '100%', height: '100%' }}
-                      onClick={() => document.getElementById('cv-input').click()}
-                    >
-                      <CloudUploadIcon />
-                    </IconButton>
-                    <input
-                      type="file"
-                      id="cv-input"
-                      style={{ display: 'none' }}
-                      onChange={handleCvUpload}
-                    />
-                  </Grid>
-                </Grid>
-              </Box>
+                      <IconButton
+                        sx={{
+                          color: 'success.main',
+                          '&:hover': {
+                            backgroundColor: 'success.light'
+                          }
+                        }}
+                        onClick={() => cvUrl && window.open(cvUrl, '_blank')}
+                      >
+                        <GetAppIcon />
+                      </IconButton>
+                    </Box>
+                  ) : (
+                    <Typography color="text.secondary">CV non disponible</Typography>
+                  )}
+                </Box>
+              </Paper>
             </Grid>
-            <Grid item xs={12} md={12} >
-              <Box sx={{ border: 1, borderRadius: 1, borderColor: 'grey.400', p: 2, mt: 2 }}>
-                <Typography variant="h6">Contrat</Typography>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} md={6}>
-                    {contratUrl ? (
-                      <a href={contratUrl} target="_blank" rel="noopener noreferrer">
-                        <TextField
-                          margin="dense"
-                          id="contrat"
-                          label="Contrat"
-                          type="text"
-                          fullWidth
-                          value={contrat || "Contrat non disponible"}
-                          style={{ cursor: 'pointer', color: 'blue' }}
-                          disabled={!client.CONTRAT}
-                        />
-                      </a>
-                    ) : (
+
+            {/* Contract Section */}
+            <Grid item xs={12}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  border: '1px solid',
+                  borderColor: 'grey.200',
+                  borderRadius: '12px',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    transition: 'all 0.3s ease'
+                  }
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Contrat</Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  {contratUrl ? (
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      flex: 1,
+                      backgroundColor: 'grey.50',
+                      borderRadius: '8px',
+                      padding: '8px'
+                    }}>
                       <TextField
                         margin="dense"
                         id="contrat"
@@ -861,300 +1090,416 @@ function CustomCard({ client, user, fetchPart }) {
                         type="text"
                         fullWidth
                         value={contrat || "Contrat non disponible"}
-                        disabled
+                        disabled={!client.CONTRAT}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            backgroundColor: 'transparent'
+                          }
+                        }}
                       />
-                    )}
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <IconButton
-                      style={{ color: 'blue', width: '100%', height: '100%' }}
-                      onClick={() => document.getElementById('file-input').click()}
-                    >
-                      <CloudUploadIcon />
-                    </IconButton>
-                    <input
-                      type="file"
-                      id="file-input"
-                      style={{ display: 'none' }}
-                      onChange={handleFileUpload}
+
+                    </Box>
+                  ) : (
+                    <TextField
+                      margin="dense"
+                      id="contrat"
+                      label="Contrat"
+                      type="text"
+                      fullWidth
+                      value="Contrat non disponible"
+                      disabled
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px'
+                        }
+                      }}
                     />
-                  </Grid>
-                  {(user.ROLE === "administrateur" && client.CONTRAT === '') && (
-                    <Grid item xs={12} md={5}>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<CheckCircleIcon />}
-                        style={{ width: '100%', height: '100%', fontSize: '16px' }}
-                        onClick={handleAcceptPart}
-                      >
-                        Accepter comme partenaire
-                      </Button>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
+                  )
+                  } <IconButton
+                    sx={{
+                      color: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'primary.light'
+                      }
+                    }}
+                    onClick={() => document.getElementById('file-input').click()}
+                  >
+                    <CloudUploadIcon />
+                  </IconButton>
+                </Box>
+
+                <input
+                  type="file"
+                  id="file-input"
+                  style={{ display: 'none' }}
+                  onChange={handleFileUpload}
+                />
+
+                {(user.ROLE === "administrateur" && client.CONTRAT === '') && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<CheckCircleIcon />}
+                    sx={{
+                      mt: 2,
+                      width: '100%',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      textTransform: 'none',
+                      fontWeight: 600
+                    }}
+                    onClick={handleAcceptPart}
+                  >
+                    Accepter comme partenaire
+                  </Button>
+                )}
+              </Paper>
             </Grid>
-            <DialogActions>
-              <Button
-                variant="contained"
-                size="small"
-                style={{
-                  color: "black",
-                  backgroundColor: "white",
-                  transition: "background-color 0.3s",
-                  width: "150px",
-                  height: "40px",
-                  marginTop: "10px",
-                }}
-                startIcon={<SaveOutlinedIcon />}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = "#C4D6E8";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = "white";
-                }}
-                onClick={() => handleSaveContrat(client)}
-              >
-                Enregistrer</Button>
-            </DialogActions>
           </Grid>
         </DialogContent>
+
+        <DialogActions sx={{ padding: '16px 24px' }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<SaveOutlinedIcon />}
+            onClick={() => handleSaveContrat(client)}
+            sx={{
+              borderRadius: '8px',
+              textTransform: 'none',
+              backgroundColor: 'grey.100',
+              color: 'grey.900',
+              '&:hover': {
+                backgroundColor: 'grey.200'
+              },
+              padding: '12px 24px',
+              fontWeight: 600
+            }}
+          >
+            Enregistrer
+          </Button>
+        </DialogActions>
       </Dialog>
+
       <Dialog
         open={openPartSuccess}
         onClose={() => setOpenPartSuccess(false)}
         PaperProps={{
-          style: { borderRadius: 15, padding: '20px' }
+          sx: {
+            borderRadius: '20px',
+            padding: '24px',
+            maxWidth: '400px',
+            background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+          }
         }}
       >
-        <DialogTitle style={{ color: '#4CAF50', textAlign: 'center', fontWeight: 'bold' }}>
-          Succès
+        <Box sx={{ textAlign: 'center', mb: 2 }}>
+          <CheckCircleOutline
+            sx={{
+              fontSize: 68,
+              color: 'success.main',
+              animation: 'popIn 0.5s ease-out',
+              '@keyframes popIn': {
+                '0%': { transform: 'scale(0)' },
+                '70%': { transform: 'scale(1.1)' },
+                '100%': { transform: 'scale(1)' },
+              }
+            }}
+          />
+        </Box>
+
+        <DialogTitle
+          sx={{
+            color: 'success.main',
+            textAlign: 'center',
+            fontWeight: 700,
+            fontSize: '1.5rem',
+            pb: 1
+          }}
+        >
+          Succès!
         </DialogTitle>
+
         <DialogContent>
-          <DialogContentText style={{ textAlign: 'center', fontSize: '16px' }}>
+          <DialogContentText
+            sx={{
+              textAlign: 'center',
+              fontSize: '1.1rem',
+              color: 'text.primary',
+              mb: 3
+            }}
+          >
             Partenaire enregistré avec succès.
           </DialogContentText>
         </DialogContent>
-        <DialogActions style={{ justifyContent: 'center' }}>
+
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
           <Button
             onClick={() => setOpenPartSuccess(false)}
             variant="contained"
-            style={{ backgroundColor: '#4CAF50', color: 'white' }}
+            sx={{
+              bgcolor: 'success.main',
+              color: 'white',
+              px: 4,
+              py: 1.5,
+              borderRadius: '12px',
+              fontSize: '1rem',
+              textTransform: 'none',
+              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)',
+              '&:hover': {
+                bgcolor: 'success.dark',
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s ease-in-out',
+              }
+            }}
           >
             OK
           </Button>
         </DialogActions>
       </Dialog>
+
+
       <Dialog
         open={openCommSuccess}
         onClose={() => setOpenCommSuccess(false)}
         PaperProps={{
-          style: { borderRadius: 15, padding: '20px' }
+          sx: {
+            borderRadius: '20px',
+            padding: '24px',
+            maxWidth: '400px',
+            background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+          }
         }}
       >
-        <DialogTitle style={{ color: '#4CAF50', textAlign: 'center', fontWeight: 'bold' }}>
-          Succès
+        <Box sx={{ textAlign: 'center', mb: 2 }}>
+          <CheckCircleOutline
+            sx={{
+              fontSize: 68,
+              color: 'success.main',
+              animation: 'popIn 0.5s ease-out',
+              '@keyframes popIn': {
+                '0%': { transform: 'scale(0)' },
+                '70%': { transform: 'scale(1.1)' },
+                '100%': { transform: 'scale(1)' },
+              }
+            }}
+          />
+        </Box>
+
+        <DialogTitle
+          sx={{
+            color: 'success.main',
+            textAlign: 'center',
+            fontWeight: 700,
+            fontSize: '1.5rem',
+            pb: 1
+          }}
+        >
+          Succès!
         </DialogTitle>
+
         <DialogContent>
-          <DialogContentText style={{ textAlign: 'center', fontSize: '16px' }}>
+          <DialogContentText
+            sx={{
+              textAlign: 'center',
+              fontSize: '1.1rem',
+              color: 'text.primary',
+              mb: 3
+            }}
+          >
             Communication enregistrée avec succès.
           </DialogContentText>
         </DialogContent>
-        <DialogActions style={{ justifyContent: 'center' }}>
+
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
           <Button
             onClick={() => setOpenCommSuccess(false)}
             variant="contained"
-            style={{ backgroundColor: '#4CAF50', color: 'white' }}
+            sx={{
+              bgcolor: 'success.main',
+              color: 'white',
+              px: 4,
+              py: 1.5,
+              borderRadius: '12px',
+              fontSize: '1rem',
+              textTransform: 'none',
+              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)',
+              '&:hover': {
+                bgcolor: 'success.dark',
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s ease-in-out',
+              }
+            }}
           >
             OK
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
+
+      <StyledDialog
         open={openHistorique}
         onClose={handleCloseHistorique}
         maxWidth="xl"
         fullWidth
-        PaperProps={{
-          style: {
-            height: 'auto',
-            maxHeight: '90vh',
-            width: '90%',
-            margin: '20px'
-          }
-        }}
       >
-        <DialogContent style={{ padding: '24px' }}>
-          <IconButton
-            aria-label="close"
-            onClick={handleCloseHistorique}
-            style={{ position: 'absolute', right: 8, top: 8 }}
-          >
+        <DialogHeader>
+          Historique communication
+          <IconButton onClick={handleCloseHistorique}>
             <CloseIcon />
           </IconButton>
-          <Box style={{ width: '100%', height: '100%' }}>
-            <Typography
-              variant="h6"
-              align="center"
-              gutterBottom
-              style={{ marginBottom: '20px' }}
-            >
-              Historique communication
-            </Typography>
-            <TableContainer style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.common.white,
-                      fontWeight: 'bold',
-                      borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                    }}>Date communication</TableCell>
-                    <TableCell sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.common.white,
-                      fontWeight: 'bold',
-                      borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                    }}>Détails communication</TableCell>
-                    <TableCell sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.common.white,
-                      fontWeight: 'bold',
-                      borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                    }}>Raison d'appel</TableCell>
-                    <TableCell sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.common.white,
-                      fontWeight: 'bold',
-                      borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                    }}>Qualification d'appel</TableCell>
-                    <TableCell sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.common.white,
-                      fontWeight: 'bold',
-                      borderBottom: '1px solid rgba(224, 224, 224, 1)',
-                    }}>collaborateur</TableCell>
+        </DialogHeader>
+        <DialogContent>
+          <TableContainer sx={{ maxHeight: '70vh' }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Date communication</StyledTableCell>
+                  <StyledTableCell>Détails communication</StyledTableCell>
+                  <StyledTableCell>Raison d'appel</StyledTableCell>
+                  <StyledTableCell>Qualification d'appel</StyledTableCell>
+                  <StyledTableCell>Collaborateur</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {communications.map((c) => (
+                  <TableRow key={c.ID_COMMUNICATION} hover>
+                    <TableCell>{formatDate(c.DATE_COMMUNICATION)}</TableCell>
+                    <TableCell>{c.DETAILS_COMMUNICATION}</TableCell>
+                    <TableCell>{c?.RAISON}</TableCell>
+                    <TableCell>{c?.QUALIFICATION}</TableCell>
+                    <TableCell>{c.COLLABORATOR}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {communications.map((c) => (
-                    <TableRow key={c.ID_COMMUNICATION}>
-                      <TableCell>{formatDate(c.DATE_COMMUNICATION)}</TableCell>
-                      <TableCell>{c.DETAILS_COMMUNICATION}</TableCell>
-                      <TableCell>{c?.RAISON}</TableCell>
-                      <TableCell>{c?.QUALIFICATION}</TableCell>
-                      <TableCell>{c.COLLABORATOR}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </DialogContent>
-        <DialogActions style={{ justifyContent: 'center' }}>
-        </DialogActions>
-      </Dialog>
-    </CustomCardWrapper>
+      </StyledDialog>
+    </StyledCard>
+
   );
 }
-function CardContainer({ searchTerm, selectedAvancement, setTotalObj }) {
+const CardContainer = ({ searchTerm, selectedAvancement, setTotalObj }) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12);
   const [total, setTotal] = useState(0);
   const user = useSelector((state) => state.user);
+  const theme = useTheme();
+
   const fetchPart = async () => {
-    const URL = user.ROLE === "collaborateur" ? `${BASE_URL}/api/partenaires` : `${BASE_URL}/api/partenaires`
     setLoading(true);
-    console.log('clientttt:', URL)
     try {
       const params = {
-        page: page,
-        pageSize: pageSize,
-        searchTerm: searchTerm,
-        avancement: selectedAvancement
+        page,
+        pageSize,
+        searchTerm,
+        avancement: selectedAvancement,
+        ...(user.ROLE === "collaborateur" && { user: user.LOGIN })
       };
-      if (user.ROLE === "collaborateur") {
-        params.user = user.LOGIN;
-      }
-      const response = await axios.get(URL, { params });
-      console.log(response.data)
-      let listClient = [...response.data.clients]
-      let listFinale = []
-      console.log("listClient")
-      listClient.map((row) => {
-        listFinale.push({ ...row, selectedCli: false, collab: false, })
-      })
-      console.log("listclient", listFinale)
-      setClients(listFinale);
+
+      const response = await axios.get(`${BASE_URL}/api/partenaires`, { params });
+
+      const enhancedClients = response.data.clients.map(client => ({
+        ...client,
+        selectedCli: false,
+        collab: false,
+      }));
+
+      setClients(enhancedClients);
       setTotal(response.data.total);
       setTotalObj("par", response.data.total);
-      setLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError('There was an error fetching the clients!');
+      setError('Une erreur est survenue lors du chargement des données.');
+      console.error('Error:', error);
+    } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     fetchPart();
   }, [page, pageSize, searchTerm, selectedAvancement]);
-  const handleChangePage = (event, newPage) => setPage(newPage);
-  const handleChangeRowsPerPage = (event) => {
-    setPageSize(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-  const filteredClients = clients
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <StyledContainer>
+        <Alert
+          severity="error"
+          onClose={() => setError(null)}
+          sx={{
+            borderRadius: 2,
+            boxShadow: theme.shadows[3],
+          }}
+        >
+          {error}
+        </Alert>
+      </StyledContainer>
+    );
   }
+
   return (
-    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <Box sx={{
-        flex: '1 1 auto',
-        maxHeight: `100vh`,
-        overflowY: 'auto',
-        padding: '16px'
-      }}>
-        <Grid container spacing={2}>
-          {filteredClients.map((client, i) => (
-            <Grid item xs={12} sm={6} md={4} lg={4} xl={4} key={client.ID_PARTENAIRE}>
-              <CustomCard client={client} setClients={setClients} user={user} fetchPart={fetchPart} />
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          backgroundColor: '#fff',
-          boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
-          padding: '8px 16px',
-          zIndex: 1000,
-        }}
-      >
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 50, 100, 150, 200]}
-          component="div"
-          count={total}
-          rowsPerPage={pageSize}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Box>
-    </Box>
+
+    <StyledContainer maxWidth={false}>
+      <ContentWrapper>
+        {loading && (
+          <LoadingOverlay>
+            <CircularProgress size={60} thickness={4} />
+          </LoadingOverlay>
+        )}
+
+        <Fade in={!loading} timeout={500}>
+          <Box>
+            {clients.length > 0 ? (
+              <GridContainer container spacing={3}>
+                {clients.map((client) => (
+                  <Grid item xs={12} sm={12} md={4} lg={4} xl={4} key={client.ID_PARTENAIRE}>
+                    <CustomCard
+                      client={client}
+                      setClients={setClients}
+                      user={user}
+                      fetchPart={fetchPart}
+                    />
+                  </Grid>
+                ))}
+              </GridContainer>
+            ) : (
+              <NoResultsMessage>
+                <Typography variant="h6">
+                  Aucun résultat trouvé
+                </Typography>
+                <Typography variant="body2">
+                  Essayez de modifier vos critères de recherche
+                </Typography>
+              </NoResultsMessage>
+            )}
+          </Box>
+        </Fade>
+
+        <StyledPagination elevation={0}>
+          <TablePagination
+            component="div"
+            count={total}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            rowsPerPage={pageSize}
+            onRowsPerPageChange={(event) => {
+              setPageSize(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[12, 24, 36, 48]}
+            labelRowsPerPage="Éléments par page"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`
+            }
+          />
+        </StyledPagination>
+      </ContentWrapper>
+    </StyledContainer>
   );
 };
 

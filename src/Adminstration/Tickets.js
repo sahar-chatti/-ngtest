@@ -17,11 +17,13 @@ import BASE_URL from '../Utilis/constantes';
 
 const evaluationCriteria = [
     { id: 'punctuality', label: 'Ponctualité et Présence', description: 'Respect des horaires et délais' },
-    { id: 'creativity', label: 'Créativité', description: 'Capacité d\'innovation' },
+    { id: 'creativity', label: 'Créativité et exposé', description: 'Capacité d\'innovation' },
     { id: 'behavior', label: 'Comportement', description: 'Attitude professionnelle' },
     { id: 'elegance', label: 'Élégance', description: 'Présentation et tenue professionnelle' },
     { id: 'discipline', label: 'Discipline', description: 'Respect des règles et procédures' },
     { id: 'productivity', label: 'Productivité', description: 'Efficacité et rendement' },
+    { id: 'objectif', label: 'objectif', description: 'Objectifs et réalisation' },
+
 ];
 
 const calculateMoney = (rating, criteriaId) => {
@@ -32,6 +34,8 @@ const calculateMoney = (rating, criteriaId) => {
         elegance: 1.5,
         discipline: 1.5,
         productivity: 1.5,
+        objectif: 100,
+
     };
     return rating * (starValues[criteriaId] || 0);
 };
@@ -100,6 +104,8 @@ const UserEvaluation = () => {
                     behavior: evalData.BEHAVIOR,
                     elegance: evalData.ELEGANCE,
                     discipline: evalData.DISCIPLINE,
+                   objectif: evalData.OBJECTIF,
+
                     productivity: evalData.PRODUCTIVITY,
                     containerCount: evalData.CONTAINER_COUNT || 0,
                     voyageCount: evalData.VOYAGE_COUNT || 0,
@@ -175,6 +181,7 @@ const UserEvaluation = () => {
                 voyageCount: evaluationData.voyageCount || 0,
                 totalSavings, 
                 creativity: evaluationData.creativity || 0,
+                objectif: evaluationData.objectif || 0,
                 behavior: evaluationData.behavior || 0,
                 elegance: evaluationData.elegance || 0,
                 discipline: evaluationData.discipline || 0,

@@ -55,7 +55,7 @@ function CustomCard({ client, setSelectedCli }) {
   return (
     <CustomCardWrapper style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent' }}>
       <CustomCardContent>
-        <GlowingBox style={{ backgroundColor: client.CC_BLOQUER ? "red" : "#7695FF", borderRadius: '11px' }}>
+        <GlowingBox style={{ backgroundColor: client.CC_BLOQUER ? "red" : "#3572EF", borderRadius: '11px' }}>
           <Typography
             variant="h6"
             component="div"

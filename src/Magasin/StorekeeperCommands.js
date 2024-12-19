@@ -576,7 +576,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                 }}
               >
                 <CardContent sx={{ cursor: 'pointer', position: 'relative', height: type === "partenaire" ? 'auto' : 'auto', marginBottom: "20px" }}>
-                  <GlowingBox style={{ backgroundColor: "#7695FF", borderRadius: '10px' }}>
+                  <GlowingBox style={{ backgroundColor: "#3572EF", borderRadius: '10px' }}>
                     <Typography
                       variant="h6"
                       component="div"
