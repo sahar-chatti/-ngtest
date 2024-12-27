@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import AddIcon from '@mui/icons-material/Add';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { styled } from '@mui/system';
 import { useSelector } from 'react-redux';
 import HistoryIcon from '@mui/icons-material/History';
@@ -100,6 +102,10 @@ function CustomCard({ client, selectedClientType, user }) {
   const [openTarifDialog, setOpenTarifDialog] = useState(false)
   const [openHistoriqueDialog, setOpenHistoriqueDialog] = useState(false);
   const [communicationHistory, setCommunicationHistory] = useState([]);
+  const [communicationPassagerHistory, setCommunicationPassagerHistory] = useState([]);
+  const [openCommunicationDialog, setOpenCommunicationDialog] = useState(false);
+
+
   const [encoursData, setEncoursData] = useState(null);
   const [files, setFiles] = useState([]); 
   const [emailSent, setEmailSent] = useState(false);
@@ -110,7 +116,67 @@ function CustomCard({ client, selectedClientType, user }) {
   const [boiteMail, setBoiteMail] = useState("");
   const [catalogFiles, setCatalogFiles] = useState([]);
   const [open, setOpen] = useState(false);
+  const [topArticles, setTopArticles] = useState([]);
+  const [openTopArticlesDialog, setOpenTopArticlesDialog] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('');
+
+
   const [selectedCatalogFile, setSelectedCatalogFile] = useState('');
+  const [formData, setFormData] = useState({
+    nom: '',
+    commercial: user.LOGIN || '',
+    raison: '',
+    details: '',
+    numero: ''
+  });
+  const handleSubmit = async () => {
+    try {
+        const response = await axios.post(`${BASE_URL}/api/client-passager`, formData);
+        if (response.status === 201) {
+            // Ajouter la nouvelle communication à l'état local
+            const newCommunication = {
+                ...formData,
+                DATE_ENREGISTREMENT: new Date().toISOString()
+            };
+            
+            setCommunicationPassagerHistory(prevHistory => [
+                newCommunication,
+                ...prevHistory
+            ]);
+
+            alert('Communication enregistrée avec succès');
+            handleClose();
+        }
+        setOpenCommunicationDialog(false)
+    } catch (error) {
+        console.error('Error saving passager communication:', error);
+        alert('Erreur lors de l\'enregistrement');
+    }
+};
+useEffect(() => {
+  if (openCommunicationDialog && formData.nom) {
+      fetchCommunicationPassagerHistory(formData.nom);
+  }
+}, [openCommunicationDialog, formData.nom]);
+
+  const fetchCommunicationPassagerHistory = async (status) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/api/client-passager/${status}`);
+        if (response.data.success) {
+            setCommunicationPassagerHistory(response.data.data);
+        }
+    } catch (error) {
+        console.error('Error fetching history:', error);
+    }
+};
+
+useEffect(() => {
+    if (formData.nom) {
+        fetchCommunicationPassagerHistory(formData.nom);
+    }
+}, [formData.nom]);
+
+
   const [currentUser, setCurrentUser] = useState({
     COLLABORATOR: user.LOGIN,
     CALL_DATE: new Date().toISOString().slice(0, 16),
@@ -156,7 +222,24 @@ function CustomCard({ client, selectedClientType, user }) {
     }
     setOpenTarifDialog(true)
   }
-
+  const fetchTopArticles = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/sumSalesByArticle`, {
+        params: {
+          base: selectedClientType === "clientsFdm" ? "fdm" : "cspd",
+          clientCode: client.CODE_CLIENT // Ajout du code client
+        }
+      });
+      setTopArticles(response.data.slice(0, 100));
+    } catch (error) {
+      console.error('Error fetching top articles:', error);
+    }
+  };
+  useEffect(() => {
+    if (openTopArticlesDialog) {
+      fetchTopArticles();
+    }
+  }, [openTopArticlesDialog]);
   const handleDialogOpen = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/clientsCspd`, {
@@ -173,6 +256,8 @@ function CustomCard({ client, selectedClientType, user }) {
             CALL_DATE: new Date().toISOString().slice(0, 16),
             RAISON: '',
             DESCRIPTION: '',
+            STATUS: '' // Add this field
+
           };
           return newState;
         });
@@ -213,7 +298,17 @@ function CustomCard({ client, selectedClientType, user }) {
       console.error('Error fetching communication history:', error);
     }
   };
-
+  const formatDate = (date) => {
+    const dateObj = new Date(date);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+  
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
   const handleSaveUser = async () => {
     try {
       const requiredFields = ['COLLABORATOR', 'CALL_DATE', 'RAISON', 'DESCRIPTION', 'CODE_CLIENT'];
@@ -227,18 +322,16 @@ function CustomCard({ client, selectedClientType, user }) {
         : `${BASE_URL}/api/collaboratorscalls`;
 
       const apiMethod = editing ? 'put' : 'post';
-      const formatDate = (date) => {
-        const dateObj = new Date(date);
-        const tunisiaTime = new Date(dateObj.getTime() + (1 * 60 * 60 * 1000));
-        return tunisiaTime.toISOString();
-      };
-
+  
+      
       const requestData = {
         COLLABORATOR: user.LOGIN,
         CALL_DATE: formatDate(currentUser.CALL_DATE),
         RAISON: currentUser.RAISON,
         DESCRIPTION: currentUser.DESCRIPTION,
         clientId: currentUser.CODE_CLIENT,
+        STATUS: client.CODE_CLIENT === '41101089' ? currentUser.STATUS : undefined // Only include for specific client
+
       };
       const response = await axios[apiMethod](apiEndpoint, requestData, { timeout: 5000 });
       if (response.status === 201 || response.status === 200) {
@@ -403,24 +496,61 @@ function CustomCard({ client, selectedClientType, user }) {
     setOpen(true);
   };
 
+
+
   return (
     <CustomCardWrapper style={{ backgroundColor: 'white', borderRadius: '15px', border: 'transparent' }}>
       <CustomCardContent>
-        <GlowingBox style={{ backgroundColor: client.BLOQUER_CLIENT ? "red" : "#3572EF", borderRadius: '11px' }}>
-          <Typography
-            variant="h6"
-            component="div"
-            align="center"
-            style={{
-              color: "white",
-              fontWeight: 'bold',
-              fontSize: '1rem',
-            }}
-          >
-            {client.INTITULE_CLIENT.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())} <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>{client.INTITULE_GR ? client.INTITULE_GR.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())
-              : " " 
-            }</span> </Typography>
-        </GlowingBox>
+      <GlowingBox 
+  style={{ 
+    backgroundColor: client.BLOQUER_CLIENT ? "red" : "#3572EF", 
+    borderRadius: '11px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 16px'
+  }}
+>
+  <Typography
+    variant="h6"
+    component="div"
+    style={{
+      color: "white",
+      fontWeight: 'bold',
+      fontSize: '1rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%'
+    }}
+  >
+    <div>
+      {client.INTITULE_CLIENT.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())}
+      <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '8px' }}>
+        {client.INTITULE_GR ? client.INTITULE_GR.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()) : " "}
+      </span>
+    </div>
+    
+    <CustomButton 
+      onClick={() => setOpenTopArticlesDialog(true)}
+      sx={{
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        color: "#F8FAFC",
+        fontWeight: 'bold',
+        minWidth: '60px',
+        marginLeft: '16px',
+        '&:hover': {
+          backgroundColor: 'rgba(255, 255, 255, 0.2)'
+        }
+      }}     
+      size="small"
+      startIcon={<EmojiEventsIcon/>} 
+    >
+      Top Articles
+    </CustomButton>
+  </Typography>
+</GlowingBox>
+
         {client.BLOQUER_CLIENT ? (
           <Typography
             variant="body2"
@@ -624,11 +754,14 @@ function CustomCard({ client, selectedClientType, user }) {
             color: "#478CCF",
             fontWeight: 'bold',
           }}
+          
           startIcon={<LocalAtmIcon />} onClick={() => handleTarifDialogOpen(client)}
           size="medium"
         >
           tarifs
         </CustomButton>
+     
+
       </CustomCardActions>
 
       <Dialog open={openDialog} >
@@ -687,7 +820,21 @@ function CustomCard({ client, selectedClientType, user }) {
             fullWidth
             value={currentUser.CALL_DATE}
             onChange={(e) => setCurrentUser({ ...currentUser, CALL_DATE: e.target.value })}
-          />
+          /> 
+            {client.CODE_CLIENT === '41101089' && (
+    <TextField
+      fullWidth
+      label="Client"
+      value={formData.nom}
+      margin="normal"
+      InputProps={{ readOnly: true }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          backgroundColor: '#f5f5f5',
+        },
+      }}
+    />
+  )}
           <InputLabel>Raison</InputLabel>
           <Select
             fullWidth
@@ -712,23 +859,77 @@ function CustomCard({ client, selectedClientType, user }) {
           <Typography variant="h6" style={{ marginTop: '20px' }}>
             Historique des communications
           </Typography>
+          {client.CODE_CLIENT === '41101089' && (
+  <FormControl fullWidth sx={{ mb: 2, mt: 2 }}>
+    <TextField
+      label="Chercher une communication client"
+      value={statusFilter}
+      onChange={(e) => setStatusFilter(e.target.value)}
+      variant="outlined"
+      size="small"
+    />
+  </FormControl>
+)}
           <Table>
             <TableHead>
               <TableRow>
+              {client.CODE_CLIENT === '41101089' && (
+                <TableCell></TableCell>
+              )}
+              {client.CODE_CLIENT === '41101089' && (
+                <TableCell>Client</TableCell>
+              )}
                 <TableCell>Date et heure</TableCell>
                 <TableCell>Commercial</TableCell>
                 <TableCell>Raison</TableCell>
                 <TableCell>Détails</TableCell>
+             
               </TableRow>
             </TableHead>
             <TableBody>
-              {communicationHistory.length > 0 ? (
-                communicationHistory.map((comm, index) => (
+            {communicationHistory.length > 0 ? (
+  communicationHistory
+    .filter(comm => 
+      client.CODE_CLIENT !== '41101089' || 
+      !statusFilter || 
+      (comm.STATUS && comm.STATUS.toLowerCase().includes(statusFilter.toLowerCase()))
+    ).map((comm, index) => (
                   <TableRow key={index}>
+                     {client.CODE_CLIENT === '41101089' && (
+          <TableCell> <Button
+          onClick={() => {
+            setFormData(prev => ({
+              ...prev,
+              nom: comm.STATUS || ''
+            }));
+            setOpenCommunicationDialog(true); // Use the new state instead of setOpen
+            setOpenDialogCalls(false);
+
+          }}
+          startIcon={<AddIcon />}
+          sx={{
+            minWidth: 'auto',
+            padding: '4px 8px',
+            background: 'linear-gradient(135deg, #0B4C69, #1976d2)',
+            color: 'white',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #1976d2, #0B4C69)',
+            },
+            borderRadius: '8px',
+          }}
+        >
+        </Button></TableCell>
+          
+        )}
+                              {client.CODE_CLIENT === '41101089' && (
+                <TableCell>{comm.STATUS || 'N/A'}</TableCell>
+              )}
+               
                     <TableCell>{new Date(comm.CALL_DATE).toLocaleString()}</TableCell>
                     <TableCell>{comm.COLLABORATOR}</TableCell>
                     <TableCell>{comm.RAISON}</TableCell>
                     <TableCell>{comm.DESCRIPTION}</TableCell>
+          
                   </TableRow>
                 ))
               ) : (
@@ -778,30 +979,94 @@ function CustomCard({ client, selectedClientType, user }) {
       <Dialog open={openDialogCalls} >
         <DialogTitle>    Historique des communications</DialogTitle>
         <DialogContent>
+        {client.CODE_CLIENT === '41101089' && (
+ <FormControl fullWidth sx={{ mb: 2, mt: 2 }}>
+ <TextField
+   label="Chercher une communication client"
+   value={statusFilter}
+   onChange={(e) => setStatusFilter(e.target.value)}
+   variant="outlined"
+   size="small"
+ />
+</FormControl>
+)}
           <Table>
+   
             <TableHead>
               <TableRow>
+              {client.CODE_CLIENT === '41101089' && (
+              <TableCell></TableCell>
+
+        )}
+              {client.CODE_CLIENT === '41101089' && (
+              <TableCell>client</TableCell>
+
+        )}
+             
                 <TableCell>Date et heure</TableCell>
                 <TableCell>Commercial</TableCell>
                 <TableCell>Raison</TableCell>
                 <TableCell>Détails</TableCell>
+          
               </TableRow>
             </TableHead>
             <TableBody>
-              {communicationHistory.length > 0 ? (
-                communicationHistory.map((comm, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{new Date(comm.CALL_DATE).toLocaleString()}</TableCell>
-                    <TableCell>{comm.COLLABORATOR}</TableCell>
-                    <TableCell>{comm.RAISON}</TableCell>
-                    <TableCell>{comm.DESCRIPTION}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">Aucun historique de communication trouvé</TableCell>
-                </TableRow>
-              )}
+            {communicationHistory.length > 0 ? (
+  communicationHistory
+    .filter(comm => 
+      client.CODE_CLIENT !== '41101089' || 
+      !statusFilter || 
+      (comm.STATUS && comm.STATUS.toLowerCase().includes(statusFilter.toLowerCase()))
+    )
+    .map((comm, index) => (
+      <TableRow key={index}>
+      
+         {client.CODE_CLIENT === '41101089' && (
+          <TableCell> <Button
+          onClick={() => {
+            setFormData(prev => ({
+              ...prev,
+              nom: comm.STATUS || ''
+            }));
+            setOpenCommunicationDialog(true); // Use the new state instead of setOpen
+            setOpenDialogCalls(false);
+
+          }}
+          startIcon={<AddIcon />}
+          sx={{
+            minWidth: 'auto',
+            padding: '4px 8px',
+            background: 'linear-gradient(135deg, #0B4C69, #1976d2)',
+            color: 'white',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #1976d2, #0B4C69)',
+            },
+            borderRadius: '8px',
+          }}
+        >
+        </Button></TableCell>
+          
+        )}
+           {client.CODE_CLIENT === '41101089' && (
+          <TableCell>{comm.STATUS || 'N/A'} </TableCell>
+          
+        )}
+        <TableCell>{new Date(comm.CALL_DATE).toLocaleString()}</TableCell>
+        <TableCell>{comm.COLLABORATOR}</TableCell>
+        <TableCell>{comm.RAISON}</TableCell>
+        <TableCell>{comm.DESCRIPTION}</TableCell>
+       
+      </TableRow>
+    ))
+) : (
+  <TableRow>
+    <TableCell colSpan={client.CODE_CLIENT === '41101089' ? 5 : 4} align="center">
+      Aucun historique de communication trouvé
+    </TableCell>
+  </TableRow>
+)}
+
+
             </TableBody>
           </Table>
         </DialogContent>
@@ -1003,6 +1268,281 @@ function CustomCard({ client, selectedClientType, user }) {
             </Button>
           </DialogActions>
         </Dialog>
+        <Dialog
+  open={openCommunicationDialog}
+  onClose={() => setOpenCommunicationDialog(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: '12px',
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      background: 'linear-gradient(135deg, #3572EF, #3572EF)',
+      color: 'white',
+      fontSize: '1.25rem',
+      fontWeight: 'bold',
+      padding: '20px',
+      textAlign: 'center',
+    }}
+  >
+    Enregistrement Communication Client {formData.nom}
+  </DialogTitle>
+
+  <DialogContent
+    sx={{
+      padding: '24px',
+      background: '#f9fafb',
+    }}
+  >
+    {/* Form Fields */}
+    <TextField
+      fullWidth
+      label="Status"
+      value={formData.nom}
+      margin="normal"
+      InputProps={{ readOnly: true }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          backgroundColor: '#f5f5f5',
+        },
+      }}
+    />
+    <TextField
+      fullWidth
+      label="Commercial"
+      value={formData.commercial}
+      margin="normal"
+      InputProps={{ readOnly: true }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          backgroundColor: '#f5f5f5',
+        },
+      }}
+    />
+    <FormControl fullWidth margin="normal">
+      <InputLabel>Raison</InputLabel>
+      <Select
+        value={formData.raison}
+        onChange={(e) => setFormData({ ...formData, raison: e.target.value })}
+      >
+        <MenuItem value="Prospection">Prospection</MenuItem>
+        <MenuItem value="Information">Demande d'information</MenuItem>
+        <MenuItem value="Réclamation">Réclamation</MenuItem>
+      </Select>
+    </FormControl>
+    <TextField
+      fullWidth
+      label="Détails"
+      multiline
+      rows={4}
+      value={formData.details}
+      onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+      margin="normal"
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          backgroundColor: '#ffffff',
+        },
+      }}
+    />
+    <TextField
+      fullWidth
+      label="Numéro"
+      value={formData.numero}
+      onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+      margin="normal"
+    />
+
+    {/* History Section */}
+    <Typography
+      variant="h6"
+      sx={{
+        marginTop: '32px',
+        marginBottom: '16px',
+        color: '#3572EF',
+        fontWeight: 'bold',
+      }}
+    >
+      Historique des Communications - {formData.nom}
+    </Typography>
+    <TableContainer
+      component={Paper}
+      sx={{
+        maxHeight: '300px',
+        borderRadius: '8px',
+        border: '1px solid #e0e0e0',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ backgroundColor: '#3572EF', color: 'white', fontWeight: 'bold' }}>
+              Date
+            </TableCell>
+            <TableCell sx={{ backgroundColor: '#3572EF', color: 'white', fontWeight: 'bold' }}>
+              Commercial
+            </TableCell>
+            <TableCell sx={{ backgroundColor: '#3572EF', color: 'white', fontWeight: 'bold' }}>
+              Raison
+            </TableCell>
+            <TableCell sx={{ backgroundColor: '#3572EF', color: 'white', fontWeight: 'bold' }}>
+              Détails
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {communicationPassagerHistory && communicationPassagerHistory.length > 0 ? (
+            communicationPassagerHistory
+              .filter((comm) => comm.NOM === formData.nom) // Filter to match STATUS
+              .map((comm, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    '&:nth-of-type(odd)': { backgroundColor: '#f9f9f9' },
+                    '&:hover': { backgroundColor: '#e3f2fd', transition: '0.3s ease' },
+                  }}
+                >
+                  <TableCell>{new Date(comm.DATE_ENREGISTREMENT).toLocaleString()}</TableCell>
+                  <TableCell>{comm.COMMERCIAL}</TableCell>
+                  <TableCell>{comm.RAISON}</TableCell>
+                  <TableCell>{comm.DETAILS}</TableCell>
+                </TableRow>
+              ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} align="center">
+                Aucun historique trouvé pour {formData.nom}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </DialogContent>
+
+  <DialogActions
+    sx={{
+      padding: '16px',
+    }}
+  >
+    <Button
+      onClick={handleSubmit}
+      variant="contained"
+      sx={{
+        background: 'linear-gradient(135deg, #3572EF, #3572EF)',
+        color: 'white',
+        padding: '8px 16px',
+        textTransform: 'none',
+        '&:hover': {
+          background: 'linear-gradient(135deg, #3572EF, #3572EF)',
+        },
+      }}
+    >
+      Enregistrer
+    </Button>
+  </DialogActions>
+</Dialog>
+
+        <Dialog 
+  open={openTopArticlesDialog} 
+  onClose={() => setOpenTopArticlesDialog(false)}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: '16px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+      background: 'linear-gradient(to right bottom, #ffffff, #f8f9fa)'
+    }
+  }}
+>
+  <DialogTitle 
+    sx={{ 
+      background: 'linear-gradient(135deg, #0B4C69, #1976d2)',
+      color: 'white',
+      padding: '20px 24px',
+      fontSize: '1rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px'
+    }}
+  >
+    <EmojiEventsIcon sx={{ fontSize: '2rem' }} />
+    Top 100 Articles les Plus Commandés par {client.INTITULE_CLIENT} pour les 2 derniéres années
+  </DialogTitle>
+
+  <DialogContent sx={{ padding: '24px' }}>
+    <TableContainer 
+      sx={{ 
+        marginTop: 2,
+        borderRadius: '12px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+        overflow: 'hidden'
+      }}
+    >
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell 
+              sx={{ 
+                background: 'linear-gradient(135deg, #0B4C69, #1976d2)',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                padding: '16px'
+              }}
+            >Article</TableCell>
+            <TableCell 
+              sx={{ 
+                background: 'linear-gradient(135deg, #0B4C69, #1976d2)',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                padding: '16px'
+              }}
+            >Description</TableCell>
+            <TableCell 
+              sx={{ 
+                background: 'linear-gradient(135deg, #0B4C69, #1976d2)',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                padding: '16px'
+              }}
+            >Quantité Totale</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {topArticles.map((article, index) => (
+            <TableRow 
+              key={index} 
+              sx={{ 
+                '&:nth-of-type(odd)': { backgroundColor: '#f8f9fa' },
+                '&:hover': {
+                  backgroundColor: '#e3f2fd',
+                  transition: 'background-color 0.3s ease'
+                },
+                cursor: 'pointer'
+              }}
+            >
+              <TableCell sx={{ padding: '16px' }}>{article.CCL_ARTICLE}</TableCell>
+              <TableCell sx={{ padding: '16px' }}>{article.CCL_DES_ART}</TableCell>
+              <TableCell sx={{ padding: '16px', fontWeight: 'bold' }}>{article.TOTAL_SALES}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </DialogContent>
+
+</Dialog>
+
+
       </div>
     </CustomCardWrapper>
   );

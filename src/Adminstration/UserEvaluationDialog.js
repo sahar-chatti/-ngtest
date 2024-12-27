@@ -13,9 +13,12 @@ import {
     styled,
     useTheme
 } from '@mui/material';
+import Talent from '../images/TalentBH.png'
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import StarIcon from '@mui/icons-material/Star';
+import { Button } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(3),
@@ -41,45 +44,53 @@ const evaluationCriteria = [
         id: 'punctuality',
         label: 'Ponctualité',
         description: 'Évaluation de la ponctualité au travail',
-        icon: '⏰'
+        icon: '⏰',
+        value: '0.5 DT / étoile'
     },
     {
         id: 'creativity',
         label: 'Créativité',
         description: 'Capacité à proposer des solutions innovantes',
-        icon: '💡'
+        icon: '💡',
+        value: '1.5 DT / étoile'
     },
     {
         id: 'behavior',
         label: 'Comportement',
         description: 'Attitude générale et relations professionnelles',
-        icon: '🤝'
+        icon: '🤝',
+        value: '1.5 DT / étoile'
     },
     {
         id: 'elegance',
         label: 'Élégance',
         description: 'Présentation et professionnalisme',
-        icon: '✨'
+        icon: '✨',
+        value: '1.5 DT / étoile'
     },
     {
         id: 'discipline',
         label: 'Discipline',
         description: 'Respect des règles et procédures',
-        icon: '📋'
+        icon: '📋',
+        value: '1.5 DT / étoile'
     },
     {
         id: 'productivity',
         label: 'Productivité',
         description: 'Efficacité et qualité du travail',
-        icon: '📈'
+        icon: '📈',
+        value: '1.5 DT / étoile'
     },
     {
         id: 'objectif',
         label: 'Objectif',
         description: 'Objectifs et réalisation',
-        icon: '🎯'
+        icon: '🎯',
+        value: '100 DT / étoile'
     }
 ];
+
 
 const EmployeeEvaluationDialog = ({ open, onClose }) => {
     const theme = useTheme();
@@ -88,38 +99,102 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchEvaluation = async () => {
-            if (!user?.LOGIN) return;
 
-            try {
-                setLoading(true);
-                const response = await axios.get(`http://192.168.1.170:3300/api/evaluations`, {
-                    params: {
-                        userLogin: user.LOGIN,
-                        userId: user.ID_UTILISATEUR
-                    }
-                });
+// Add console logs to debug the API response
+useEffect(() => {
+    const fetchEvaluation = async () => {
+        if (!user?.LOGIN) return;
 
-                const userEvaluations = response.data
-                    .filter(evaluation => evaluation.USER_ID === user.ID_UTILISATEUR)
-                    .sort((a, b) => new Date(b.EVALUATION_DATE) - new Date(a.EVALUATION_DATE));
+        try {
+            setLoading(true);
+            const response = await axios.get(`http://192.168.1.170:3300/api/evaluations`, {
+                params: {
+                    userLogin: user.LOGIN,
+                    userId: user.ID_UTILISATEUR
+                }
+            });
 
-                setEvaluation(userEvaluations[0]);
-            } catch (err) {
-                setError('Impossible de récupérer les données d\'évaluation');
-            } finally {
-                setLoading(false);
-            }
-        };
+            console.log('API Response:', response.data); // Add this log
 
-        if (open && user?.LOGIN) {
-            fetchEvaluation();
+            const userEvaluations = response.data
+    .filter(evaluation => 
+        evaluation.USER_ID === user.ID_UTILISATEUR && 
+        evaluation.STATE === 'VALIDATED' // Check if it's 'VALIDATED' instead of 'validated'
+    )
+    .sort((a, b) => new Date(b.EVALUATION_DATE) - new Date(a.EVALUATION_DATE));
+
+            setEvaluation(userEvaluations[0]);
+        } catch (err) {
+            console.error('API Error:', err); // Add this log
+            setError('Impossible de récupérer les données d\'évaluation');
+        } finally {
+            setLoading(false);
         }
-    }, [open, user]);
+    };
+
+    if (open && user?.LOGIN) {
+        fetchEvaluation();
+    }
+}, [open, user]);
 
     if (!open) return null;
+    const isPrintable = () => {
+        const today = new Date();
+        return today.getDate() >= 1;
+    };
+    const handlePrint = (evaluation) => {
+        const imageUrl = Talent;
 
+        const printContent = `
+        <div style="padding: 20px; font-family: Arial, sans-serif;">
+            <h2 style="text-align: center;">Évaluation de l'Employé</h2>
+            <hr/>
+            <div style="margin: 20px 0;">
+                <p><strong>Employé:</strong> ${user?.UTILISATEUR}</p>
+                <p><strong>Date d'évaluation:</strong> ${new Date(evaluation?.EVALUATION_DATE).toLocaleString()}</p>
+                
+                <div style="margin: 20px 0;">
+                    ${evaluationCriteria.map(({ id, label, icon }) => `
+                        <div style="margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+                            <p><strong>${icon} ${label}:</strong> ${id === 'punctuality' ? 5 : Number(evaluation?.[id.toUpperCase()]) || 0} étoiles</p>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 4px;">
+                    <p style="text-align: center; font-size: 18px;">
+                        <strong>Récompense Totale:</strong> ${evaluation?.TOTAL_SAVINGS} DT
+                    </p>
+                </div>
+            </div>
+
+            <h3 style="text-align: center;">Ordre de Virement</h3>
+            <img src="${imageUrl}" alt="Ordre de Virement" style="width: 100%; height: auto; margin-top: 20px;"/>
+
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; width: 100%;">
+                <div style="text-align: center;">
+                    <p>Signature financier: _________________</p>
+                    <p>Date: ${new Date().toLocaleDateString()}</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <p>Signature direction: _________________</p>
+                    <p>Date: ${new Date().toLocaleDateString()}</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <p>Signature employé: _________________</p>
+                    <p>Date: ${new Date().toLocaleDateString()}</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+};
     return (
         <Dialog 
             open={open} 
@@ -137,7 +212,34 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
                 background: theme.palette.primary.main,
                 color: 'white',
                 pb: 1
-            }}>
+            }}><Button
+            variant="contained"
+            startIcon={<PrintIcon />}
+            onClick={() => handlePrint(evaluation)}
+            disabled={!isPrintable()}
+            sx={{
+                backgroundColor: 'white',
+                color: theme.palette.primary.main,
+                fontWeight: 'bold',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                position:'end',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                },
+                '&.Mui-disabled': {
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                    color: 'rgba(0,0,0,0.26)',
+                },
+                transition: 'all 0.2s ease-in-out'
+            }}
+        >
+        </Button>
+        
+        
                 <Typography variant="h5" fontWeight="bold">
                     Évaluation de {user?.UTILISATEUR}
                 </Typography>
@@ -167,7 +269,7 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
                 ) : (
                     <Fade in={!loading}>
                         <Grid container spacing={3}>
-                            {evaluationCriteria.map(({ id, label, description, icon }) => (
+                            {evaluationCriteria.map(({ id, label, description, icon,value }) => (
                                 <Grid item xs={12} sm={6} key={id}>
                                     <StyledPaper>
                                         <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -177,6 +279,12 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
                                             <Typography variant="h6">
                                                 {label}
                                             </Typography>
+                                            <Typography 
+                                            variant="body2" 
+                                            color="text.secondary"
+                                            sx={{ mt: 1 }}
+                                        >                    {value}
+                </Typography>
                                         </Box>
                                         <StyledRating
                                             value={id === 'punctuality' ? 5 : Number(evaluation?.[id.toUpperCase()]) || 0}
@@ -199,9 +307,10 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
                                     background: theme.palette.primary.light,
                                     color: theme.palette.primary.contrastText
                                 }}>
-                                    <Typography variant="h5" align="center">
-                                        Récompense Totale: {evaluation.TOTAL_SAVINGS} DT
-                                    </Typography>
+                                   <Typography variant="h5" align="center">
+    Récompense Totale: {evaluation && evaluation.TOTAL_SAVINGS ? evaluation.TOTAL_SAVINGS : 'Non disponible'} DT
+</Typography>
+
                                 </StyledPaper>
                             </Grid>
                         </Grid>
@@ -210,6 +319,6 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
             </DialogContent>
         </Dialog>
     );
-};
+}; 
 
 export default EmployeeEvaluationDialog;

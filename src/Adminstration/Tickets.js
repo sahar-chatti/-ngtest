@@ -11,29 +11,30 @@ import {
     Typography,
     TableContainer,
     TextField,
+    Box
 } from '@mui/material';
 import axios from 'axios';
 import BASE_URL from '../Utilis/constantes';
 
-const evaluationCriteria = [
-    { id: 'punctuality', label: 'Ponctualité et Présence', description: 'Respect des horaires et délais' },
-    { id: 'creativity', label: 'Créativité et exposé', description: 'Capacité d\'innovation' },
-    { id: 'behavior', label: 'Comportement', description: 'Attitude professionnelle' },
-    { id: 'elegance', label: 'Élégance', description: 'Présentation et tenue professionnelle' },
-    { id: 'discipline', label: 'Discipline', description: 'Respect des règles et procédures' },
-    { id: 'productivity', label: 'Productivité', description: 'Efficacité et rendement' },
-    { id: 'objectif', label: 'objectif', description: 'Objectifs et réalisation' },
 
+const evaluationCriteria = [
+    { id: 'punctuality', label: 'Ponctualité et Présence', value: '0,500 dt / étoile', description: 'Respect des horaires et délais' },
+    { id: 'creativity', label: 'Créativité et exposé', value: '5dt / étoile', description: 'Capacité d\'innovation' },
+    { id: 'behavior', label: 'Comportement', value: '5 dt / étoile', description: 'Attitude professionnelle' },
+    { id: 'elegance', label: 'Élégance', value: '5 dt / étoile', description: 'Présentation et tenue professionnelle' },
+    { id: 'discipline', label: 'Discipline', value: '5 dt / étoile', description: 'Respect des règles et procédures' },
+    { id: 'productivity', label: 'Productivité', value: '5 dt / étoile', description: 'Efficacité et rendement' },
+    { id: 'objectif', label: 'Objectif', value: '100 dt / étoile', description: 'Objectifs et réalisation' },
 ];
 
 const calculateMoney = (rating, criteriaId) => {
     const starValues = {
         punctuality: 0.5,
-        creativity: 1.5,
-        behavior: 1.5,
-        elegance: 1.5,
-        discipline: 1.5,
-        productivity: 1.5,
+        creativity: 5,
+        behavior: 5,
+        elegance: 5,
+        discipline: 5,
+        productivity: 5,
         objectif: 100,
 
     };
@@ -43,10 +44,11 @@ const calculateMoney = (rating, criteriaId) => {
 const UserEvaluation = () => {
     const [users, setUsers] = useState([]);
     const [evaluations, setEvaluations] = useState({});
-    const [containerCount, setContainerCount] = useState(0); 
+    const [containerCount, setContainerCount] = useState(0);
     const [savedEvaluations, setSavedEvaluations] = useState({});
     const [orders, setOrders] = useState([]);
     const BASE = 'CSPD24';
+    const [validatedEvaluations, setValidatedEvaluations] = useState({});
 
 
     const fetchUsers = async () => {
@@ -104,7 +106,8 @@ const UserEvaluation = () => {
                     behavior: evalData.BEHAVIOR,
                     elegance: evalData.ELEGANCE,
                     discipline: evalData.DISCIPLINE,
-                   objectif: evalData.OBJECTIF,
+                    objectif: evalData.OBJECTIF,
+                    state: evalData.STATE, // Add this line
 
                     productivity: evalData.PRODUCTIVITY,
                     containerCount: evalData.CONTAINER_COUNT || 0,
@@ -117,7 +120,7 @@ const UserEvaluation = () => {
             }, {});
 
             const latestEvaluations = Object.keys(evaluationsMap).reduce((acc, userId) => {
-                acc[userId] = evaluationsMap[userId][0]; 
+                acc[userId] = evaluationsMap[userId][0];
                 return acc;
             }, {});
             setSavedEvaluations(evaluationsMap);
@@ -149,12 +152,12 @@ const UserEvaluation = () => {
         }
 
         if (department === 'Magasin') {
-            totalReward += (containerCount || 0) * 10; 
+            totalReward += (containerCount || 0) * 10;
         }
         const orderCount = getOrderCount(userLogin);
-        totalReward += orderCount * 0.5; 
+        totalReward += orderCount * 0.5;
 
-        totalReward += (userEvaluations.voyageCount || 0) * 10; 
+        totalReward += (userEvaluations.voyageCount || 0) * 10;
 
         return totalReward;
     };
@@ -168,29 +171,46 @@ const UserEvaluation = () => {
             },
         }));
     };
-    const handleSubmitEvaluation = async (userId) => {
+    const handleSubmitEvaluation = async (userId, action) => {
         try {
-
             const user = users.find(u => u.ID_UTILISATEUR === userId);
             const evaluationData = evaluations[userId] || {};
             const totalSavings = calculateTotalReward(userId, user.LOGIN, user.DEPARTEMENT);
+
+            // Get existing evaluations for this user
+            const existingEvaluations = await axios.get(`${BASE_URL}/api/evaluations`, {
+                params: {
+                    userId,
+                    userLogin: user.LOGIN
+                }
+            });
+
             const payload = {
                 userId,
                 averageRating: calculateAverageRating(userId),
                 containerCount: user.DEPARTEMENT === 'Magasin' ? containerCount : 0,
                 voyageCount: evaluationData.voyageCount || 0,
-                totalSavings, 
+                totalSavings,
                 creativity: evaluationData.creativity || 0,
                 objectif: evaluationData.objectif || 0,
                 behavior: evaluationData.behavior || 0,
                 elegance: evaluationData.elegance || 0,
                 discipline: evaluationData.discipline || 0,
                 productivity: evaluationData.productivity || 0,
-                punctuality: evaluationData.punctuality || 5
+                punctuality: evaluationData.punctuality || 5,
+                state: action === 'validate' ? 'VALIDATED' : 'SAVED'
+
             };
 
-            console.log('PUT payload:', payload);
-            const response = await axios.post(`${BASE_URL}/api/evaluations`, payload);
+            // Find the most recent evaluation for this user
+            const userEvaluations = existingEvaluations.data
+                .filter(evaluation => evaluation.USER_ID === userId)
+                .sort((a, b) => new Date(b.EVALUATION_DATE) - new Date(a.EVALUATION_DATE));
+
+
+            const response = userEvaluations.length > 0
+                ? await axios.put(`${BASE_URL}/api/evaluations/${userEvaluations[0].ID}`, payload)
+                : await axios.post(`${BASE_URL}/api/evaluations`, payload);
 
             if (response.data.success) {
                 console.log('Evaluation saved successfully:', response.data);
@@ -200,6 +220,24 @@ const UserEvaluation = () => {
             console.error('Error submitting evaluation:', error);
         }
     };
+
+
+    useEffect(() => {
+        const initializeValidatedStates = () => {
+            const validatedStates = {};
+            users.forEach(user => {
+                const userEval = savedEvaluations[user.ID_UTILISATEUR]?.[0];
+                if (userEval?.state === 'VALIDATED') {
+                    validatedStates[user.ID_UTILISATEUR] = true;
+                }
+            });
+            setValidatedEvaluations(validatedStates);
+        };
+
+        if (savedEvaluations && users.length) {
+            initializeValidatedStates();
+        }
+    }, [savedEvaluations, users]);
 
     return (
         <TableContainer component={Paper} sx={{ margin: 2 }}>
@@ -214,8 +252,13 @@ const UserEvaluation = () => {
                         <TableCell align="center">Commandes</TableCell>
                         <TableCell align="center">Contenaires</TableCell>
 
-                        {evaluationCriteria.map(({ label }) => (
-                            <TableCell key={label} align="center">{label}</TableCell>
+                        {evaluationCriteria.map(({ label, id }) => (
+                            <TableCell key={id} align="center">
+                                <Typography variant="body1">{label}</Typography>
+                                <Typography variant="body2" color="textSecondary" sx={{ fontSize: '0.8rem' }}>
+                                    {evaluationCriteria.find(criteria => criteria.id === id).value}
+                                </Typography>
+                            </TableCell>
                         ))}
                         <TableCell align="center">Déplacement</TableCell>
                         <TableCell align="center">Moyenne</TableCell>
@@ -276,14 +319,26 @@ const UserEvaluation = () => {
                             </TableCell>
                             <TableCell align="center">{calculateAverageRating(user.ID_UTILISATEUR).toFixed(1)}</TableCell>
                             <TableCell align="center">
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => handleSubmitEvaluation(user.ID_UTILISATEUR)}
-                                >
-                                    Valider
-                                </Button>
+                                <Box display="flex" justifyContent="center" gap={2}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => handleSubmitEvaluation(user.ID_UTILISATEUR, 'save')}
+                                    >
+                                        Enregistrer
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="secondary"
+                                        onClick={() => handleSubmitEvaluation(user.ID_UTILISATEUR, 'validate')}
+                                    >
+                                        Valider
+                                    </Button>
+                                </Box>
                             </TableCell>
+
+
+
                         </TableRow>
                     ))}
                 </TableBody>

@@ -161,7 +161,9 @@ function CustomCard({ article, tarifs, type, base }) {
     REMISE_FAM,
     minDateLivraison,
     maxDateLivraison,
-    qteCommande
+    qteCommande,
+    latestDateLivCfp,
+    totalCflQteC
   } = article;
 
   const prix = Number(TARIF_1 * (1 + TX_TVA_ART / 100)).toFixed(3);
@@ -374,7 +376,7 @@ function CustomCard({ article, tarifs, type, base }) {
               <DirectionsBoat sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>
                 Quantité Prochainement Disponible:
-                {renderBatteryIcon(qteCommande)}
+                {renderBatteryIcon(totalCflQteC)}
 
 
               </Typography>
@@ -384,8 +386,8 @@ function CustomCard({ article, tarifs, type, base }) {
             <InfoItem>
               <CalendarMonth sx={{ color: '#3572EF', mr: 2 }} />
               <Typography>
-                {maxDateLivraison ? (
-                  `Date de réception prévue: ${formatDate(maxDateLivraison)} - ${formatDate(maxDateLivraison)}`
+                {latestDateLivCfp ? (
+                  `Date de réception prévue: ${formatDate(latestDateLivCfp)}`
                 ) : (
                   'Pas de commandes en cours'
                 )}

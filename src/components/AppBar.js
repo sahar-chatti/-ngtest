@@ -83,7 +83,7 @@ import axios from 'axios';
 import ShopTwoIcon from '@mui/icons-material/ShopTwo';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-
+import CarRepairIcon from '@mui/icons-material/CarRepair';
 import BASE_URL from '../Utilis/constantes';
 import { Badge, Popover, Avatar, Button } from '@mui/material';
 import cmdIcon from '../icons/cmd.png'
@@ -92,8 +92,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import RestoreIcon from '@mui/icons-material/Restore';
 import { useAccessRights } from '../Utilis/accessRights';
 import OrdresAdministration from '../Adminstration/OrdreAdministration';
-import ReclamationsList from '../ReclamationsList';
-
+import ReclamationsList from '../Sav/ReclamationsList';
+import Maintenance from '../MaintenanceVoiture'
 const drawerWidth = 340;
 
 const openedMixin = (theme) => ({
@@ -219,7 +219,7 @@ export default function MiniDrawer() {
   const prevEvaluationCount = useRef(0);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [newNotification, setNewNotification] = useState(null);
-  
+
   const fetchEvaluationCount = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/evaluations`);
@@ -251,7 +251,7 @@ export default function MiniDrawer() {
   };
   useEffect(() => {
     fetchEvaluationCount();
-    const intervalId = setInterval(fetchEvaluationCount, 30000); 
+    const intervalId = setInterval(fetchEvaluationCount, 30000);
 
     return () => clearInterval(intervalId);
   }, [user.LOGIN]);
@@ -422,7 +422,7 @@ export default function MiniDrawer() {
           }}
           onClick={handleClearAllNotifications}
           onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave} 
+          onMouseLeave={handleMouseLeave}
         >
           Marquer tous les notificaions comme lus
         </Button>
@@ -436,39 +436,39 @@ export default function MiniDrawer() {
         const response = await axios.get(`${BASE_URL}/api/getNotifications`, {
           params: { userLogin: user.LOGIN },
         });
-        
+
         // Check if there are new notifications
         if (response.data.length > notifications.length) {
           // Get the newest notification
           const newestNotification = response.data[0];
           setNewNotification(newestNotification);
           setOpenSnackbar(true);
-          
+
           // Play notification sound
           const audio = new Audio('/notification_sound.mp3');
           audio.play();
         }
-        
+
         setNotifications(response.data);
         prevNotificationLength.current = response.data.length;
       } catch (error) {
         console.error('Error fetching notifications:', error);
       }
     };
-  
+
     fetchNotifications();
     const intervalId = setInterval(fetchNotifications, 50000);
-  
+
     return () => clearInterval(intervalId);
   }, [user.LOGIN]);
-  
+
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
     setOpenSnackbar(false);
   };
-  
+
 
   useEffect(() => {
     const checkNewEntries = async () => {
@@ -499,72 +499,72 @@ export default function MiniDrawer() {
 
       <CssBaseline />
       <AppBar position="fixed" open={open} style={{ backgroundColor: '#3572EF' }}>
-      
-<Snackbar
-  open={openSnackbar}
-  autoHideDuration={6000}
-  onClose={handleCloseSnackbar}
-  anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
-  sx={{
-    '& .MuiAlert-root': {
-      animation: 'popIn 0.5s ease-out',
-      ...popupAnimation,
-      minWidth: '400px',
-      maxWidth: '600px',
-      borderRadius: '15px',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-    }
-  }}
->
-  <Alert
-    onClose={handleCloseSnackbar}
-    severity="info"
-    sx={{
-      backgroundColor: '#3572EF',
-      color: 'white',
-      padding: '20px',
-      '& .MuiAlert-icon': {
-        color: 'white',
-        fontSize: '28px'
-      },
-      '& .MuiAlert-message': {
-        fontSize: '16px',
-        fontWeight: 500
-      },
-      '& .MuiAlert-action': {
-        paddingTop: '8px'
-      },
-      transform: 'scale(1)',
-      transition: 'transform 0.2s ease',
-      '&:hover': {
-        transform: 'scale(1.02)',
-      }
-    }}
-  >
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center',
-      gap: '12px'
-    }}>
-      <Avatar
-        src={newNotification?.TYPE?.includes('cmd') ? cmdIcon : personIcon}
-        sx={{ 
-          width: 40, 
-          height: 40,
-          border: '2px solid white'
-        }}
-      />
-      <div>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '4px' }}>
-          Nouvelle notification
-        </Typography>
-        <Typography variant="body1">
-          {newNotification?.MESSAGE}
-        </Typography>
-      </div>
-    </div>
-  </Alert>
-</Snackbar>
+
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+          sx={{
+            '& .MuiAlert-root': {
+              animation: 'popIn 0.5s ease-out',
+              ...popupAnimation,
+              minWidth: '400px',
+              maxWidth: '600px',
+              borderRadius: '15px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+            }
+          }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity="info"
+            sx={{
+              backgroundColor: '#3572EF',
+              color: 'white',
+              padding: '20px',
+              '& .MuiAlert-icon': {
+                color: 'white',
+                fontSize: '28px'
+              },
+              '& .MuiAlert-message': {
+                fontSize: '16px',
+                fontWeight: 500
+              },
+              '& .MuiAlert-action': {
+                paddingTop: '8px'
+              },
+              transform: 'scale(1)',
+              transition: 'transform 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.02)',
+              }
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <Avatar
+                src={newNotification?.TYPE?.includes('cmd') ? cmdIcon : personIcon}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  border: '2px solid white'
+                }}
+              />
+              <div>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                  Nouvelle notification
+                </Typography>
+                <Typography variant="body1">
+                  {newNotification?.MESSAGE}
+                </Typography>
+              </div>
+            </div>
+          </Alert>
+        </Snackbar>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -727,7 +727,7 @@ export default function MiniDrawer() {
               <ListItem disablePadding>
                 <ListItemButton onClick={() => handleCategoryClick('Commercial')}>
                   <ListItemIcon>
-                    <ContactsIcon style={{ color: '#4379F2' }}/>
+                    <ContactsIcon style={{ color: '#4379F2' }} />
                   </ListItemIcon>
                   <ListItemText primary="Commercial" />
                   {openCategory === 'Commercial' ? <ExpandLess /> : <ExpandMore />}
@@ -853,7 +853,7 @@ export default function MiniDrawer() {
                     </ListItemButton>
                   </ListItem>
                 </Tooltip>
-             
+
                 <Tooltip title="Demandes et Réclamations" placement="right" >
                   <ListItem disablePadding>
                     <ListItemButton onClick={() => handleTabClick(9)}>
@@ -964,13 +964,13 @@ export default function MiniDrawer() {
               </Collapse>
             </>
           )}
-          {(
+          {accessRights.ACCESS_RECEPTIONIST === 1 &&(
             <>
               <Tooltip title="Réception" placement="right">
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleCategoryClick('Réception')}>
                     <ListItemIcon>
-                      <BusinessIcon style={{ color: '#4379F2' }}/>
+                      <BusinessIcon style={{ color: '#4379F2' }} />
                     </ListItemIcon>
                     <ListItemText primary="Réception" />
                     {openCategory === 'Réception' ? <ExpandLess /> : <ExpandMore />}
@@ -1046,7 +1046,7 @@ export default function MiniDrawer() {
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleCategoryClick('Comptabilité')}>
                     <ListItemIcon>
-                      <CalculateIcon style={{ color: '#4379F2' }}/>
+                      <CalculateIcon style={{ color: '#4379F2' }} />
                     </ListItemIcon>
                     <ListItemText primary="Comptabilité" />
                     {openCategory === 'Comptabilité' ? <ExpandLess /> : <ExpandMore />}
@@ -1073,7 +1073,7 @@ export default function MiniDrawer() {
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleCategoryClick('Import / Export')}>
                     <ListItemIcon>
-                      <DirectionsBoatIcon style={{ color: '#4379F2' }}/>
+                      <DirectionsBoatIcon style={{ color: '#4379F2' }} />
                     </ListItemIcon>
                     <ListItemText primary="Import / Export" />
                     {openCategory === 'Import / Export' ? <ExpandLess /> : <ExpandMore />}
@@ -1088,6 +1088,16 @@ export default function MiniDrawer() {
                         <ApartmentIcon />
                       </ListItemIcon>
                       <ListItemText primary="Demandes et Réclamations" sx={boldTextStyle} />
+                    </ListItemButton>
+                  </ListItem>
+                </Tooltip>
+                <Tooltip title="Réclamation Clients (Application)" placement="right" >
+                  <ListItem disablePadding>
+                    <ListItemButton onClick={() => handleTabClick(2)}>
+                      <ListItemIcon>
+                        <ShopTwoIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Réclamation Clients (Application) " sx={boldTextStyle} />
                     </ListItemButton>
                   </ListItem>
                 </Tooltip>
@@ -1111,7 +1121,7 @@ export default function MiniDrawer() {
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleCategoryClick('Marketing')}>
                     <ListItemIcon>
-                      <FacebookIcon style={{ color: '#4379F2' }}/>
+                      <FacebookIcon style={{ color: '#4379F2' }} />
                     </ListItemIcon>
                     <ListItemText primary="Marketing" />
                     {openCategory === 'Marketing' ? <ExpandLess /> : <ExpandMore />}
@@ -1150,7 +1160,7 @@ export default function MiniDrawer() {
                 <ListItem disablePadding>
                   <ListItemButton onClick={() => handleCategoryClick('Administration')}>
                     <ListItemIcon>
-                      <ManageAccountsIcon style={{ color: '#4379F2' }}/>
+                      <ManageAccountsIcon style={{ color: '#4379F2' }} />
                     </ListItemIcon>
                     <ListItemText primary="Administration" />
                     {openCategory === 'Administration' ? <ExpandLess /> : <ExpandMore />}
@@ -1298,6 +1308,39 @@ export default function MiniDrawer() {
               </Collapse>
             </>
           )}
+          {!isLoading && accessRights.ACCESS_VEHICULE === 1 && (
+            <>
+
+              <Tooltip title="Maintenance véhicule" placement="right">
+                <ListItem disablePadding>
+                  <ListItemButton onClick={() => handleCategoryClick('Maintenance véhicule')}>
+                    <ListItemIcon>
+                      <CarRepairIcon style={{ color: '#4379F2' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="Maintenance véhicule" />
+                    {openCategory === 'Maintenance véhicule' ? <ExpandLess /> : <ExpandMore />}
+                  </ListItemButton>
+                </ListItem>
+              </Tooltip>
+              <Collapse in={openCategory === 'Maintenance véhicule'} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <Tooltip title="Gestion des voitures" placement="right" >
+                    <ListItem disablePadding>
+                      <ListItemButton onClick={() => handleTabClick(0)}>
+                        <ListItemIcon  >
+
+                          <ViewStreamIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Gestion des voitures" sx={boldTextStyle} />
+                      </ListItemButton>
+                    </ListItem>
+                  </Tooltip>
+
+                </List>
+              </Collapse>
+            </>
+          )}
+
 
 
         </List>
@@ -1389,10 +1432,17 @@ export default function MiniDrawer() {
             {selectedTab === 0 && <EmployeeRequestsTabs earchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} value={value} setValue={setValue} />}
           </>
         )}
-
         {openCategory === 'Import / Export' && (
           <>
             {selectedTab === 0 && <EmployeeRequestsTabs earchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} value={value} setValue={setValue} />}
+            {selectedTab === 2 && <ReclamationsList searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} value={value} setValue={setValue} />}
+
+            {/*selectedTab === 1 && <SavImport earchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} value={value} setValue={setValue} />*/}
+          </>
+        )}
+        {openCategory === 'Maintenance véhicule' && (
+          <>
+            {selectedTab === 0 && <Maintenance earchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} value={value} setValue={setValue} />}
 
             {/*selectedTab === 1 && <SavImport earchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedOption={selectedOption} setSelectedOption={setSelectedOption} value={value} setValue={setValue} />*/}
           </>

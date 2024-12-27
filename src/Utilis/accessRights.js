@@ -14,6 +14,9 @@ export const useAccessRights = (userLogin) => {
         if (userRights) {
           setAccessRights({
             ACCESS_RECEPTION: Number(userRights.ACCESS_RECEPTION),
+            ACCESS_VEHICULE: Number(userRights.ACCESS_VEHICULE),
+            ACCESS_RECEPTIONIST: Number(userRights.ACCESS_RECEPTIONIST),
+
             ACCESS_CONTACT: Number(userRights.ACCESS_CONTACT),
             ACCESS_PARTENAIRE: Number(userRights.ACCESS_PARTENAIRE),
             ACCESS_INVESTISSEUR: Number(userRights.ACCESS_INVESTISSEUR),

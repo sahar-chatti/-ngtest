@@ -77,6 +77,8 @@ const UserManagement = () => {
     importExport: false,
     reception: false,
     partenaire: false,
+    vehicules: false,
+
     investisseur: false,
     client_cspd: false,
     client_fdm: false,
@@ -112,6 +114,7 @@ const UserManagement = () => {
       importExport: user.ACCESS_IMPORT_EXPORT === 1,
       reception: user.ACCESS_RECEPTION === 1,
       partenaire: user.ACCESS_PARTENAIRE === 1,
+      vehicules: user.ACCESS_VEHICULE === 1,
       investisseur: user.ACCESS_INVESTISSEUR === 1,
       client_cspd: user.ACCESS_CLIENT_CSPD === 1,
       client_fdm: user.ACCESS_CLIENT_FDM === 1,
@@ -119,7 +122,9 @@ const UserManagement = () => {
       historique_appel: user.ACCESS_HISTORIQUE_APPEL === 1,
       achats: user.ACCESS_ACHATS === 1,
       comptabilite: user.ACCESS_COMPTABILITE === 1,
-      finance: user.ACCESS_FINANCE === 1
+      finance: user.ACCESS_FINANCE === 1,
+      reception: user.ACCESS_RECEPTIONIST === 1,
+
     });
     setOpenDialog(true);
   };
@@ -164,7 +169,7 @@ const UserManagement = () => {
     clients: ['partenaire', 'investisseur', 'client_cspd', 'client_fdm', 'famille'],
     operations: ['magasin', 'importExport', 'achats'],
     finance: ['comptabilite', 'finance'],
-    other: ['parametrage', 'rh', 'mailing', 'historique_appel']
+    other: ['parametrage', 'rh', 'mailing', 'historique_appel', 'vehicules']
   };
 
   return (

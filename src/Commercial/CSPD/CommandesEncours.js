@@ -56,6 +56,8 @@ import { FormControlLabel, Radio } from '@mui/material';
 import RadioGroup from '@mui/material/RadioGroup';
 import AdsClickIcon from '@mui/icons-material/AdsClick';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { LinearProgress } from '@mui/material';
+
 
 const CommandesList = ({ base, type, searchTerm, }) => {
   const theme = useTheme();
@@ -114,6 +116,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
   const [idCollaborator, setIdCollaborator] = useState('');
   const [vehicule, setVehicule] = useState([]);
   const [validationStatus, setValidationStatus] = useState({});
+  const [carAssignmentError, setCarAssignmentError] = useState('');
 
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleValidationChange = async (commandId, isChecked) => {
@@ -140,6 +143,31 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     }
   };
 
+  // Function to handle vehicle assignment
+  const handleVehicleAssignment = (carName, command) => {
+    const orderVolume = calculateTotalCubage(articles);
+    
+    // Check if vehicle has enough space
+    if (vehicleSpace[carName].remainingVolume < orderVolume) {
+      setCarAssignmentError('Volume insuffisant dans ce véhicule');
+      return false;
+    }
+  
+    // Update vehicle space
+    setVehicleSpace(prev => ({
+      ...prev,
+      [carName]: {
+        ...prev[carName],
+        remainingVolume: prev[carName].remainingVolume - orderVolume,
+        assignedOrders: [...prev[carName].assignedOrders, {
+          commandId: command.NUM_CDE_C,
+          volume: orderVolume
+        }]
+      }
+    }));
+  
+    return true;
+  };
   useEffect(() => {
 
     if (commandes.length > 0) {
@@ -628,7 +656,24 @@ const CommandesList = ({ base, type, searchTerm, }) => {
   const handleCloseArticleDialog = () => {
     setArticleDialogOpened(false);
   };
-
+  const VehicleLoadingStatus = () => (
+    <Box sx={{ mt: 2, p: 2, border: '1px solid #ccc' }}>
+      <Typography variant="h6">État de chargement des véhicules</Typography>
+      {Object.entries(vehicleSpace).map(([carName, data]) => (
+        <Box key={carName} sx={{ mt: 1 }}>
+          <Typography>
+            {carName}: {((data.maxVolume - data.remainingVolume) / data.maxVolume * 100).toFixed(1)}% utilisé
+            ({data.assignedOrders.length} commandes)
+          </Typography>
+          <LinearProgress 
+            variant="determinate" 
+            value={((data.maxVolume - data.remainingVolume) / data.maxVolume) * 100}
+            sx={{ mt: 1 }}
+          />
+        </Box>
+      ))}
+    </Box>
+  );
   const BouncingIcon = styled(AdsClickIcon)`
   animation: bounce 1s infinite;
   
@@ -644,6 +689,58 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     }
   }
 `;
+const AVAILABLE_CARS = [
+  { id: 1, name: 'Jumper 1', maxVolume: 1, currentVolume: 0 },
+  { id: 2, name: 'Jumper 2', maxVolume: 12, currentVolume: 0 },
+  { id: 3, name: 'Jumper 3', maxVolume: 14.4, currentVolume: 0 },
+  { id: 4, name: 'Iveco 1 ', maxVolume: 16, currentVolume: 0 },
+  { id: 5, name: 'Iveco 1', maxVolume: 17.6, currentVolume: 0 },
+  { id: 6, name: 'Partner 1', maxVolume: 2.4, currentVolume: 0 },
+  { id: 7, name: 'Partner 2', maxVolume: 2.4, currentVolume: 0 },
+  { id: 8, name: 'Bipper 1', maxVolume: 2.4, currentVolume: 0 },
+  { id: 9, name: 'Bipper 2', maxVolume: 2.4, currentVolume: 0 },
+  { id: 10, name: 'Isuzu', maxVolume: 4, currentVolume: 0 },
+  { id: 11, name: 'Camion 5 tonnes', maxVolume: 28, currentVolume: 0 },
+  { id: 12, name: 'Contenaire 40 HQ', maxVolume: 60.8, currentVolume: 0 },
+  { id: 13, name: 'Contenaire 20 pieds', maxVolume: 26.4, currentVolume: 0 },
+
+];
+const [carLoadings, setCarLoadings] = useState(
+  AVAILABLE_CARS.reduce((acc, car) => ({
+    ...acc,
+    [car.name]: car.maxVolume
+  }), {})
+);
+const handleCarAssignment = (carName, orderVolume) => {
+  setCarLoadings(prev => ({
+    ...prev,
+    [carName]: prev[carName] - orderVolume
+  }));
+};
+const [assignedCommands, setAssignedCommands] = useState({});
+
+
+const [selectedCar, setSelectedCar] = useState(null);
+const [carLoading, setCarLoading] = useState(AVAILABLE_CARS);
+const calculateTotalCubage = (articles) => {
+  if (!Array.isArray(articles)) return 0;
+  return articles.reduce((sum, article) => {
+    const volume = parseFloat(article.VOLUME_ART) || 0;
+    const quantity = parseFloat(article.CCL_QTE_C) || 0;
+    return sum + (volume * quantity);
+  }, 0);
+};
+const [vehicleSpace, setVehicleSpace] = useState(
+  AVAILABLE_CARS.reduce((acc, car) => ({
+    ...acc,
+    [car.name]: {
+      maxVolume: car.maxVolume,
+      remainingVolume: car.maxVolume,
+      assignedOrders: []
+    }
+  }), {})
+);
+
   return (
     <Grid container spacing={2}>
       {commandes.map((command) => {
@@ -766,6 +863,19 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                   <img src={matricule} alt="matricule icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Matricule: {command.ADR_C_C_3}
                 </Typography>
+<Typography style={{ 
+  display: "flex", 
+  alignItems: "center", 
+  marginBottom: 10, 
+  marginTop: "10px", 
+  color: '#545454', 
+  fontWeight: 'bold', 
+  fontSize: '16px' 
+}}>
+  <LocalAtmIcon style={{ marginRight: 8 }} />
+  Total Cubage: {calculateTotalCubage(articles)} m³
+</Typography>
+
                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><img src={addressIcon} alt="person icon" style={{ marginRight: 8, width: "25px", height: "25px" }} />
                   Adresses Client: {command.ADR_C_C_2}</Typography>
                 <Typography
@@ -825,6 +935,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                       <TableRow>
                         <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Article</TableCell>
                         <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Description</TableCell>
+                        <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Cubage</TableCell>
                         <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Pu TTC</TableCell>
                         <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité</TableCell>
                         <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Montant TTC</TableCell>
@@ -846,6 +957,8 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                               <Button onClick={() => openArticleDialog(cardItem?.CCL_ARTICLE)}>{cardItem.CCL_ARTICLE}</Button>
                             </TableCell>
                             <TableCell>{cardItem.CCL_DES_ART}</TableCell>
+                            <TableCell>{cardItem.VOLUME_ART}</TableCell>
+
                             <TableCell>{cardItem.CCL_PXU_TTC}</TableCell>
                             <TableCell>{cardItem.CCL_QTE_C}</TableCell>
                             <TableCell>{cardItem.CCL_MONTANT_TTC}</TableCell>
@@ -1210,18 +1323,48 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                 </Select>
                 <InputLabel id="select-label-chauffeur">Véhicule</InputLabel>
                 <Select
-                  labelId="select-label-1"
-                  id="select-1"
-                  value={vehiculeCspd}
-                  onChange={(e) => setVehiculeCspd(e.target.value)}
-                  fullWidth
-                >
-                  {vehicule.map((vehicule) => (
-                    <MenuItem key={vehicule.ID} value={vehicule.LIBELLE}>
-                      {vehicule.LIBELLE}
-                    </MenuItem>
-                  ))}
-                </Select>
+  labelId="select-label-1"
+  id="select-1"
+  value={vehiculeCspd}
+  onChange={(e) => {
+    const selectedCar = e.target.value;
+    const success = handleVehicleAssignment(selectedCar, commandTocom);
+    if (success) {
+      setVehiculeCspd(selectedCar);
+    }
+  }}
+  fullWidth
+>
+  {AVAILABLE_CARS.map((car) => {
+    const orderVolume = calculateTotalCubage(articles);
+    const currentSpace = vehicleSpace[car.name];
+    
+    return (
+      <MenuItem 
+        key={car.id} 
+        value={car.name}
+        disabled={orderVolume > currentSpace.remainingVolume}
+      >
+        {car.name} (
+          Volume Total: {car.maxVolume}m³ / 
+          Disponible: {currentSpace.remainingVolume.toFixed(2)}m³
+        )
+        {currentSpace.assignedOrders.length > 0 && (
+          <Typography variant="caption" display="block">
+            Commandes assignées: {currentSpace.assignedOrders.map(o => o.commandId).join(', ')}
+          </Typography>
+        )}
+      </MenuItem>
+    );
+  })}
+</Select>
+
+// Add error display
+{carAssignmentError && (
+  <Typography color="error" sx={{ mt: 1 }}>
+    {carAssignmentError}
+  </Typography>
+)}
               </>
             )}
             {modeLivraison?.LIBELLE === 'transporteur' && (
@@ -1336,6 +1479,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
               </>
             )}
           </Box>
+ 
         </DialogContent>
         <DialogActions>
           <Button
