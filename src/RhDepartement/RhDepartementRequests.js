@@ -21,9 +21,10 @@ import {
   InputLabel,
   Typography
 } from '@mui/material';
+import { Pagination } from '@mui/material';
+
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import BASE_URL from '../Utilis/constantes';
 import { useSelector } from 'react-redux';
@@ -39,13 +40,16 @@ const RHdemands = () => {
   });
   const [editing, setEditing] = useState(false);
   const [enteteBase64, setEnteteBase64] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const itemsPerPage = 50;
 
 
   const handleStateChange = async (demandId, newState) => {
     try {
       const response = await axios.put(`${BASE_URL}/api/updateDemandRhState/${demandId}`, {
         STATE: newState,
-        PAR: user?.LOGIN // Add the current user's login
+        PAR: user?.LOGIN
       });
 
       if (response.status === 200) {
@@ -127,19 +131,27 @@ const RHdemands = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/demandesRH`);
-      // Remove any whitespace and convert to lowercase for reliable comparison
-      const userRole = user?.ROLE?.trim().toLowerCase();
+      const response = await axios.get(`${BASE_URL}/api/demandesRH`, {
+        params: {
+          page: page,
+          pageSize: itemsPerPage
+        }
+      });
 
-      const filteredUsers =
-        response.data
-
-
-      setUsers(filteredUsers);
+      const { data, pagination } = response.data;
+      setUsers(data || []);
+      setTotalPages(pagination.totalPages);
     } catch (error) {
       console.error('Error fetching users:', error);
       alert('Erreur lors de la récupération des demandes.');
+      setUsers([]);
     }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, [page]);
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
   };
 
   const handleDeleteUser = async (id) => {
@@ -253,7 +265,6 @@ const RHdemands = () => {
     }
   };
 
-  // In the handleSaveState function
   const handleSaveState = async () => {
     try {
       if (!currentUser.STATE) {
@@ -263,7 +274,7 @@ const RHdemands = () => {
 
       const response = await axios.put(`${BASE_URL}/api/updateDemandRhState/${currentUser.ID}`, {
         STATE: currentUser.STATE,
-        UPDATED_BY: user?.LOGIN // Optionally track who made the change
+        UPDATED_BY: user?.LOGIN
       });
 
       if (response.status === 200) {
@@ -680,7 +691,19 @@ const RHdemands = () => {
           <Button onClick={handleSaveState} color="primary">Modifier l'état</Button>
         </DialogActions>
       </Dialog>
+      <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+          size="large"
+          showFirstButton
+          showLastButton
+        />
+      </Grid>
     </Grid>
+
   );
 };
 

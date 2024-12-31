@@ -15,7 +15,7 @@ import {
   Table, TableBody, TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
+  TablePagination,   
   TableRow,
   Typography,
   useTheme
@@ -38,9 +38,6 @@ import { styled } from '@mui/material/styles';
 import { useSelector } from 'react-redux';
 import BASE_URL from '../Utilis/constantes';
 import addressIcon from '../icons/address.png';
-import midbattery from '../icons/batterie orangé.png';
-import fullbattery from '../icons/full-battery.png';
-import emptybattery from '../icons/low-battery.png';
 import { getArticleById } from "../Api";
 import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
 import { fetchClientsPartenaires } from "../Api";
@@ -48,7 +45,6 @@ import { FormControlLabel, Radio } from '@mui/material';
 import RadioGroup from '@mui/material/RadioGroup';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
-import PaidIcon from '@mui/icons-material/Paid';
 import entete from '../images/sahar up.png';
 
 
@@ -92,37 +88,30 @@ const CommandesList = ({ base, type, searchTerm }) => {
   const [expandedClient, setExpandedClient] = useState(null);
   const [isArticleDialogOpened, setArticleDialogOpened] = React.useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const [clients, setClients] = useState(null);
-  const [partner, setPartner] = useState([]);
   const [error, setError] = useState(null);
   const [clientsData, setClientsData] = useState([]);
-  const client = clientsData[0];
   const handleChangePage = (event, newPage) => setPage(newPage);
 
 
 
 
   useEffect(() => {
-    // Fetch clients only if commandes is not empty
+
     if (commandes.length > 0) {
-      const command = commandes[0]; // Get the first command
-      const clientId = command.CLIENT_CDE; // Extract clientId from command
+      const command = commandes[0];
+      const clientId = command.CLIENT_CDE;
 
       const fetchClients = async () => {
         try {
-          // Call the API with the required parameters
+
           const { clients, total, error: apiError } = await fetchClientsPartenaires(page, clientId, pageSize, searchTerm, clientId);
           console.log("Fetched Clients Data:", clients);
-
-          // Handle API errors
           if (apiError) {
             throw new Error(apiError);
           }
-
-          // Set the clients data
           setClientsData(clients);
         } catch (err) {
-          setError(err.message); // Set error state
+          setError(err.message);
         }
       };
       console.log("Fetching clients with params:", {
@@ -131,10 +120,9 @@ const CommandesList = ({ base, type, searchTerm }) => {
         pageSize,
         searchTerm
       });
-      fetchClients(); // Call the fetch function
+      fetchClients();
     }
-  }, [commandes, page, pageSize, searchTerm]); // Run effect whenever these dependencies change
-
+  }, [commandes, page, pageSize, searchTerm]);
 
   useEffect(() => {
     fetchClientsPartenaires();
@@ -230,7 +218,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
         page: page,
         pageSize: pageSize,
         searchTerm: searchTerm,
-        cc_champ_3: "traité" // Ajout du filtre pour cc_champ_3
+        cc_champ_3: "traité"
       };
 
       const result = await axios.get(url, { params });
@@ -267,7 +255,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
       try {
         const result = await axios.get(`${BASE_URL}/api/communicationsCmd`);
         console.log("com", result.data)
-        //setCommunications(result.data);
       } catch (error) {
         console.error('Error fetching communications:', error);
       }
@@ -286,21 +273,17 @@ const CommandesList = ({ base, type, searchTerm }) => {
     fetchCommunications();
   }, [page, pageSize, searchTerm]);
   const handleSaveCommunication = async () => {
-    // Clear previous errors
     setErrorLivraison('');
     resetForm();
 
-    // Check if a date has been selected
     if (!dateLivraisonPrevue) {
       console.log("Erreur : dateLivraisonPrevue est vide");
       setErrorLivraison('Veuillez sélectionner une date de livraison.');
-      return; // Prevent further execution if validation fails
+      return;
     }
 
     try {
-      // Check if commandTocom is not an empty string and has necessary properties
       if (commandTocom && commandTocom.NUM_CDE_C) {
-        // Make the POST request to save or update communication details_CDE_C) {
         const response = await axios.post(`${BASE_URL}/api/UpdateOrCreateComCmd`, {
           ref_commande: commandTocom.NUM_CDE_C,
           commercial: user.LOGIN,
@@ -321,11 +304,10 @@ const CommandesList = ({ base, type, searchTerm }) => {
           dateLivraisonPrevue,
         });
 
-        // Check if the response contains the expected message
         if (response.data && response.data.message) {
           console.log('Communication enregistrée avec succès:', response.data.message);
           setOpenCommSuccess(true);
-          await fetchCommandes(); // Await fetchCommandes if it's an async function
+          await fetchCommandes();
         } else {
           console.error('Unexpected response format:', response.data);
         }
@@ -350,24 +332,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
     }
   };
 
-
-  const handleTarifDialogOpen = async (command) => {
-
-    try {
-      console.log("client", command.CODE_CLIENT)
-
-      const result = await axios.get(`${BASE_URL}/api/tarifsClient`, {
-        params: {
-          code: command.CODE_CLIENT
-        }
-      });
-
-      setTarifs(result.data);
-    } catch (error) {
-      console.error('Error fetching commands:', error);
-    }
-    setOpenTarifDialog(true)
-  }
 
   const handleChangeRowsPerPage = (event) => {
     setPageSize(parseInt(event.target.value, 10));
@@ -406,10 +370,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
     setHistoryDialog(true)
   };
 
-  const handleClientClick = (commandId) => {
-    setExpandedClient(prev => (prev === commandId ? null : commandId));
-  };
-
   const openArticleDialog = (articleId) => {
     if (articleId) {
       getArticleById(articleId, 'cspd').then((article) => {
@@ -440,7 +400,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
     }
     img.src = entete;
   }, []);
- 
+
 
 
   const handlePrint = (command) => {
@@ -489,7 +449,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
               <p class="section-title">Informations commandes</p>
               <p>Commande: ${formatDate(command.DATE_CDE_C)} ${command.CC_CHAMP_6} - ${command.NUM_CDE_C}</p>
               <p>Client: ${command.CLIENT_CDE}, ${command.ADR_C_C_1}</p>
-              <p>Total: ${command.CC_TOTAL} TND</p>
               <p>Matricule: ${command.ADR_C_C_3}</p>
               <p>Numéro: ${command.TEL_CLIENT_F}</p>
                <p>Adresse: ${command.ADR_C_C_2}</p>
@@ -507,9 +466,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                   <tr>
                     <th>Article</th>
                     <th>Description</th>
-                    <th>Pu TTC</th>
                     <th>Quantité</th>
-                    <th>Montant TTC</th>
                     <th>Emplacement </th>
                     <th>Rayon</th>
                   </tr>
@@ -519,9 +476,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                     <tr>
                       <td>${article.CCL_ARTICLE}</td>
                       <td>${article.CCL_DES_ART}</td>
-                      <td>${article.CCL_PXU_TTC}</td>
                       <td>${article.CCL_QTE_C}</td>
-                      <td>${article.CCL_MONTANT_TTC}</td>
                       <td>${article.EMPLACEMENT_ART}</td>
                       <td>${article.RAYON_ARTICLE}</td>
                     </tr>
@@ -588,7 +543,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                         fontSize: '1.1rem',
 
                       }}
-                    > {etat}    </Typography>
+                    > {etat}</Typography>
 
                   </GlowingBox>
                   <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
@@ -597,10 +552,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                     <PersonIcon style={{ marginRight: '0.3em' }} />
                     <span style={{ color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }}>Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}</span>
                   </Typography>
-                  <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
-                    <PaidIcon style={{ marginRight: '0.3em' }} />
-                    Total: {command.CC_TOTAL} TND
-                  </Typography>
+
                   <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                     <BrandingWatermarkIcon style={{ marginRight: '0.3em' }} />
                     Matricule: {command.ADR_C_C_3}
@@ -669,24 +621,15 @@ const CommandesList = ({ base, type, searchTerm }) => {
                         <TableRow>
                           <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Article</TableCell>
                           <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Description</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Pu TTC</TableCell>
                           <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Montant TTC</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Mode de paiement</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd clients</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Quantité cmd fournisseurs</TableCell>
                           <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Emplacement</TableCell>
                           <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Rayon</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Date réception prv</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Remise</TableCell>
-                          <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Disponibilité</TableCell>
                         </TableRow>
                       </TableHead>
 
                       <TableBody>
                         {articles.length > 0 && articles.map((cardItem) => {
 
-                          const difference = (Number(cardItem.STOCK_PHYSIQUE) - Number(cardItem.CDES_CLIENTS));
 
                           return (
                             <TableRow key={cardItem.CCL_ARTICLE}>
@@ -695,50 +638,9 @@ const CommandesList = ({ base, type, searchTerm }) => {
                               </TableCell>
 
                               <TableCell>{cardItem.CCL_DES_ART}</TableCell>
-                              <TableCell>{cardItem.CCL_PXU_TTC}</TableCell>
                               <TableCell>{cardItem.CCL_QTE_C}</TableCell>
-                              <TableCell>{cardItem.CCL_MONTANT_TTC}</TableCell>
-                              <TableCell>{command.LIBEL_REGL_C}</TableCell>
-                              <TableCell>{cardItem.CDES_CLIENTS}</TableCell>
-                              <TableCell>{cardItem.CDES_FOURNIS}</TableCell>
                               <TableCell align="right">{cardItem.EMPLACEMENT_ART}</TableCell>
                               <TableCell align="right">{cardItem.RAYON_ARTICLE}</TableCell>
-                              <TableCell> {formatDate(cardItem.LATEST_DATE_LIV_CF_P)}</TableCell>
-                              <TableCell>
-                                {[
-                                  { keyword: "OZKA", amount: 30 },
-                                  { keyword: "OTANI", amount: 35 },
-                                  { keyword: "STARMAXX", amount: 30 },
-                                  { keyword: "STIP", amount: 22.17 },
-                                  { keyword: "PETLAS", amount: 30 },
-                                  { keyword: "KUMHO", amount: 33 },
-                                  { keyword: "SIOC", amount: 20 },
-                                  { keyword: "ZEETEX", amount: 28 },
-                                ].some(({ keyword, amount }) =>
-                                  ((cardItem.CCL_ARTICLE && cardItem.CCL_ARTICLE.includes(keyword)) ||
-                                    (cardItem.CCL_DES_ART && cardItem.CCL_DES_ART.includes(keyword))) &&
-                                  cardItem.CCL_TX_REM === amount
-                                ) ? "Comptant" : "à termes"}
-                              </TableCell>
-                              <TableCell>
-                                <img
-                                  src={
-                                    difference <= 0
-                                      ? emptybattery
-                                      : difference <= 8
-                                        ? midbattery
-                                        : fullbattery
-                                  }
-                                  alt={
-                                    difference <= 0
-                                      ? 'Empty Battery'
-                                      : difference <= 8
-                                        ? 'Mid Battery'
-                                        : 'Full Battery'
-                                  }
-                                  style={{ width: '24px', height: '24px' }}
-                                />
-                              </TableCell>
                             </TableRow>
 
                           );
@@ -968,7 +870,6 @@ const CommandesList = ({ base, type, searchTerm }) => {
             <Select
               labelId="select-label-1"
               id="select-1"
-              // value={modeLivraison}
               value={modeLivraison}
               onChange={(e) => setModeLivraison(e.target.value)}
               fullWidth
@@ -977,14 +878,7 @@ const CommandesList = ({ base, type, searchTerm }) => {
                 <MenuItem key={raison.ID} value={raison}>{raison.LIBELLE}</MenuItem>
               ))}
             </Select>
-            {/* <TextField
-            margin="dense"
-            id="mode-livraison"
-            label="Mode de livraison"
-            fullWidth 
-            value={modeLivraison}
-            onChange={(e) => setModeLivraison(e.target.value)}
-          /> */}
+
             <TextField
               margin="dense"
               id="adresse-livraison"

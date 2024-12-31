@@ -143,7 +143,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     }
   };
 
-  // Function to handle vehicle assignment
   const handleVehicleAssignment = (carName, command) => {
     const orderVolume = calculateTotalCubage(articles);
     
@@ -744,24 +743,28 @@ const [vehicleSpace, setVehicleSpace] = useState(
   return (
     <Grid container spacing={2}>
       {commandes.map((command) => {
-        const etat =
-          command.ETAT_CDE_C === 'LT' && command.CC_VALIDE !== 0
-            ? 'Livré'
-            : command.CC_CHAMP_3
-              ? command.CC_CHAMP_3
-              : "Non encore traité";
-        const etatColor =
-          etat === "Non encore traité"
-            ? "red"
-            : etat === "Livré"
-              ? "#3572EF"
-              : etat === "En cours de traitement"
-                ? "orange"
-                : etat === "Traité" && command.CC_VALIDE !== 0 
-                  ? "green"
-                  : etat === "Annulée"
-                    ? "purple"
-                    : "blue";
+      const etat =
+      command.ETAT_CDE_C === 'LP' 
+        ? 'Livraison partielle'
+        : command.ETAT_CDE_C === 'LT' && command.CC_VALIDE !== 0
+          ? 'Livré'
+          : command.CC_CHAMP_3
+            ? command.CC_CHAMP_3
+            : "Non encore traité";
+            const etatColor =
+            etat === "Non encore traité"
+              ? "red"
+              : etat === "Livré"
+                ? "#3572EF"
+                : etat === "En cours de traitement"
+                  ? "orange"
+                  : etat === "Traité" && command.CC_VALIDE !== 0 
+                    ? "green"
+                    : etat === "Annulée"
+                      ? "purple"
+                      : etat === "Livraison partielle"
+                        ? "#FF8C00"
+                        : "blue";
 
         const isClientDetailsVisible = expandedClient === command.NUM_CDE_C;
         console.table([{ etat, etatColor, numCl: command.NUM_CDE_CL, champ3: command.CC_CHAMP_3 }]);

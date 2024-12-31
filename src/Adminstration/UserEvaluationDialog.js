@@ -52,35 +52,35 @@ const evaluationCriteria = [
         label: 'Créativité',
         description: 'Capacité à proposer des solutions innovantes',
         icon: '💡',
-        value: '1.5 DT / étoile'
+        value: '5 DT / étoile'
     },
     {
         id: 'behavior',
         label: 'Comportement',
         description: 'Attitude générale et relations professionnelles',
         icon: '🤝',
-        value: '1.5 DT / étoile'
+        value: '5 DT / étoile'
     },
     {
         id: 'elegance',
         label: 'Élégance',
         description: 'Présentation et professionnalisme',
         icon: '✨',
-        value: '1.5 DT / étoile'
+        value: '5 DT / étoile'
     },
     {
         id: 'discipline',
         label: 'Discipline',
         description: 'Respect des règles et procédures',
         icon: '📋',
-        value: '1.5 DT / étoile'
+        value: '5 DT / étoile'
     },
     {
         id: 'productivity',
         label: 'Productivité',
         description: 'Efficacité et qualité du travail',
         icon: '📈',
-        value: '1.5 DT / étoile'
+        value: '5 DT / étoile'
     },
     {
         id: 'objectif',
@@ -99,43 +99,52 @@ const EmployeeEvaluationDialog = ({ open, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-
-// Add console logs to debug the API response
-useEffect(() => {
-    const fetchEvaluation = async () => {
-        if (!user?.LOGIN) return;
-
-        try {
-            setLoading(true);
-            const response = await axios.get(`http://192.168.1.170:3300/api/evaluations`, {
-                params: {
-                    userLogin: user.LOGIN,
-                    userId: user.ID_UTILISATEUR
-                }
-            });
-
-            console.log('API Response:', response.data); // Add this log
-
-            const userEvaluations = response.data
-    .filter(evaluation => 
-        evaluation.USER_ID === user.ID_UTILISATEUR && 
-        evaluation.STATE === 'VALIDATED' // Check if it's 'VALIDATED' instead of 'validated'
-    )
-    .sort((a, b) => new Date(b.EVALUATION_DATE) - new Date(a.EVALUATION_DATE));
-
-            setEvaluation(userEvaluations[0]);
-        } catch (err) {
-            console.error('API Error:', err); // Add this log
-            setError('Impossible de récupérer les données d\'évaluation');
-        } finally {
-            setLoading(false);
+    useEffect(() => {
+        const fetchEvaluation = async () => {
+            if (!user?.LOGIN) return;
+    
+            try {
+                setLoading(true);
+                const response = await axios.get(`http://192.168.1.170:3300/api/evaluations`, {
+                    params: {
+                        userLogin: user.LOGIN,
+                        userId: user.ID_UTILISATEUR
+                    }
+                });
+    
+                console.log('API Response:', response.data);
+    
+                // Filter for validated evaluations and sort by date
+                const userEvaluations = response.data
+                    .filter(evaluation => 
+                        evaluation.USER_ID === user.ID_UTILISATEUR && 
+                        evaluation.STATE === 'VALIDATED'  // Corrected spelling
+                    )
+                    .sort((a, b) => {
+                        // Sort in descending order (newest first)
+                        const dateA = new Date(b.EVALUATION_DATE);
+                        const dateB = new Date(a.EVALUATION_DATE);
+                        return dateA - dateB;
+                    });
+    
+                // Get the most recent evaluation
+                const latestEvaluation = userEvaluations[0];
+                console.log('Latest Evaluation:', latestEvaluation);
+                
+                setEvaluation(latestEvaluation);
+            } catch (err) {
+                console.error('API Error:', err);
+                setError('Impossible de récupérer les données d\'évaluation');
+            } finally {
+                setLoading(false);
+            }
+        };
+    
+        if (open && user?.LOGIN) {
+            fetchEvaluation();
         }
-    };
+    }, [open, user]);
 
-    if (open && user?.LOGIN) {
-        fetchEvaluation();
-    }
-}, [open, user]);
 
     if (!open) return null;
     const isPrintable = () => {

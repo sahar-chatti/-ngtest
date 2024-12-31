@@ -83,14 +83,19 @@ const RHdemands = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/demandesRH`);
-      const userRole = user?.ROLE?.trim().toLowerCase();
-      const filteredUsers = response.data.filter(u => u.USER_NAME === user?.LOGIN);
+      const response = await axios.get(`${BASE_URL}/api/demandesRHemployer`);
+
+      const data = Array.isArray(response.data) ? response.data : response.data.data;
+
+      const filteredUsers = data.filter(u => u.USER_NAME === user.LOGIN);
 
       setUsers(filteredUsers);
+
     } catch (error) {
       console.error('Error fetching users:', error);
-      alert('Erreur lors de la récupération des demandes.');
+      setUsers([]);
+      const errorMessage = error.response?.data?.message || 'Erreur lors de la récupération des demandes.';
+      alert(errorMessage);
     }
   };
 
@@ -134,9 +139,6 @@ const RHdemands = () => {
     setEditing(false);
   };
 
-  const handleCloseStateDialog = () => {
-    setOpenStateDialog(false);
-  };
 
   const handleSaveUser = async () => {
     try {
@@ -155,7 +157,7 @@ const RHdemands = () => {
       const apiMethod = editing ? 'put' : 'post';
       const formatDate = (date) => {
         const dateObj = new Date(date);
-        const tunisiaTime = new Date(dateObj.getTime() - (1 * 60 * 60 * 1000)); // Subtracting one hour
+        const tunisiaTime = new Date(dateObj.getTime() - (1 * 60 * 60 * 1000));
         return tunisiaTime.toISOString();
       };
 

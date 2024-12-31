@@ -222,8 +222,6 @@ const ArticleMovementsList = ({ }) => {
                         <h3>${data.details.INTIT_ARTICLE} (${data.details.CODE_ARTICLE})</h3>
                         <p><strong>Rayon:</strong> ${data.details.RAYON_ARTICLE || 'N/A'} | 
                            <strong>Emplacement:</strong> ${data.details.EMPLACEMENT_ART || 'N/A'} | 
-                           <strong>Stock initial:</strong> ${initialStock} | 
-                           <strong>Stock Actuel:</strong> ${data.details.STOCK_PHYSIQUE}</p>
                     </div>
                     <table class="movements-table">
                         <thead>
@@ -453,8 +451,6 @@ const ArticleMovementsList = ({ }) => {
                             <p><strong>Code Article:</strong> ${articleData.details.CODE_ARTICLE}</p>
                             <p><strong>Rayon:</strong> ${articleData.details.RAYON_ARTICLE || 'N/A'}</p>
                             <p><strong>Emplacement:</strong> ${articleData.details.EMPLACEMENT_ART || 'N/A'}</p>
-                            <p><strong>Stock Initial:</strong> ${initialStock}</p>
-                            <p><strong>Stock Actuel:</strong> ${articleData.details.STOCK_PHYSIQUE}</p>
                         </div>
     
                         <table class="movements-table">
@@ -667,12 +663,10 @@ const ArticleMovementsList = ({ }) => {
                                                     {data.movements.length} mouvements
                                                 </Typography>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    <InventoryIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                                                    Stock initial : {data.trueInitialStock}
+                                                   {/*   Stock initial : {data.trueInitialStock}*/} 
                                                 </Typography>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    <InventoryIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                                                    Stock Actuel: {data.details.STOCK_PHYSIQUE}                                                </Typography>
+                                                   {/* Stock Actuel: {data.details.STOCK_PHYSIQUE}   */}                                             </Typography>
                                             </Box>
                                             <IconButton
                                                 onClick={() => handleCardClick(articleCode)}

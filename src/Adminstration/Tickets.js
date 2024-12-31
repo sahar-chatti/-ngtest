@@ -161,8 +161,8 @@ const UserEvaluation = () => {
 
         return totalReward;
     };
-
     const handleInputChange = (userId, field, value) => {
+        console.log(`User: ${userId}, Field: ${field}, Value: ${value}`); // Add this line for debugging
         setEvaluations(prev => ({
             ...prev,
             [userId]: {
@@ -290,10 +290,10 @@ const UserEvaluation = () => {
                                     {id === 'productivity' ? (
                                         user.DEPARTEMENT !== 'Commercial' ? (
                                             <Rating
-                                                value={evaluations[user.ID_UTILISATEUR]?.[id] || 0}
-                                                onChange={(e, value) => handleInputChange(user.ID_UTILISATEUR, id, value)}
-                                                precision={0.5}
-                                            />
+                                            value={(evaluations[user.ID_UTILISATEUR]?.[id] || 0).toFixed(1)} // For debugging
+                                            onChange={(e, value) => handleInputChange(user.ID_UTILISATEUR, id, value)}
+                                            precision={0.5}
+                                        />
                                         ) : (
                                             <Rating
                                                 value={0}

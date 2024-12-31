@@ -64,6 +64,8 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     const [articles, setArticles] = useState({});
     const [openDialog, setOpenDialog] = useState(false);
     const [dateTime, setDateTime] = useState('');
+    const [users, setUsers] = useState('');
+
     const user = useSelector((state) => state.user);
     const [detailsCommunication, setDetailsCommunication] = useState('');
     const [transporteurs, setTransporteurs] = useState([])
@@ -99,9 +101,6 @@ const CommandesList = ({ base, type, searchTerm, }) => {
     const [clientsData, setClientsData] = useState([]);
     const [selectedCommands, setSelectedCommands] = useState([]); // To store selected command IDs
     const [assignedList, setAssignedList] = useState(""); // To store concatenated command IDs
-    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
-    const [users, setUsers] = useState([]);
-   
 
     const handleChangePage = (event, newPage) => setPage(newPage);
 
@@ -237,9 +236,8 @@ const CommandesList = ({ base, type, searchTerm, }) => {
         const year = date.getFullYear();
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
 
-        return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+        return `${day}-${month}-${year} ${hours}:${minutes}`;
     };
 
     const fetchCommandes = async () => {
@@ -459,12 +457,12 @@ const CommandesList = ({ base, type, searchTerm, }) => {
         setPage(0);
     };
 
-    const formatDate = (dateString) => {
+   {/*const formatDate = (dateString) => {
         if (!dateString) return '-';
         const [datePart, timePart] = dateString.split('T');
         const [year, month, day] = datePart.split('-');
         const [hour, minute, second] = timePart.split('.')[0].split(':');
-        const date = new Date(year, month - 1, day, hour, minute, second);
+        const date = new Date(year, month, day, hour, minute, second);
         const formattedDate = date.toLocaleString('fr-FR', {
             year: 'numeric',
             month: '2-digit',
@@ -476,7 +474,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
         });
 
         return formattedDate;
-    };
+    };*/} 
 
 
     const handleCloseDialog = () => {
@@ -608,7 +606,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                 </GlowingBox>
                                 <Typography variant="h6" style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                                     <ShoppingBagIcon style={{ marginRight: '0.3em' }} />
-                                    Commande:   {formatDate(command.DATE_CDE_C)}  -  {command.NUM_CDE_C}  </Typography>
+                                    Commande:   {formatDateTr(command.DATETRAIT)}  -  {command.NUM_CDE_C}  </Typography>
                                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: '10px', color: command.BLOQUER_CLIENT === 1 ? "red" : "green", fontWeight: "bold" }} onClick={() => handleClientClick(command.NUM_CDE_C)}>
                                     <PermIdentityIcon style={{ marginRight: '0.3em' }} />
                                     Client: {command.CLIENT_CDE}, {command.ADR_C_C_1}<BouncingIcon style={{ marginRight: '0.5em' }} />
@@ -697,7 +695,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}>
                                     <CreditCardIcon style={{ marginRight: '0.3em' }} />
                                     Identifiant: {command.ADR_C_C_5}</Typography>
-                                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><SupportAgentIcon style={{ marginRight: '0.3em' }} /> Traité par : {command.CC_CHAMP_7} le {formatDateTr(command.DATETRAIT)}</Typography>
+                                <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}><SupportAgentIcon style={{ marginRight: '0.3em' }} /> Traité par : {command.CC_CHAMP_7} le {command.DATETRAIT}</Typography>
                                 <Typography style={{ display: "flex", alignItems: "center", marginBottom: 10, marginTop: "10px", color: '#545454', fontWeight: 'bold', fontSize: '16px' }}> <LocalShippingIcon style={{ marginRight: '0.3em' }} />
                                     Date livraison prévue :  {communications[command.NUM_CDE_C]?.find(communication => communication.DATELIVRAISONPREVUE?.length)?.DATELIVRAISONPREVUE ? (
                                         <span style={{ color: 'red' }}>
@@ -749,7 +747,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                                         <TableCell>{command.LIBEL_REGL_C}</TableCell>
                                                         <TableCell>{cardItem.CDES_CLIENTS}</TableCell>
                                                         <TableCell>{cardItem.CDES_FOURNIS}</TableCell>
-                                                        <TableCell> {formatDate(cardItem.LATEST_DATE_LIV_CF_P)}</TableCell>
+                                                        <TableCell> {cardItem.LATEST_DATE_LIV_CF_P}</TableCell>
                                                         <TableCell>
                                                             Comptant
                                                         </TableCell>
@@ -928,7 +926,7 @@ const CommandesList = ({ base, type, searchTerm, }) => {
                                 <TableBody>
                                     {(communications[openedHistoryCommand] ?? []).map((c, i) => (
                                         <TableRow key={c.ID + i}>
-                                            <TableCell>{formatDate(c.DATETIME)}</TableCell>
+                                            <TableCell>{c.DATETIME}</TableCell>
                                             <TableCell>{c.DETAILS_COMMUNICATION}</TableCell>
                                             <TableCell>{c?.COMMERCIAL}</TableCell>
                                             <TableCell>{c?.MODE_LIV}</TableCell>

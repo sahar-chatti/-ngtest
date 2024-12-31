@@ -146,7 +146,6 @@ const BasicTable = () => {
               <TableCell align="right">Code article</TableCell>
               <TableCell align="right">Emplacement</TableCell>
               <TableCell align="right">Rayon</TableCell>
-              <TableCell align="right">Stock actuel</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>

@@ -15,7 +15,6 @@ import {
     TableHead,
     TablePagination,
     TableRow,
-    useTheme,
     Typography,
     TextField,
     Dialog,
@@ -37,14 +36,12 @@ const CommandesList = ({ type, searchTerm }) => {
     const [commandes, setCommandes] = useState([]);
     const [expanded, setExpanded] = useState(null);
     const [page, setPage] = useState(0);
-    const theme = useTheme();
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [isArticleDialogOpened, setArticleDialogOpened] = useState(false);
     const [loading, setLoading] = useState(false);
     const [pageSize, setPageSize] = useState(21);
     const [total, setTotal] = useState(0);
     const [articles, setArticles] = useState([]);
-    const [text, setText] = useState('');
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -320,7 +317,7 @@ const CommandesList = ({ type, searchTerm }) => {
 
                                                 >
                                                     <InventoryIcon style={{ marginRight: '0.3em' }} />
-                                                    Total produits: {calculateTotalProducts(articles)}
+                                                    {/* Total produits: {calculateTotalProducts(articles)}*/}
                                                 </Typography>
                                                 <TableRow>
                                                     <TableCell style={{ backgroundColor: '#0B4C69', color: 'white' }}>Article</TableCell>
@@ -335,7 +332,6 @@ const CommandesList = ({ type, searchTerm }) => {
                                                         <TableRow key={cardItem.CFL_ARTICLE}>
                                                             <TableCell>{cardItem.CFL_ARTICLE}</TableCell>
                                                             <TableCell>{cardItem.CFL_DES_ARTICLE}</TableCell>
-                                                            <TableCell>{cardItem.CFL_QTE_C}</TableCell>
                                                             <TableCell>
                                                                 <Button onClick={() => openArticleDialog(cardItem.CFL_ARTICLE)}>
                                                                     <AddCircleIcon />
@@ -415,7 +411,7 @@ const CommandesList = ({ type, searchTerm }) => {
                                 />
                                 <p>Emplacement actuel : {selectedArticle.EMPLACEMENT_ART || "Pas d'information sur l'emplacement."}</p>
                                 <Typography style={{ color: 'black', fontSize: '1.2em', fontWeight: '20px' }}>
-                                    <span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Stock actuel:</span> {selectedArticle.STOCK_PHYSIQUE}
+                                    {/*<span style={{ color: 'black', fontWeight: 'bold', color: '#4379F2', marginBottom: '0.5em' }}>Stock actuel:</span> {selectedArticle.STOCK_PHYSIQUE}*/}
                                 </Typography>
                             </div>
                         </DialogContentText>
