@@ -20,11 +20,13 @@ import BASE_URL from '../Utilis/constantes';
 const evaluationCriteria = [
     { id: 'punctuality', label: 'Ponctualité et Présence', value: '0,500 dt / étoile', description: 'Respect des horaires et délais' },
     { id: 'creativity', label: 'Créativité et exposé', value: '5dt / étoile', description: 'Capacité d\'innovation' },
-    { id: 'behavior', label: 'Comportement', value: '5 dt / étoile', description: 'Attitude professionnelle' },
+    { id: 'behavior', label: 'Comportement et Discipline', value: '5 dt / étoile', description: 'Attitude professionnelle' },
     { id: 'elegance', label: 'Élégance', value: '5 dt / étoile', description: 'Présentation et tenue professionnelle' },
-    { id: 'discipline', label: 'Discipline', value: '5 dt / étoile', description: 'Respect des règles et procédures' },
     { id: 'productivity', label: 'Productivité', value: '5 dt / étoile', description: 'Efficacité et rendement' },
-    { id: 'objectif', label: 'Objectif', value: '100 dt / étoile', description: 'Objectifs et réalisation' },
+
+    { id: 'discipline', label: 'Objectifs ', value: '25 dt / étoile', description: 'Respect des règles et procédures' },
+    { id: 'new_discipline', label: 'Défis', value: '100 dt / étoile', description: 'Défis' },
+
 ];
 
 const calculateMoney = (rating, criteriaId) => {
@@ -33,9 +35,9 @@ const calculateMoney = (rating, criteriaId) => {
         creativity: 5,
         behavior: 5,
         elegance: 5,
-        discipline: 5,
+        discipline: 25,
         productivity: 5,
-        objectif: 100,
+        new_discipline: 100,
 
     };
     return rating * (starValues[criteriaId] || 0);
@@ -83,7 +85,15 @@ const UserEvaluation = () => {
             setOrders([]);
         }
     };
-
+    const fetchOrdersFdm = async (base) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/api/currentMonthCommandsFdm`);
+            setOrders(response.data.commandes || []);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            setOrders([]);
+        }
+    };
     const getOrderCount = (userLogin) => {
         return orders.filter(order =>
             order.ETAT_CDE_C === "LT" &&
@@ -106,7 +116,7 @@ const UserEvaluation = () => {
                     behavior: evalData.BEHAVIOR,
                     elegance: evalData.ELEGANCE,
                     discipline: evalData.DISCIPLINE,
-                    objectif: evalData.OBJECTIF,
+                    new_discipline: evalData.NEW_DISCIPLINE,
                     state: evalData.STATE, // Add this line
 
                     productivity: evalData.PRODUCTIVITY,
@@ -192,7 +202,7 @@ const UserEvaluation = () => {
                 voyageCount: evaluationData.voyageCount || 0,
                 totalSavings,
                 creativity: evaluationData.creativity || 0,
-                objectif: evaluationData.objectif || 0,
+                new_discipline: evaluationData.new_discipline || 0,
                 behavior: evaluationData.behavior || 0,
                 elegance: evaluationData.elegance || 0,
                 discipline: evaluationData.discipline || 0,

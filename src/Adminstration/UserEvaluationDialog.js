@@ -68,13 +68,7 @@ const evaluationCriteria = [
         icon: '✨',
         value: '5 DT / étoile'
     },
-    {
-        id: 'discipline',
-        label: 'Discipline',
-        description: 'Respect des règles et procédures',
-        icon: '📋',
-        value: '5 DT / étoile'
-    },
+  
     {
         id: 'productivity',
         label: 'Productivité',
@@ -83,9 +77,16 @@ const evaluationCriteria = [
         value: '5 DT / étoile'
     },
     {
-        id: 'objectif',
+        id: 'discipline',
         label: 'Objectif',
-        description: 'Objectifs et réalisation',
+        description: 'Respect des règles et procédures',
+        icon: '📋',
+        value: '25 DT / étoile'
+    },
+    {
+        id: 'new_discipline',
+        label: 'Défis',
+        description: 'Défis et réalisation de projets',
         icon: '🎯',
         value: '100 DT / étoile'
     }
